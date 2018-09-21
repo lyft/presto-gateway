@@ -1,0 +1,46 @@
+requestRouter:
+  port: 8080
+  name: Proxly
+  cacheDir: /var/log/prestoproxy/cache
+
+backends:
+  - localPort: 8081
+    name: presto1
+    proxyTo: http://presto1.lyft.com
+    preserveHost: true
+    includeInRouter: true
+  - localPort: 8082
+    name: presto2
+    proxyTo: http://presto2.lyft.com
+    preserveHost: true
+    includeInRouter: true
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8090
+  adminConnectors:
+    - type: http
+      port: 8091
+
+modules:
+  - com.lyft.data.gateway.module.ProxyBackendProviderModule
+  - com.lyft.data.gateway.module.GatewayProviderModule
+
+# Logging settings.
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+    com.lyft: DEBUG
+
+  appenders:
+    - type: console
+    - type: file
+      currentLogFilename: /var/log/prestoproxy/prestoproxy-java.log
+      archivedLogFilenamePattern: /var/log/prestoproxy/prestoproxy-java-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 100MB
