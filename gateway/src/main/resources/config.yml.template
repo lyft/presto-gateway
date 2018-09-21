@@ -9,6 +9,7 @@ backends:
     proxyTo: http://presto1.lyft.com
     preserveHost: true
     includeInRouter: true
+    limitless: true
   - localPort: 8082
     name: presto2
     proxyTo: http://presto2.lyft.com

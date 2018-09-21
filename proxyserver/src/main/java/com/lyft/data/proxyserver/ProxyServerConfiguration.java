@@ -10,4 +10,5 @@ public class ProxyServerConfiguration {
   private String prefix = "/";
   private String trustAll = "true";
   private String preserveHost = "true";
+  private boolean limitless = false;
 }

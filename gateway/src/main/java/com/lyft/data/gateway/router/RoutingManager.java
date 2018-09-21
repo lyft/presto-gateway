@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +71,8 @@ public abstract class RoutingManager {
    * @return
    */
   public String provideBackendForThisRequest() {
-    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveBackends();
+    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveBackends().
+            stream().filter(conf -> !conf.isLimitless()).collect(Collectors.toList());
     int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
   }

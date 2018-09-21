@@ -16,7 +16,8 @@ Get all backends behind the gateway
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "trustAll": "true"
+        "trustAll": "true",
+        "limitless": "false"
     },
     {
         "includeInRouter": true,
@@ -25,7 +26,8 @@ Get all backends behind the gateway
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "trustAll": "true"
+        "trustAll": "true",
+        "limitless": "false"
     }
 ]
 ```
