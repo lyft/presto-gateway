@@ -11,7 +11,7 @@ Edit the config file and update backend urls `https://github.com/lyft/presto-gat
 cd gateway/target/
 java -jar gateway-{{VERSION}}-jar-with-dependencies.jar server  /Users/pjaiswal/src/presto-gateway/gateway/src/main/resources/config.yml.template
 ```
-
+Now you can access load balanced presto at localhost:8080 port. 
 
 ## Gateway API
 
