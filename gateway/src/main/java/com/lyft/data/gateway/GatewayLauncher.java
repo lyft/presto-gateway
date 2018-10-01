@@ -1,7 +1,7 @@
 package com.lyft.data.gateway;
 
-import com.lyft.data.gateway.app.AppModule;
-import com.lyft.data.gateway.app.BaseApp;
+import com.lyft.data.baseapp.AppModule;
+import com.lyft.data.baseapp.BaseApp;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 
 import io.dropwizard.setup.Environment;

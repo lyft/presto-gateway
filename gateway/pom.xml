@@ -34,6 +34,11 @@
     <dependencies>
         <dependency>
             <groupId>com.lyft.data</groupId>
+            <artifactId>baseapp</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lyft.data</groupId>
             <artifactId>proxyserver</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

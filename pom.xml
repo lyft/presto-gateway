@@ -74,6 +74,7 @@
     </dependencyManagement>
 
     <modules>
+        <module>baseapp</module>
         <module>proxyserver</module>
         <module>gateway</module>
     </modules>
