@@ -1,6 +1,7 @@
-package com.lyft.data.gateway.app;
+package com.lyft.data.baseapp;
 
 import com.google.inject.AbstractModule;
+
 import io.dropwizard.Configuration;
 import lombok.Getter;
 
