@@ -3,7 +3,7 @@ package com.lyft.data.gateway.module;
 import com.codahale.metrics.Meter;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.lyft.data.gateway.app.AppModule;
+import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.config.RequestRouterConfiguration;

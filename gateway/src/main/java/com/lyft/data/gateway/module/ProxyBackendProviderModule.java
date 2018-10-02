@@ -2,7 +2,7 @@ package com.lyft.data.gateway.module;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.lyft.data.gateway.app.AppModule;
+import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
