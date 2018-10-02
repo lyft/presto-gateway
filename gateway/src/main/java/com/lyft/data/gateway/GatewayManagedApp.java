@@ -12,13 +12,22 @@ public class GatewayManagedApp implements Managed {
 
   @Override
   public void start() throws Exception {
-    gateway.start();
-    proxyServers.forEach(proxyServer -> proxyServer.start());
+    if (gateway != null) {
+      gateway.start();
+    }
+
+    if (proxyServers != null) {
+      proxyServers.forEach(proxyServer -> proxyServer.start());
+    }
   }
 
   @Override
   public void stop() throws Exception {
-    gateway.close();
-    proxyServers.forEach(proxyServer -> proxyServer.close());
+    if (gateway != null) {
+      gateway.close();
+    }
+    if (proxyServers != null) {
+      proxyServers.forEach(proxyServer -> proxyServer.close());
+    }
   }
 }
