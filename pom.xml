@@ -77,6 +77,7 @@
         <module>baseapp</module>
         <module>proxyserver</module>
         <module>gateway</module>
+        <module>spark-gateway</module>
     </modules>
 
     <build>

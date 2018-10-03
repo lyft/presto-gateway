@@ -1,0 +1,41 @@
+requestRouter:
+  port: 8080
+  name: SparkGateway
+
+backends:
+  - localPort: 8081
+    name: spark1
+    proxyTo: http://titan-command-api.ingress.titanfinancialinfra.us-east-1.k8s.lyft.net
+  - localPort: 8082
+    name: spark2
+    proxyTo: http://titan-command-api.ingress.titanfinancialinfra.us-east-1.k8s.lyft.net
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8090
+  adminConnectors:
+    - type: http
+      port: 8091
+
+modules:
+  - com.lyft.data.spark.gateway.module.SparkGatewayProviderModule
+  - com.lyft.data.gateway.module.ProxyBackendProviderModule
+
+# Logging settings.
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+    com.lyft: DEBUG
+
+  appenders:
+    - type: console
+    - type: file
+      currentLogFilename: /var/log/sparkgateway/sparkgateway-java.log
+      archivedLogFilenamePattern: /var/log/sparkgateway/sparkgateway-java-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 100MB
