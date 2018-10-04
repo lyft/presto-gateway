@@ -6,9 +6,12 @@ backends:
   - localPort: 8081
     name: spark1
     proxyTo: http://titan-command-api.ingress.titanfinancialinfra.us-east-1.k8s.lyft.net
+    preserveHost: false
+
   - localPort: 8082
     name: spark2
     proxyTo: http://titan-command-api.ingress.titanfinancialinfra.us-east-1.k8s.lyft.net
+    preserveHost: false
 
 server:
   applicationConnectors:
@@ -19,7 +22,7 @@ server:
       port: 8091
 
 modules:
-  - com.lyft.data.spark.gateway.module.SparkGatewayProviderModule
+  - com.lyft.data.gateway.module.SparkGatewayProviderModule
   - com.lyft.data.gateway.module.ProxyBackendProviderModule
 
 # Logging settings.

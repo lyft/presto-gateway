@@ -1,0 +1,8 @@
+Run gateway launcher with this argument
+
+```server /Users/pjaiswal/src/presto-gateway/gateway/src/main/resources/spark-gateway-config.yml.template```
+
+```
+curl -v -u admin:{{PASS}} http://localhost:8080/v1/command/a1538602773962a/status --header "label: spark1"
+curl -v -u admin:{{PASS}} http://localhost:8080/v1/command/a1538602773962a/status --header "label: spark2"
+```
