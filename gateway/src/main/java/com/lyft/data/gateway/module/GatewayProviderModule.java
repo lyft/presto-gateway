@@ -45,6 +45,16 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
         gatewayBackendManager, requestMeter, routerConfiguration.getCacheDir());
   }
 
+  protected ProxyServerConfiguration getGatewayProxyConfig() {
+    RequestRouterConfiguration routerConfiguration = getConfiguration().getRequestRouter();
+
+    ProxyServerConfiguration routerProxyConfig = new ProxyServerConfiguration();
+    routerProxyConfig.setLocalPort(routerConfiguration.getPort());
+    routerProxyConfig.setName(routerConfiguration.getName());
+    routerProxyConfig.setProxyTo("");
+    return routerProxyConfig;
+  }
+
   @Provides
   @Singleton
   public ProxyServer provideGateway() {
