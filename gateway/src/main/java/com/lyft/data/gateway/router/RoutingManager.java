@@ -32,7 +32,8 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public abstract class RoutingManager {
-  private static final AtomicLong requestCounter = new AtomicLong(0);
+  private static final AtomicLong requestAdhocCounter = new AtomicLong(0);
+  private static final AtomicLong requestScheduledCounter = new AtomicLong(0);
   private final Cache<String, String> queryIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
@@ -71,7 +72,7 @@ public abstract class RoutingManager {
    */
   public String provideAdhocBackendForThisRequest() {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
-    int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
+    int backendId = (int) (requestAdhocCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
   }
 
@@ -87,7 +88,7 @@ public abstract class RoutingManager {
     if (backends.isEmpty()) {
       backends = this.gatewayBackendManager.getActiveAdhocBackends();
     }
-    int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
+    int backendId = (int) (requestScheduledCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
   }
 
