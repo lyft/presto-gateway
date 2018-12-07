@@ -72,9 +72,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     if (!Strings.isNullOrEmpty(queryId)) {
       backendAddress = routingManager.findBackendForQueryId(queryId);
     } else {
-      boolean scheduledQuery =
+      boolean isScheduledQuery =
           request.getHeader("X-Presto-Scheduled-Query").toLowerCase().equals("true");
-      if (scheduledQuery) {
+      if (isScheduledQuery) {
         backendAddress = routingManager.provideScheduledBackendForThisRequest();
       } else {
         backendAddress = routingManager.provideAdhocBackendForThisRequest();
