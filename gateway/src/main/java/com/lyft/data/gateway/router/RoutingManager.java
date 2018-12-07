@@ -65,12 +65,28 @@ public abstract class RoutingManager {
   }
 
   /**
-   * Performs routing.
+   * Performs routing to an adhoc backend.
    *
    * @return
    */
-  public String provideBackendForThisRequest() {
-    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveBackends();
+  public String provideAdhocBackendForThisRequest() {
+    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
+    int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
+    return backends.get(backendId).getProxyTo();
+  }
+
+  /**
+   * Performs routing to a scheduled backend. This falls back to an adhoc backend, if no scheduled
+   * backend is found.
+   *
+   * @return
+   */
+  public String provideScheduledBackendForThisRequest() {
+    List<ProxyBackendConfiguration> backends =
+        this.gatewayBackendManager.getActiveScheduledBackends();
+    if (backends.isEmpty()) {
+      backends = this.gatewayBackendManager.getActiveAdhocBackends();
+    }
     int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
   }
