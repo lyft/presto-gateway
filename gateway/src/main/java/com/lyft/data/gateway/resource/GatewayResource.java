@@ -40,7 +40,11 @@ public class GatewayResource {
   @GET
   public Response getActiveBackends() {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
-    backends.addAll(this.gatewayBackendManager.getActiveScheduledBackends());
+    List<ProxyBackendConfiguration> scheduledBackends =
+        this.gatewayBackendManager.getActiveScheduledBackends();
+    if (!scheduledBackends.isEmpty()) {
+      backends.addAll(scheduledBackends);
+    }
     return Response.ok(backends).build();
   }
 
