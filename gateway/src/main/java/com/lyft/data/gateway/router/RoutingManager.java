@@ -86,7 +86,7 @@ public abstract class RoutingManager {
     List<ProxyBackendConfiguration> backends =
         this.gatewayBackendManager.getActiveScheduledBackends();
     if (backends.isEmpty()) {
-      backends = this.gatewayBackendManager.getActiveAdhocBackends();
+      return provideAdhocBackendForThisRequest();
     }
     int backendId = (int) (requestScheduledCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
