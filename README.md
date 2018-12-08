@@ -21,21 +21,36 @@ Now you can access load balanced presto at localhost:8080 port.
 ```
 [
     {
-        "includeInRouter": true,
-        "localPort": 8082,
-        "name": "presto2",
-        "prefix": "/",
-        "preserveHost": "true",
-        "proxyTo": "http://presto2.lyft.com",
-        "trustAll": "true"
-    },
-    {
+        "active": true,
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
+        "scheduledCluster": false,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8083,
+        "name": "presto3",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto3.lyft.com",
+        "scheduledCluster": true,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8082,
+        "name": "presto2",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto2.lyft.com",
+        "scheduledCluster": false,
         "trustAll": "true"
     }
 ]
@@ -47,21 +62,36 @@ Now you can access load balanced presto at localhost:8080 port.
 ```
 [
     {
+        "active": true,
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
+        "scheduledCluster": false,
         "trustAll": "true"
     },
     {
+        "active": true,
         "includeInRouter": true,
         "localPort": 8082,
         "name": "presto2",
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
+        "scheduledCluster": false,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8083,
+        "name": "presto3",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto3.lyft.com",
+        "scheduledCluster": true,
         "trustAll": "true"
     }
 ]
@@ -75,12 +105,25 @@ Verify this by calling get active backends
 curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
 [
     {
+        "active": true,
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
+        "scheduledCluster": false,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8083,
+        "name": "presto3",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto3.lyft.com",
+        "scheduledCluster": true,
         "trustAll": "true"
     }
 ]
@@ -95,21 +138,36 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
 
 [
     {
-        "includeInRouter": true,
-        "localPort": 8082,
-        "name": "presto2",
-        "prefix": "/",
-        "preserveHost": "true",
-        "proxyTo": "http://presto2.lyft.com",
-        "trustAll": "true"
-    },
-    {
+        "active": true,
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
+        "scheduledCluster": false,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8082,
+        "name": "presto2",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto2.lyft.com",
+        "scheduledCluster": false,
+        "trustAll": "true"
+    },
+    {
+        "active": true,
+        "includeInRouter": true,
+        "localPort": 8083,
+        "name": "presto3",
+        "prefix": "/",
+        "preserveHost": "true",
+        "proxyTo": "http://presto3.lyft.com",
+        "scheduledCluster": true,
         "trustAll": "true"
     }
 ]
