@@ -7,7 +7,9 @@ import java.util.List;
 public interface GatewayBackendManager {
   List<ProxyBackendConfiguration> getAllBackends();
 
-  List<ProxyBackendConfiguration> getActiveBackends();
+  List<ProxyBackendConfiguration> getActiveAdhocBackends();
+
+  List<ProxyBackendConfiguration> getActiveScheduledBackends();
 
   void deactivateBackend(String backendName);
 

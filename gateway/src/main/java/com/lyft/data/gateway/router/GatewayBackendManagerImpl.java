@@ -15,12 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 public class GatewayBackendManagerImpl implements GatewayBackendManager {
   private final Map<String, ProxyBackendConfiguration> backendNameMap;
   private final Set<ProxyBackendConfiguration> allBackends;
-  private final Set<ProxyBackendConfiguration> activeBackends;
+  private final Set<ProxyBackendConfiguration> activeAdhocBackends;
+  private final Set<ProxyBackendConfiguration> activeScheduledBackends;
 
   public GatewayBackendManagerImpl(List<ProxyBackendConfiguration> backends) {
     this.backendNameMap = new HashMap<>();
     this.allBackends = new HashSet<>();
-    this.activeBackends = new HashSet<>();
+    this.activeAdhocBackends = new HashSet<>();
+    this.activeScheduledBackends = new HashSet<>();
     backends.forEach(
         backend -> {
           backendNameMap.put(backend.getName(), backend);
@@ -29,7 +31,11 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
           // We can make it agnostic of restart by persisting a copy of active backends to a
           // persistent cache.
           if (backend.isActive()) {
-            activeBackends.add(backend);
+            if (backend.isScheduledCluster()) {
+              activeScheduledBackends.add(backend);
+            } else {
+              activeAdhocBackends.add(backend);
+            }
           }
         });
   }
@@ -38,8 +44,12 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
     return ImmutableList.copyOf(allBackends);
   }
 
-  public List<ProxyBackendConfiguration> getActiveBackends() {
-    return ImmutableList.copyOf(activeBackends);
+  public List<ProxyBackendConfiguration> getActiveAdhocBackends() {
+    return ImmutableList.copyOf(activeAdhocBackends);
+  }
+
+  public List<ProxyBackendConfiguration> getActiveScheduledBackends() {
+    return ImmutableList.copyOf(activeScheduledBackends);
   }
 
   public void deactivateBackend(String backendName) {
@@ -47,19 +57,31 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
     ProxyBackendConfiguration toDeactivate = null;
-    for (ProxyBackendConfiguration backend : activeBackends) {
+    for (ProxyBackendConfiguration backend : activeAdhocBackends) {
       if (backend.getName().equals(backendName)) {
         toDeactivate = backend;
         break;
       }
     }
-    if (toDeactivate != null) {
-      if (activeBackends.size() == 1) {
-        throw new IllegalArgumentException(
-            "Active backend size is 1, can't deactivate the backend");
+    if (toDeactivate == null) {
+      for (ProxyBackendConfiguration backend : activeScheduledBackends) {
+        if (backend.getName().equals(backendName)) {
+          toDeactivate = backend;
+          break;
+        }
       }
-      activeBackends.remove(toDeactivate);
-      log.info("De-activating backend cluster [{}]", backendName);
+    }
+    if (toDeactivate != null) {
+      if (toDeactivate.isScheduledCluster() == false) {
+        if (activeAdhocBackends.size() == 1) {
+          throw new IllegalArgumentException(
+              "Active backend size is 1, can't deactivate the backend");
+        }
+        activeAdhocBackends.remove(toDeactivate);
+        log.info("De-activating backend cluster [{}]", backendName);
+      } else {
+        activeScheduledBackends.remove(toDeactivate);
+      }
     }
   }
 
@@ -68,9 +90,16 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
     ProxyBackendConfiguration toActivate = backendNameMap.get(backendName);
-    if (!activeBackends.contains(toActivate)) {
-      activeBackends.add(toActivate);
-      log.info("Re-activating backend cluster [{}]", backendName);
+    if (toActivate.isScheduledCluster()) {
+      if (!activeScheduledBackends.contains(toActivate)) {
+        activeScheduledBackends.add(toActivate);
+        log.info("Re-activating Scheduled backend cluster [{}]", backendName);
+      }
+    } else {
+      if (!activeAdhocBackends.contains(toActivate)) {
+        activeAdhocBackends.add(toActivate);
+        log.info("Re-activating Adhoc backend cluster [{}]", backendName);
+      }
     }
   }
 }

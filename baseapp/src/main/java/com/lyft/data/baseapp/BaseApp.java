@@ -1,7 +1,6 @@
-package com.lyft.data.gateway.app;
+package com.lyft.data.baseapp;
 
 import com.codahale.metrics.health.HealthCheck;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;

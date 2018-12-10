@@ -1,4 +1,4 @@
-package com.lyft.data.gateway.app;
+package com.lyft.data.baseapp;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.AbstractModule;

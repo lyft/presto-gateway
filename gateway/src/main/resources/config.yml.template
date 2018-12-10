@@ -14,6 +14,12 @@ backends:
     proxyTo: http://presto2.lyft.com
     preserveHost: true
     includeInRouter: true
+  - localPort: 8083
+    name: presto3
+    proxyTo: http://presto3.lyft.com
+    preserveHost: true
+    includeInRouter: true
+    scheduledCluster: true
 
 server:
   applicationConnectors:

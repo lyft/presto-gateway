@@ -3,7 +3,7 @@ package com.lyft.data.gateway.module;
 import com.codahale.metrics.Meter;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.lyft.data.gateway.app.AppModule;
+import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.config.RequestRouterConfiguration;
@@ -43,6 +43,16 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
         getEnvironment().metrics().meter(routerConfiguration.getName() + ".requests");
     return new QueryIdCachingProxyHandler(
         gatewayBackendManager, requestMeter, routerConfiguration.getCacheDir());
+  }
+
+  protected ProxyServerConfiguration getGatewayProxyConfig() {
+    RequestRouterConfiguration routerConfiguration = getConfiguration().getRequestRouter();
+
+    ProxyServerConfiguration routerProxyConfig = new ProxyServerConfiguration();
+    routerProxyConfig.setLocalPort(routerConfiguration.getPort());
+    routerProxyConfig.setName(routerConfiguration.getName());
+    routerProxyConfig.setProxyTo("");
+    return routerProxyConfig;
   }
 
   @Provides

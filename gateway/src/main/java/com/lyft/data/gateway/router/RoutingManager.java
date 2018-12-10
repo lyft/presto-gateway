@@ -32,7 +32,8 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public abstract class RoutingManager {
-  private static final AtomicLong requestCounter = new AtomicLong(0);
+  private static final AtomicLong requestAdhocCounter = new AtomicLong(0);
+  private static final AtomicLong requestScheduledCounter = new AtomicLong(0);
   private final Cache<String, String> queryIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
@@ -65,13 +66,29 @@ public abstract class RoutingManager {
   }
 
   /**
-   * Performs routing.
+   * Performs routing to an adhoc backend.
    *
    * @return
    */
-  public String provideBackendForThisRequest() {
-    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveBackends();
-    int backendId = (int) (requestCounter.incrementAndGet() % backends.size());
+  public String provideAdhocBackendForThisRequest() {
+    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
+    int backendId = (int) (requestAdhocCounter.incrementAndGet() % backends.size());
+    return backends.get(backendId).getProxyTo();
+  }
+
+  /**
+   * Performs routing to a scheduled backend. This falls back to an adhoc backend, if no scheduled
+   * backend is found.
+   *
+   * @return
+   */
+  public String provideScheduledBackendForThisRequest() {
+    List<ProxyBackendConfiguration> backends =
+        this.gatewayBackendManager.getActiveScheduledBackends();
+    if (backends.isEmpty()) {
+      return provideAdhocBackendForThisRequest();
+    }
+    int backendId = (int) (requestScheduledCounter.incrementAndGet() % backends.size());
     return backends.get(backendId).getProxyTo();
   }
 

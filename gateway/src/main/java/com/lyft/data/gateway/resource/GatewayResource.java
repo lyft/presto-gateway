@@ -1,8 +1,11 @@
 package com.lyft.data.gateway.resource;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -15,6 +18,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import lombok.extern.slf4j.Slf4j;
+import org.ehcache.core.internal.util.CollectionUtil;
 
 @Slf4j
 @Path("/gateway")
@@ -37,7 +41,10 @@ public class GatewayResource {
   @Path("/backend/active")
   @GET
   public Response getActiveBackends() {
-    return Response.ok(this.gatewayBackendManager.getActiveBackends()).build();
+    List<ProxyBackendConfiguration> backends = Lists.newArrayList();
+    backends.addAll(this.gatewayBackendManager.getActiveAdhocBackends());
+    backends.addAll(this.gatewayBackendManager.getActiveScheduledBackends());
+    return Response.ok(backends).build();
   }
 
   @Path("/backend/deactivate/{name}")
