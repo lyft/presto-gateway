@@ -28,6 +28,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String QUERY_HTML_PATH = "/query.html";
+  public static final String SCHEDULED_QUERY_HEADER = "X-Presto-Scheduled-Query";
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,9 +73,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     if (!Strings.isNullOrEmpty(queryId)) {
       backendAddress = routingManager.findBackendForQueryId(queryId);
     } else {
-      String scheduledHeader =
-          request.getHeader("X-Presto-Scheduled-Query");
-      if (scheduledHeader != null && scheduledHeader.toLowerCase().equals("true")) {
+      String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
+      if ("true".equalsIgnoreCase(scheduledHeader)) {
         backendAddress = routingManager.provideScheduledBackendForThisRequest();
       } else {
         backendAddress = routingManager.provideAdhocBackendForThisRequest();
