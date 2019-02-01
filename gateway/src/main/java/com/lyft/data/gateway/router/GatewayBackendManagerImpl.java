@@ -72,7 +72,7 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       }
     }
     if (toDeactivate != null) {
-      if (toDeactivate.isScheduledCluster() == false) {
+      if (!toDeactivate.isScheduledCluster()) {
         if (activeAdhocBackends.size() == 1) {
           throw new IllegalArgumentException(
               "Active backend size is 1, can't deactivate the backend");
