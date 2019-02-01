@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"active"})
 public class ProxyBackendConfiguration extends ProxyServerConfiguration {
   private boolean includeInRouter = true;
   private boolean scheduledCluster = false;
