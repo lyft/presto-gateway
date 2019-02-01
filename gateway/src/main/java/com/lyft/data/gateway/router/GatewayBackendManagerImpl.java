@@ -12,23 +12,23 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GatewayBackendManagerImpl implements GatewayBackendManager {
-  private final ConcurrentMap<String, ProxyBackendConfiguration> backendNameMap;
+  private final ConcurrentMap<String, ProxyBackendConfiguration> backendMap;
 
   public GatewayBackendManagerImpl(List<ProxyBackendConfiguration> backends) {
-    this.backendNameMap = new ConcurrentHashMap<>(); // immutable / un-modifiable
+    this.backendMap = new ConcurrentHashMap<>(); // immutable / un-modifiable
 
     backends.forEach(
         backend -> {
-          backendNameMap.put(backend.getName(), backend);
+          backendMap.put(backend.getName(), backend);
         });
   }
 
   public List<ProxyBackendConfiguration> getAllBackends() {
-    return ImmutableList.copyOf(backendNameMap.values());
+    return ImmutableList.copyOf(backendMap.values());
   }
 
   public List<ProxyBackendConfiguration> getActiveAdhocBackends() {
-    return backendNameMap
+    return backendMap
         .values()
         .stream()
         .filter(backend -> backend.isActive())
@@ -37,7 +37,7 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
   }
 
   public List<ProxyBackendConfiguration> getActiveScheduledBackends() {
-    return backendNameMap
+    return backendMap
         .values()
         .stream()
         .filter(backend -> backend.isActive())
@@ -46,19 +46,19 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
   }
 
   public void deactivateBackend(String backendName) {
-    if (!backendNameMap.containsKey(backendName)) {
+    if (!backendMap.containsKey(backendName)) {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
-    ProxyBackendConfiguration backendToRemove = backendNameMap.get(backendName);
+    ProxyBackendConfiguration backendToRemove = backendMap.get(backendName);
     backendToRemove.setActive(false);
     log.info("De-activating backend cluster [{}]", backendName);
   }
 
   public void activateBackend(String backendName) {
-    if (!backendNameMap.containsKey(backendName)) {
+    if (!backendMap.containsKey(backendName)) {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
-    ProxyBackendConfiguration toActivate = backendNameMap.get(backendName);
+    ProxyBackendConfiguration toActivate = backendMap.get(backendName);
     toActivate.setActive(true);
   }
 }
