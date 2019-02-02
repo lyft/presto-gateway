@@ -50,6 +50,13 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
     ProxyBackendConfiguration backendToRemove = backendMap.get(backendName);
+    if (!backendToRemove.isScheduledCluster()) {
+      List<ProxyBackendConfiguration> activeBackends = getActiveAdhocBackends();
+      if (activeBackends.size() <= 1) {
+        throw new IllegalArgumentException(
+            "Active backend size is 1, can't deactivate the backend");
+      }
+    }
     backendToRemove.setActive(false);
     log.info("De-activating backend cluster [{}]", backendName);
   }
