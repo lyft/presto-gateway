@@ -5,7 +5,7 @@ A load balancer / proxy / gateway for prestodb
 
 run `mvn clean install` to build `presto-gateway`
 
-Edit the config file and update backend urls `https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml.template#L9` 
+Edit the [config file](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml.template#L9) and update backend urls 
 
 ```
 cd gateway/target/
