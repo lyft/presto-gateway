@@ -9,7 +9,7 @@
     <artifactId>prestogateway-parent</artifactId>
     <name>prestogateway-parent</name>
     <packaging>pom</packaging>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 
     <!-- enforcing a common checkstyle -->
     <parent>
