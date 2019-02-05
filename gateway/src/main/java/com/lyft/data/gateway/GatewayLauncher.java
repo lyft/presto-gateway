@@ -4,6 +4,7 @@ import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.baseapp.BaseApp;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
@@ -24,6 +25,7 @@ public class GatewayLauncher extends BaseApp<GatewayConfiguration> {
   public void initialize(Bootstrap<GatewayConfiguration> bootstrap) {
     super.initialize(bootstrap);
     bootstrap.addBundle(new ViewBundle<>());
+    bootstrap.addBundle(new AssetsBundle("/assets", "/assets"));
   }
 
   @Override
