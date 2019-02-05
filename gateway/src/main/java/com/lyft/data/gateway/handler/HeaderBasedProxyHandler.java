@@ -39,7 +39,7 @@ public class HeaderBasedProxyHandler extends ProxyHandler {
     String targetLabel = request.getHeader(TARGET_HEADER);
     String targetUri = "";
     if (targetLabel == null) {
-      String scheduledHeader = request.getHeader("X-Presto-Scheduled-Query");
+      String scheduledHeader = request.getHeader(QueryIdCachingProxyHandler.SCHEDULED_QUERY_HEADER);
       if (scheduledHeader != null
           && scheduledHeader.toLowerCase().equals("true")
           && !gatewayBackendManager.getActiveScheduledBackends().isEmpty()) {
