@@ -10,6 +10,8 @@ import com.lyft.data.gateway.config.RequestRouterConfiguration;
 import com.lyft.data.gateway.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 import com.lyft.data.gateway.router.GatewayBackendManagerImpl;
+import com.lyft.data.gateway.router.QueryHistoryManager;
+import com.lyft.data.gateway.router.QueryHistoryManagerImpl;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
@@ -21,6 +23,8 @@ import java.util.List;
 public class GatewayProviderModule extends AppModule<GatewayConfiguration, Environment> {
 
   private final GatewayBackendManager gatewayBackendManager;
+  private final QueryHistoryManager queryHistoryManager;
+
   private final List<ProxyBackendConfiguration> gatewayBackends;
 
   public GatewayProviderModule(GatewayConfiguration configuration, Environment environment) {
@@ -32,6 +36,7 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
       }
     }
     this.gatewayBackendManager = new GatewayBackendManagerImpl(this.gatewayBackends);
+    this.queryHistoryManager = new QueryHistoryManagerImpl();
   }
 
   @Override
@@ -42,7 +47,10 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
     Meter requestMeter =
         getEnvironment().metrics().meter(routerConfiguration.getName() + ".requests");
     return new QueryIdCachingProxyHandler(
-        gatewayBackendManager, requestMeter, routerConfiguration.getCacheDir());
+        gatewayBackendManager,
+        queryHistoryManager,
+        requestMeter,
+        routerConfiguration.getCacheDir());
   }
 
   protected ProxyServerConfiguration getGatewayProxyConfig() {
@@ -78,5 +86,11 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
   @Singleton
   public GatewayBackendManager getGatewayBackendManager() {
     return this.gatewayBackendManager;
+  }
+
+  @Provides
+  @Singleton
+  public QueryHistoryManager getQueryHistoryManager() {
+    return this.queryHistoryManager;
   }
 }

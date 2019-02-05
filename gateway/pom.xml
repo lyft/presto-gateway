@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.3.5</version>
+        <version>1.4-snapshot</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -23,7 +23,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <jetty.version>9.4.9.v20180320</jetty.version>
-        <dropwizard.version>1.3.2</dropwizard.version>
+        <dropwizard.version>1.3.8</dropwizard.version>
         <ehcache.version>3.5.2</ehcache.version>
         <guice.version>4.1.0</guice.version>
         <reflections.version>0.9.10</reflections.version>
@@ -45,6 +45,16 @@
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-views</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-views-freemarker</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
         <dependency>

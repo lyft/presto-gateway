@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.lyft.data.gateway.router.DefaultRoutingManager;
 import com.lyft.data.gateway.router.GatewayBackendManager;
+import com.lyft.data.gateway.router.QueryHistoryManager;
 import com.lyft.data.gateway.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
@@ -29,16 +30,24 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String QUERY_HTML_PATH = "/query.html";
   public static final String SCHEDULED_QUERY_HEADER = "X-Presto-Scheduled-Query";
+  public static final String USER_HEADER = "X-Presto-User";
+  public static final String SOURCE_HEADER = "X-Presto-Source";
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   private final RoutingManager routingManager;
+  private final QueryHistoryManager queryHistoryManager;
+
   private final Meter requestMeter;
 
   public QueryIdCachingProxyHandler(
-      GatewayBackendManager gatewayBackendManager, Meter requestMeter, String cacheDataDir) {
+      GatewayBackendManager gatewayBackendManager,
+      QueryHistoryManager queryHistoryManager,
+      Meter requestMeter,
+      String cacheDataDir) {
     this.requestMeter = requestMeter;
     this.routingManager = new DefaultRoutingManager(gatewayBackendManager, cacheDataDir);
+    this.queryHistoryManager = queryHistoryManager;
   }
 
   protected RoutingManager getRoutingManager() {
@@ -144,21 +153,32 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
         log.debug(output);
 
-        String proxyDestination = request.getHeader(PROXY_TARGET_HEADER);
-        log.debug("Proxy destination : {}", proxyDestination);
+        QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
+        queryDetail.setBackendUrl(request.getHeader(PROXY_TARGET_HEADER));
+        queryDetail.setCaptureTime(System.currentTimeMillis());
+        queryDetail.setUser(request.getHeader(USER_HEADER));
+        queryDetail.setSource(request.getHeader(SOURCE_HEADER));
+        queryDetail.setQueryText(CharStreams.toString(request.getReader()));
+
+        log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
 
         if (response.getStatus() == HttpStatus.OK_200) {
 
           HashMap<String, String> results = objectMapper.readValue(output, HashMap.class);
-          String queryId = results.get("id");
+          queryDetail.setQueryId(results.get("id"));
 
-          if (!Strings.isNullOrEmpty(queryId)) {
-            routingManager.setBackendForQueryId(queryId, proxyDestination);
-            log.debug("QueryId [{}] mapped with proxy [{}]", queryId, proxyDestination);
+          if (!Strings.isNullOrEmpty(queryDetail.getQueryId())) {
+            routingManager.setBackendForQueryId(
+                queryDetail.getQueryId(), queryDetail.getBackendUrl());
+            log.debug(
+                "QueryId [{}] mapped with proxy [{}]",
+                queryDetail.getQueryId(),
+                queryDetail.getBackendUrl());
           } else {
-            log.debug("QueryId [{}] could not be cached", queryId);
+            log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
         }
+        queryHistoryManager.submitQueryDetail(queryDetail);
       } else {
         log.debug("SKIPPING For {}", requestPath);
       }
