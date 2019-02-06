@@ -2,7 +2,15 @@
 
 <html>
 <head>
-    <meta http-equiv="refresh" content="20"/>
+    <link rel="stylesheet" type="text/css" href="assets/css/jquery.dataTables.min.css"/>
+
+    <script src="assets/js/jquery-3.3.1.js"></script>
+    <script src="assets/js/jquery.dataTables.min.js"></script>
+    <script type="application/javascript">
+        $(document).ready(function () {
+            $('#queryHistory').DataTable();
+        });
+    </script>
 </head>
 <body>
 <div>
@@ -31,10 +39,11 @@
     </table>
 </div>
 <br/><br/>
+<a onclick="location.reload()" href="">Refresh</a>
 <#if queryHistory?size != 0>
 <div>Query details</div>
 <div>
-    <table>
+    <table id="queryHistory" class="display" style="width:100%">
         <thead>
         <tr>
             <th>queryId</th>
@@ -49,10 +58,14 @@
             <tr>
                 <td><a href="${q.backendUrl}/ui/query.html?${q.queryId}"
                        target="_blank">${q.queryId}</a></td>
-                <td>  ${q.user}</td>
-                <td>  ${q.source}</td>
+                <td data-search="${q.user}">  ${q.user}</td>
+                <td>
+                    <#if q.source??>
+                        ${q.source}
+                    </#if>
+                </td>
                 <td>${q.queryText}</td>
-                <td>${q.captureTime?number_to_datetime}</td>
+                <td data-order="${q.captureTime}">${q.captureTime?number_to_datetime}</td>
             </tr>
             </#list>
         </tbody>
