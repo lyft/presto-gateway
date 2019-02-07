@@ -11,6 +11,7 @@ import com.lyft.data.gateway.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -154,13 +155,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
         log.debug(output);
 
-        QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
-        queryDetail.setBackendUrl(request.getHeader(PROXY_TARGET_HEADER));
-        queryDetail.setCaptureTime(System.currentTimeMillis());
-        queryDetail.setUser(request.getHeader(USER_HEADER));
-        queryDetail.setSource(request.getHeader(SOURCE_HEADER));
-        queryDetail.setQueryText(CharStreams.toString(request.getReader()));
-
+        QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request);
         log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
 
         if (response.getStatus() == HttpStatus.OK_200) {
@@ -187,5 +182,18 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       log.error("Error in proxying defaulting to super call", e);
     }
     super.postConnectionHook(request, response, buffer, offset, length, callback);
+  }
+
+  private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request)
+      throws IOException {
+    QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
+    queryDetail.setBackendUrl(request.getHeader(PROXY_TARGET_HEADER));
+    queryDetail.setCaptureTime(System.currentTimeMillis());
+    queryDetail.setUser(request.getHeader(USER_HEADER));
+    queryDetail.setSource(request.getHeader(SOURCE_HEADER));
+    String queryText = CharStreams.toString(request.getReader());
+    queryDetail.setQueryText(
+        queryText.length() > 500 ? queryText.substring(0, 500) + "..." : queryText);
+    return queryDetail;
   }
 }
