@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.4-snapshot</version>
+        <version>1.4.0</version>
         <relativePath>../</relativePath>
     </parent>
 
