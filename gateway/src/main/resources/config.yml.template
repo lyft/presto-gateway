@@ -2,6 +2,7 @@ requestRouter:
   port: 8080
   name: Proxly
   cacheDir: /var/log/prestoproxy/cache
+  historySize: 1000
 
 backends:
   - localPort: 8081

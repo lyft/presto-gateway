@@ -42,7 +42,8 @@
 <br/><br/>
 <a onclick="location.reload()" href="">Refresh</a>
 <#if queryHistory?size != 0>
-<div>Query details</div>
+
+<div>Query details [history size = ${queryHistory?size} ]</div>
 <div>
     <table id="queryHistory" class="display" style="width:100%">
         <thead>
