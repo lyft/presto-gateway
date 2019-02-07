@@ -40,9 +40,8 @@ public class HeaderBasedProxyHandler extends ProxyHandler {
     String targetUri = "";
     if (targetLabel == null) {
       String scheduledHeader = request.getHeader(QueryIdCachingProxyHandler.SCHEDULED_QUERY_HEADER);
-      if (scheduledHeader != null
-          && scheduledHeader.toLowerCase().equals("true")
-          && !gatewayBackendManager.getActiveScheduledBackends().isEmpty()) {
+      if ("true".equalsIgnoreCase(scheduledHeader)) {
+        // This falls back on adhoc backends if there are no scheduled backends active.
         targetUri = gatewayBackendManager.getActiveScheduledBackends().get(0).getProxyTo();
       } else {
         targetUri = gatewayBackendManager.getActiveAdhocBackends().get(0).getProxyTo();

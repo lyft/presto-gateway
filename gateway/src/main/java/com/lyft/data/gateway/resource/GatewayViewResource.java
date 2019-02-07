@@ -40,8 +40,9 @@ public class GatewayViewResource {
 
   @Data
   public static class GatewayView extends View {
-    List<ProxyBackendConfiguration> backendConfigurations;
-    List<QueryHistoryManager.QueryDetail> queryHistory;
+    private final long gatewayStartTime = System.currentTimeMillis();
+    private List<ProxyBackendConfiguration> backendConfigurations;
+    private List<QueryHistoryManager.QueryDetail> queryHistory;
 
     protected GatewayView(String templateName) {
       super(templateName, Charset.defaultCharset());

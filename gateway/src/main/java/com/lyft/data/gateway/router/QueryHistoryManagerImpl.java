@@ -7,9 +7,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class QueryHistoryManagerImpl implements QueryHistoryManager {
 
-  private int size = 2000; // TODO: take this input from config.
-  private QueryDetail[] queryHistory = new QueryDetail[size];
-  private AtomicLong queryCounter = new AtomicLong();
+  private final int size;
+  private final QueryDetail[] queryHistory;
+  private final AtomicLong queryCounter = new AtomicLong();
+
+  public QueryHistoryManagerImpl(int size) {
+    this.size = size;
+    this.queryHistory = new QueryDetail[size];
+  }
 
   @Override
   public void submitQueryDetail(QueryDetail queryDetail) {

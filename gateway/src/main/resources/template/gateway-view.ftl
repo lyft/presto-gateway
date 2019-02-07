@@ -13,6 +13,7 @@
     </script>
 </head>
 <body>
+<div>Gateway Server started at : ${gatewayStartTime?number_to_datetime}</div>
 <div>
     All active backends:
 </div>
