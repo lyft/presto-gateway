@@ -4,6 +4,7 @@ import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
+import com.lyft.data.gateway.config.GatewayConfiguration;
 import com.lyft.data.gateway.router.DefaultRoutingManager;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 import com.lyft.data.gateway.router.QueryHistoryManager;
@@ -11,8 +12,14 @@ import com.lyft.data.gateway.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
+import io.dropwizard.jetty.ConnectorFactory;
+import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.SimpleServerFactory;
+
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,25 +41,49 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
+  //  private final int routerHistoryApiPort;
   private final RoutingManager routingManager;
   private final QueryHistoryManager queryHistoryManager;
 
   private final Meter requestMeter;
+  private final int localApplicationPort;
 
   public QueryIdCachingProxyHandler(
       GatewayBackendManager gatewayBackendManager,
       QueryHistoryManager queryHistoryManager,
-      Meter requestMeter,
-      String cacheDataDir) {
+      GatewayConfiguration appConfig,
+      Meter requestMeter) {
     this.requestMeter = requestMeter;
-    this.routingManager = new DefaultRoutingManager(gatewayBackendManager, cacheDataDir);
+    this.routingManager =
+        new DefaultRoutingManager(
+            gatewayBackendManager, appConfig.getRequestRouter().getCacheDir());
     this.queryHistoryManager = queryHistoryManager;
+    this.localApplicationPort = getApplicationPort(appConfig);
   }
 
   protected RoutingManager getRoutingManager() {
     return this.routingManager;
+  }
+
+  private int getApplicationPort(GatewayConfiguration configuration) {
+    Stream<ConnectorFactory> connectors =
+        configuration.getServerFactory() instanceof DefaultServerFactory
+            ? ((DefaultServerFactory) configuration.getServerFactory())
+                .getApplicationConnectors()
+                .stream()
+            : Stream.of((SimpleServerFactory) configuration.getServerFactory())
+                .map(SimpleServerFactory::getConnector);
+
+    int port =
+        connectors
+            .filter(connector -> connector.getClass().isAssignableFrom(HttpConnectorFactory.class))
+            .map(connector -> (HttpConnectorFactory) connector)
+            .mapToInt(HttpConnectorFactory::getPort)
+            .findFirst()
+            .orElseThrow(IllegalStateException::new);
+    return port;
   }
 
   @Override
@@ -75,27 +106,32 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   @Override
   public String rewriteTarget(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
-    String backendAddress;
+    String backendAddress = "http://localhost:" + localApplicationPort;
 
-    String queryId = extractQueryIdIfPresent(request.getRequestURI(), request.getQueryString());
+    // Only load balance presto query APIs.
+    if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
+        || request.getRequestURI().startsWith(V1_QUERY_PATH)) {
+      String queryId = extractQueryIdIfPresent(request.getRequestURI(), request.getQueryString());
 
-    // Find query id and get url from cache
-    if (!Strings.isNullOrEmpty(queryId)) {
-      backendAddress = routingManager.findBackendForQueryId(queryId);
-    } else {
-      String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
-      if ("true".equalsIgnoreCase(scheduledHeader)) {
-        // This falls back on adhoc backends if there are no scheduled backends active.
-        backendAddress = routingManager.provideScheduledBackendForThisRequest();
+      // Find query id and get url from cache
+      if (!Strings.isNullOrEmpty(queryId)) {
+        backendAddress = routingManager.findBackendForQueryId(queryId);
       } else {
-        backendAddress = routingManager.provideAdhocBackendForThisRequest();
+        String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
+        if ("true".equalsIgnoreCase(scheduledHeader)) {
+          // This falls back on adhoc backends if there are no scheduled backends active.
+          backendAddress = routingManager.provideScheduledBackendForThisRequest();
+        } else {
+          backendAddress = routingManager.provideAdhocBackendForThisRequest();
+        }
       }
+      // set target backend so that we could save queryId to backend mapping later.
+      ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
     }
     String targetLocation =
         backendAddress
             + request.getRequestURI()
             + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-    ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
 
     String originalLocation =
         request.getRemoteAddr()

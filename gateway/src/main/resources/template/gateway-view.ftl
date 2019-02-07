@@ -8,7 +8,11 @@
     <script src="assets/js/jquery.dataTables.min.js"></script>
     <script type="application/javascript">
         $(document).ready(function () {
-            $('#queryHistory').DataTable();
+            $('#queryHistory').DataTable(
+                    {
+                        "ordering": false
+                    }
+            );
         });
     </script>
 </head>
