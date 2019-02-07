@@ -84,6 +84,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } else {
       String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
       if ("true".equalsIgnoreCase(scheduledHeader)) {
+        // This falls back on adhoc backends if there are no scheduled backends active.
         backendAddress = routingManager.provideScheduledBackendForThisRequest();
       } else {
         backendAddress = routingManager.provideAdhocBackendForThisRequest();

@@ -12,4 +12,6 @@ public class RequestRouterConfiguration {
 
   // Cache dir to store query id <-> backend mapping
   private String cacheDir;
+
+  private int historySize = 2000;
 }

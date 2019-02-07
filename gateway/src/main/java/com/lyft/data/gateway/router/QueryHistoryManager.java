@@ -11,12 +11,12 @@ public interface QueryHistoryManager {
 
   @Data
   class QueryDetail implements Comparable<QueryDetail> {
-    String queryId;
-    String queryText;
-    String user;
-    String source;
-    String backendUrl;
-    long captureTime;
+    private String queryId;
+    private String queryText;
+    private String user;
+    private String source;
+    private String backendUrl;
+    private long captureTime;
 
     @Override
     public int compareTo(QueryDetail o) {
