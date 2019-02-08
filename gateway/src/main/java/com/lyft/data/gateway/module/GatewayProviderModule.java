@@ -43,19 +43,15 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
   @Override
   protected void configure() {}
 
-  /**
-   * @return Provides instance of RoutingProxyHandler.
-   **/
+  /* @return Provides instance of RoutingProxyHandler. */
   protected ProxyHandler getProxyHandler() {
-    RequestRouterConfiguration routerConfiguration = getConfiguration().getRequestRouter();
     Meter requestMeter =
-        getEnvironment().metrics().meter(routerConfiguration.getName() + ".requests");
+        getEnvironment()
+            .metrics()
+            .meter(getConfiguration().getRequestRouter().getName() + ".requests");
     // Return the Proxy Handler for RequestRouter.
     return new QueryIdCachingProxyHandler(
-        gatewayBackendManager,
-        queryHistoryManager,
-        requestMeter,
-        routerConfiguration.getCacheDir());
+        gatewayBackendManager, queryHistoryManager, getConfiguration(), requestMeter);
   }
 
   protected ProxyServerConfiguration getGatewayProxyConfig() {
