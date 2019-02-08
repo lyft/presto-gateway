@@ -1,23 +1,33 @@
 # presto-gateway
-A load balancer / proxy / gateway for prestodb
+A load balancer / proxy / gateway for prestodb.
 
-## How to build and start 
+## Getting Started 
 
+### Build and run
 run `mvn clean install` to build `presto-gateway`
 
-Edit the [config file](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml.template#L9) and update backend urls 
+Edit the [config file](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml) and update backend urls 
 
 ```
 cd gateway/target/
 java -jar gateway-{{VERSION}}-jar-with-dependencies.jar server ../src/presto-gateway/gateway/src/main/resources/config.yml.template
 ```
-Now you can access load balanced presto at localhost:8080 port. 
+Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
+ 
+### Query History UI - check query plans etc.
+PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.  
+![prestogateway.lyft.com](docs/assets/prestogateway_query_history.png) 
+
+### Adhoc vs Scheduled query routing
+In the [config](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml) 
+you can specify if a backend cluster is designated as `Scheduled Cluster`.
+Default router will route any request to scheduled clusters if it contains header `X-Presto-Scheduled-Query: true`  
 
 ## Gateway API
 
 ### Get all backends behind the gateway
 
-`curl -X GET localhost:8090/gateway/backend/all | python -m json.tool`
+`curl -X GET prestogateway.lyft.com/gateway/backend/all | python -m json.tool`
 ```
 [
     {
@@ -58,7 +68,7 @@ Now you can access load balanced presto at localhost:8080 port.
 
 ### Get active backends behind the Gateway
 
-`curl -X GET localhost:8090/gateway/backend/active | python -m json.tool`
+`curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool`
 ```
 [
     {
@@ -98,11 +108,11 @@ Now you can access load balanced presto at localhost:8080 port.
 ```
 ### Deactivate a backend 
 
-`curl -X POST localhost:8090/gateway/backend/deactivate/presto2`
+`curl -X POST prestogateway.lyft.com/gateway/backend/deactivate/presto2`
 
 Verify this by calling get active backends
 ```
-curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
+curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
@@ -130,7 +140,7 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
 ```
 ### Activate a backend 
 
-curl -X POST localhost:8090/gateway/backend/activate/presto2
+curl -X POST prestogateway.lyft.com/gateway/backend/activate/presto2
 
 Verify this by calling get active backends
 ```

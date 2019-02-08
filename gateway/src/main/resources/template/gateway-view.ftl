@@ -17,12 +17,12 @@
     </script>
 </head>
 <body>
-<div>Gateway Server started at : ${gatewayStartTime?number_to_datetime}</div>
+<div><h3>Gateway Server started at : ${gatewayStartTime?number_to_datetime}</h3></div>
 <div>
-    All active backends:
+    <h3>All active backends:</h3>
 </div>
 <div>
-    <table>
+    <table id="availableClusters" class="display">
         <thead>
         <tr>
             <th>ClusterName</th>
@@ -47,7 +47,7 @@
 <a onclick="location.reload()" href="">Refresh</a>
 <#if queryHistory?size != 0>
 
-<div>Query details [history size = ${queryHistory?size} ]</div>
+<div><b>Query details [history size = ${queryHistory?size}]</b></div>
 <div>
     <table id="queryHistory" class="display" style="width:100%">
         <thead>
@@ -64,7 +64,7 @@
             <tr>
                 <td><a href="${q.backendUrl}/ui/query.html?${q.queryId}"
                        target="_blank">${q.queryId}</a></td>
-                <td data-search="${q.user}">  ${q.user}</td>
+                <td>  ${q.user}</td>
                 <td>
                     <#if q.source??>
                         ${q.source}

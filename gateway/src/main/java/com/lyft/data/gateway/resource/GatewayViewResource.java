@@ -19,6 +19,7 @@ import lombok.Data;
 @Path("/")
 @Produces(MediaType.TEXT_HTML)
 public class GatewayViewResource {
+  private static final long START_TIME = System.currentTimeMillis();
   @Inject private GatewayBackendManager gatewayBackendManager;
   @Inject private QueryHistoryManager queryHistoryManager;
 
@@ -40,7 +41,7 @@ public class GatewayViewResource {
 
   @Data
   public static class GatewayView extends View {
-    private final long gatewayStartTime = System.currentTimeMillis();
+    private final long gatewayStartTime = START_TIME;
     private List<ProxyBackendConfiguration> backendConfigurations;
     private List<QueryHistoryManager.QueryDetail> queryHistory;
 
