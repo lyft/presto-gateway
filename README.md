@@ -6,7 +6,7 @@ A load balancer / proxy / gateway for prestodb.
 ### Build and run
 run `mvn clean install` to build `presto-gateway`
 
-Edit the [config file](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml) and update backend urls 
+Edit the [config file](gateway/src/main/resources/config.yml.template) and update backend urls 
 
 ```
 cd gateway/target/
@@ -19,7 +19,7 @@ PrestoGateway records history of recent queries and displays links to check quer
 ![prestogateway.lyft.com](docs/assets/prestogateway_query_history.png) 
 
 ### Adhoc vs Scheduled query routing
-In the [config](https://github.com/lyft/presto-gateway/blob/master/gateway/src/main/resources/config.yml) 
+In the [config](gateway/src/main/resources/config.yml.template) 
 you can specify if a backend cluster is designated as `Scheduled Cluster`.
 Default router will route any request to scheduled clusters if it contains header `X-Presto-Scheduled-Query: true`  
 
