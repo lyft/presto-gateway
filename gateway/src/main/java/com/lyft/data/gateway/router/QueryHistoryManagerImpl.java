@@ -20,6 +20,9 @@ public class QueryHistoryManagerImpl implements QueryHistoryManager {
   public void submitQueryDetail(QueryDetail queryDetail) {
     int pos = (int) queryCounter.incrementAndGet() % size;
     queryHistory[pos] = queryDetail;
+    if (queryCounter.get() >= Long.MAX_VALUE - 1) {
+      queryCounter.set(0);
+    }
   }
 
   @Override
