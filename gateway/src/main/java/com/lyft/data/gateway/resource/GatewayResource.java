@@ -32,14 +32,14 @@ public class GatewayResource {
     return Response.ok("ok").build();
   }
 
-  @Path("/backend/all")
   @GET
+  @Path("/backend/all")
   public Response getAllBackends() {
     return Response.ok(this.gatewayBackendManager.getAllBackends()).build();
   }
 
-  @Path("/backend/active")
   @GET
+  @Path("/backend/active")
   public Response getActiveBackends() {
     List<ProxyBackendConfiguration> backends = Lists.newArrayList();
     backends.addAll(this.gatewayBackendManager.getActiveAdhocBackends());
@@ -47,8 +47,8 @@ public class GatewayResource {
     return Response.ok(backends).build();
   }
 
-  @Path("/backend/deactivate/{name}")
   @POST
+  @Path("/backend/deactivate/{name}")
   public Response deactivateBackend(@PathParam("name") String name) {
     try {
       this.gatewayBackendManager.deactivateBackend(name);
@@ -62,8 +62,8 @@ public class GatewayResource {
     return Response.ok().build();
   }
 
-  @Path("/backend/activate/{name}")
   @POST
+  @Path("/backend/activate/{name}")
   public Response activateBackend(@PathParam("name") String name) {
     try {
       this.gatewayBackendManager.activateBackend(name);

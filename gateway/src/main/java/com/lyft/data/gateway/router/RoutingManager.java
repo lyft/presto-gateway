@@ -32,15 +32,13 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public abstract class RoutingManager {
-  private static final AtomicLong requestAdhocCounter = new AtomicLong(0);
-  private static final AtomicLong requestScheduledCounter = new AtomicLong(0);
+  private final AtomicLong requestAdhocCounter = new AtomicLong(0);
+  private final AtomicLong requestScheduledCounter = new AtomicLong(0);
   private final Cache<String, String> queryIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
 
-  public RoutingManager(
-      GatewayBackendManager gatewayBackendManager,
-      String cacheDataDir) {
+  public RoutingManager(GatewayBackendManager gatewayBackendManager, String cacheDataDir) {
     this.gatewayBackendManager = gatewayBackendManager;
 
     PersistentCacheManager persistentCacheManager =
@@ -73,6 +71,9 @@ public abstract class RoutingManager {
   public String provideAdhocBackendForThisRequest() {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
     int backendId = (int) (requestAdhocCounter.incrementAndGet() % backends.size());
+    if (requestAdhocCounter.get() >= Long.MAX_VALUE - 1) {
+      requestAdhocCounter.set(0);
+    }
     return backends.get(backendId).getProxyTo();
   }
 
@@ -89,6 +90,9 @@ public abstract class RoutingManager {
       return provideAdhocBackendForThisRequest();
     }
     int backendId = (int) (requestScheduledCounter.incrementAndGet() % backends.size());
+    if (requestScheduledCounter.get() >= Long.MAX_VALUE - 1) {
+      requestScheduledCounter.set(0);
+    }
     return backends.get(backendId).getProxyTo();
   }
 
