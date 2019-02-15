@@ -35,7 +35,9 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
         gatewayBackends.add(backend);
       }
     }
-    this.gatewayBackendManager = new GatewayBackendManagerImpl(this.gatewayBackends);
+    this.gatewayBackendManager =
+        new GatewayBackendManagerImpl(
+            this.gatewayBackends, configuration.getRequestRouter().getCacheDir());
     this.queryHistoryManager =
         new QueryHistoryManagerImpl(configuration.getRequestRouter().getHistorySize());
   }

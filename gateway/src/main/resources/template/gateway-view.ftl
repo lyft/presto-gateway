@@ -14,18 +14,6 @@
         .dataTables_filter input {
             width: 500px
         }
-
-        /* cellspacing */
-        table {
-            border-collapse: separate;
-            border-spacing: 0px;
-        }
-
-        /* valign */
-        th, td {
-            vertical-align: top;
-            border: 0.5px solid;
-        }
     </style>
 
     <link rel="stylesheet" type="text/css" href="assets/css/jquery.dataTables.min.css"/>
@@ -52,7 +40,7 @@
 <div>
     <table style="border: 0px;">
         <tr>
-            <td>
+            <td style="background-color: lightpink;">
                 <h3>All active backends:</h3>
                 <table id="availableClusters" class="display">
                     <thead>
@@ -76,7 +64,7 @@
                 </table>
             </td>
         <#if queryHistory?size != 0>
-            <td width="400px">
+            <td width="500px" style="background-color: lightcyan;">
                 <div><h3> Query history distribution</h3>
                     <ul class="chart">
                         <#list queryDistribution?keys as cluster>
