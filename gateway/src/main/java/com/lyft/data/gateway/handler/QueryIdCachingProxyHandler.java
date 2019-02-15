@@ -41,7 +41,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   //  private final int routerHistoryApiPort;
   private final RoutingManager routingManager;
@@ -196,7 +196,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
         if (response.getStatus() == HttpStatus.OK_200) {
 
-          HashMap<String, String> results = objectMapper.readValue(output, HashMap.class);
+          HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
           queryDetail.setQueryId(results.get("id"));
 
           if (!Strings.isNullOrEmpty(queryDetail.getQueryId())) {
