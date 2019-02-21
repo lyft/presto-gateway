@@ -9,9 +9,9 @@ import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.config.RequestRouterConfiguration;
 import com.lyft.data.gateway.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.router.GatewayBackendManager;
-import com.lyft.data.gateway.router.GatewayBackendManagerImpl;
 import com.lyft.data.gateway.router.QueryHistoryManager;
-import com.lyft.data.gateway.router.QueryHistoryManagerImpl;
+import com.lyft.data.gateway.router.impl.GatewayBackendManagerImpl;
+import com.lyft.data.gateway.router.impl.QueryHistoryManagerImpl;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
@@ -22,10 +22,10 @@ import java.util.List;
 
 public class GatewayProviderModule extends AppModule<GatewayConfiguration, Environment> {
 
+  private final List<ProxyBackendConfiguration> gatewayBackends;
+
   private final GatewayBackendManager gatewayBackendManager;
   private final QueryHistoryManager queryHistoryManager;
-
-  private final List<ProxyBackendConfiguration> gatewayBackends;
 
   public GatewayProviderModule(GatewayConfiguration configuration, Environment environment) {
     super(configuration, environment);
@@ -40,12 +40,14 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
             this.gatewayBackends, configuration.getRequestRouter().getCacheDir());
     this.queryHistoryManager =
         new QueryHistoryManagerImpl(configuration.getRequestRouter().getHistorySize());
+
   }
 
   @Override
   protected void configure() {}
 
   /* @return Provides instance of RoutingProxyHandler. */
+
   protected ProxyHandler getProxyHandler() {
     Meter requestMeter =
         getEnvironment()

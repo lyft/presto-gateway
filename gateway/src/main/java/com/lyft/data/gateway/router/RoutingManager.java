@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.ws.rs.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -135,7 +136,7 @@ public abstract class RoutingManager {
                   HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                   conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
                   conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(5));
-                  conn.setRequestMethod("HEAD");
+                  conn.setRequestMethod(HttpMethod.HEAD);
                   return conn.getResponseCode();
                 });
         responseCodes.put(backend.getProxyTo(), call);

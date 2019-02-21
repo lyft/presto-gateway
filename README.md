@@ -1,5 +1,5 @@
 # presto-gateway
-A load balancer / proxy / gateway for prestodb.
+A load balancer / proxy / gateway for presto compute engine.
 
 ## Getting Started 
 

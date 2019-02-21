@@ -1,4 +1,6 @@
-package com.lyft.data.gateway.router;
+package com.lyft.data.gateway.router.impl;
+
+import com.lyft.data.gateway.router.QueryHistoryManager;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -18,7 +18,6 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import lombok.extern.slf4j.Slf4j;
-import org.ehcache.core.internal.util.CollectionUtil;
 
 @Slf4j
 @Path("/gateway")
