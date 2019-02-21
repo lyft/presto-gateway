@@ -26,7 +26,8 @@
             $('#queryHistory').DataTable(
                     {
                         "ordering": false,
-                        "dom": '<"pull-left"f><"pull-right"l>tip'
+                        "dom": '<"pull-left"f><"pull-right"l>tip',
+                        "width": '100%'
                     }
             );
             $("ul.chart").hBarChart();

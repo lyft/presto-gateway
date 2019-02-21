@@ -1,9 +1,11 @@
-package com.lyft.data.gateway.router;
+package com.lyft.data.gateway.router.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.router.GatewayBackendManager;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

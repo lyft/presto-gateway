@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.lyft.data.gateway.config.GatewayConfiguration;
-import com.lyft.data.gateway.router.DefaultRoutingManager;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 import com.lyft.data.gateway.router.QueryHistoryManager;
 import com.lyft.data.gateway.router.RoutingManager;
+import com.lyft.data.gateway.router.impl.DefaultRoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
@@ -43,7 +43,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  //  private final int routerHistoryApiPort;
   private final RoutingManager routingManager;
   private final QueryHistoryManager queryHistoryManager;
 
@@ -138,7 +137,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             + request.getRequestURI()
             + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
 
-    log.info("Rerouting {} --> {}", originalLocation, targetLocation);
+    log.info("Rerouting [{}]--> [{}]", originalLocation, targetLocation);
     return targetLocation;
   }
 
@@ -181,7 +180,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       String requestPath = request.getRequestURI();
       if (requestPath.startsWith(V1_STATEMENT_PATH)
           && request.getMethod().equals(HttpMethod.POST)) {
-        logHeaders(response);
         String output;
         boolean isGZipEncoding = isGZipEncoding(response);
         if (isGZipEncoding) {
@@ -189,13 +187,12 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         } else {
           output = new String(buffer);
         }
-        log.debug(output);
+        log.debug("Response output [{}]", output);
 
         QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request);
         log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
 
         if (response.getStatus() == HttpStatus.OK_200) {
-
           HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
           queryDetail.setQueryId(results.get("id"));
 
@@ -209,7 +206,13 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           } else {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
+        } else {
+          log.error(
+              "Non OK HTTP Status code with response [{}] , Status code [{}]",
+              output,
+              response.getStatus());
         }
+        // Saving history at gateway.
         queryHistoryManager.submitQueryDetail(queryDetail);
       } else {
         log.debug("SKIPPING For {}", requestPath);
@@ -229,7 +232,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
-        queryText.length() > 500 ? queryText.substring(0, 500) + "..." : queryText);
+        queryText.length() > 400 ? queryText.substring(0, 400) + "..." : queryText);
     return queryDetail;
   }
 }

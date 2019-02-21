@@ -3,6 +3,7 @@ package com.lyft.data.gateway.router;
 import java.util.List;
 
 import lombok.Data;
+import lombok.ToString;
 
 public interface QueryHistoryManager {
   void submitQueryDetail(QueryDetail queryDetail);
@@ -10,6 +11,7 @@ public interface QueryHistoryManager {
   List<QueryDetail> fetchQueryHistory();
 
   @Data
+  @ToString
   class QueryDetail implements Comparable<QueryDetail> {
     private String queryId;
     private String queryText;

@@ -21,7 +21,7 @@ public class ProxyImpl extends ProxyServlet.Transparent {
   public void setProxyHandler(ProxyHandler proxyHandler) {
     this.proxyHandler = proxyHandler;
     // This needs to be high as external clients may take longer to connect.
-    this.setTimeout(TimeUnit.MINUTES.toMillis(5));
+    this.setTimeout(TimeUnit.MINUTES.toMillis(1));
   }
 
   // Overriding this method to support ssl
@@ -33,6 +33,7 @@ public class ProxyImpl extends ProxyServlet.Transparent {
     sslFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
 
     HttpClient httpClient = new HttpClient(sslFactory);
+    httpClient.setMaxConnectionsPerDestination(200); // overriding default 64
     httpClient.setConnectTimeout(TimeUnit.MINUTES.toMillis(1));
     return httpClient;
   }
@@ -81,7 +82,7 @@ public class ProxyImpl extends ProxyServlet.Transparent {
     try {
       if (this._log.isDebugEnabled()) {
         this._log.debug(
-            "{} proxying content to downstream: {} bytes", this.getRequestId(request), length);
+            "[{}] proxying content to downstream: [{}] bytes", this.getRequestId(request), length);
       }
       if (this.proxyHandler != null) {
         proxyHandler.postConnectionHook(request, response, buffer, offset, length, callback);
