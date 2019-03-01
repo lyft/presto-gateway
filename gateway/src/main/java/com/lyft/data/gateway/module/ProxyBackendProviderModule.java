@@ -19,9 +19,6 @@ public class ProxyBackendProviderModule extends AppModule<GatewayConfiguration, 
     super(configuration, environment);
   }
 
-  @Override
-  protected void configure() {}
-
   protected ProxyHandler getProxyHandler(ProxyServerConfiguration proxyServerConfiguration) {
     return new ProxyHandler();
   }

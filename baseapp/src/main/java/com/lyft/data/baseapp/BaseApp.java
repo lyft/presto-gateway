@@ -12,7 +12,6 @@ import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.Configuration;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -99,8 +98,7 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
    */
   @Override
   public void run(T configuration, Environment environment) throws Exception {
-
-    injector = configureGuice(configuration, environment);
+    this.injector = configureGuice(configuration, environment);
     logger.info("op=configure_guice injector={}", injector.toString());
     applicationAtRun(configuration, environment, injector);
     logger.info("op=configure_app_custom completed");
@@ -142,21 +140,12 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
     registerProviders(environment, injector);
     registerResources(environment, injector);
     registerTasks(environment, injector);
-    registerManaged(environment, injector);
+    addManagedApps(configuration, environment, injector);
     logger.info("op=register_end configuration={}", configuration.toString());
   }
 
-  private void registerManaged(Environment environment, Injector injector) {
-    final Set<Class<? extends Managed>> classes = reflections.getSubTypesOf(Managed.class);
-    classes
-        .stream()
-        .forEach(
-            c -> {
-              LifecycleEnvironment lifecycle = environment.lifecycle();
-              lifecycle.manage(injector.getInstance(c));
-              logger.info("op=register type=managed item={}", c);
-            });
-  }
+  protected abstract List<Managed> addManagedApps(
+      T configuration, Environment environment, Injector injector);
 
   private void registerTasks(Environment environment, Injector injector) {
     final Set<Class<? extends Task>> classes = reflections.getSubTypesOf(Task.class);

@@ -43,9 +43,6 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
 
   }
 
-  @Override
-  protected void configure() {}
-
   /* @return Provides instance of RoutingProxyHandler. */
 
   protected ProxyHandler getProxyHandler() {

@@ -43,6 +43,14 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
     return ImmutableList.copyOf(backendMap.values());
   }
 
+  public List<ProxyBackendConfiguration> getAllActiveBackends() {
+    return backendMap
+        .values()
+        .stream()
+        .filter(backend -> backend.isActive())
+        .collect(Collectors.toList());
+  }
+
   public List<ProxyBackendConfiguration> getActiveAdhocBackends() {
     return backendMap
         .values()

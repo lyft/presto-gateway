@@ -1,10 +1,13 @@
 package com.lyft.data.gateway;
 
+import com.google.inject.Injector;
 import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.baseapp.BaseApp;
 import com.lyft.data.gateway.config.GatewayConfiguration;
 
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
@@ -49,6 +52,30 @@ public class GatewayLauncher extends BaseApp<GatewayConfiguration> {
       }
     }
     return modules;
+  }
+
+  protected List<Managed> addManagedApps(
+      GatewayConfiguration configuration, Environment environment, Injector injector) {
+    List<Managed> managedApps = new ArrayList<>();
+    if (configuration.getManagedApps() == null) {
+      log.error("No managed apps found");
+      return managedApps;
+    }
+    configuration
+        .getManagedApps()
+        .stream()
+        .forEach(
+            clazz -> {
+              try {
+                Class c = Class.forName(clazz);
+                LifecycleEnvironment lifecycle = environment.lifecycle();
+                lifecycle.manage((Managed) injector.getInstance(c));
+                log.info("op=register type=managed item={}", c);
+              } catch (Exception e) {
+                log.error("Error loading managed app", e);
+              }
+            });
+    return managedApps;
   }
 
   public static void main(String[] args) throws Exception {
