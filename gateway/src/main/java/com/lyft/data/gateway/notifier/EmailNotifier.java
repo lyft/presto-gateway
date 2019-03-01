@@ -36,11 +36,11 @@ public class EmailNotifier implements Notifier {
   }
 
   @Override
-  public void sendNotification(String content) {
+  public void sendNotification(String subject, String content) {
     sendNotification(
         notifierConfiguration.getSender(),
         notifierConfiguration.getRecipients(),
-        "Presto Query Error",
+        "Presto Error: " + subject,
         content);
   }
 

@@ -79,15 +79,15 @@ public class ActiveClusterMonitor implements Managed {
   }
 
   private void notifyUnhealthyCluster(ClusterStats clusterStats) {
-    emailNotifier.sendNotification("Cluster unhealthy : " + clusterStats.toString());
+    emailNotifier.sendNotification("Cluster unhealthy", clusterStats.toString());
   }
 
   private void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
-    emailNotifier.sendNotification("Too many queued queries : " + clusterStats.toString());
+    emailNotifier.sendNotification("Too many queued queries", clusterStats.toString());
   }
 
   private void notifyForNoWorkers(ClusterStats clusterStats) {
-    emailNotifier.sendNotification("Number of workers :" + clusterStats.toString());
+    emailNotifier.sendNotification("Number of workers", clusterStats.toString());
   }
 
   private ClusterStats getPrestoClusterStats(ProxyServerConfiguration backend) {
