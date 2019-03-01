@@ -105,15 +105,6 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
   }
 
   /**
-   * Supply a list of modules to be used by Guice.
-   *
-   * @param configuration the app configuration
-   * @return a list of modules to be provisioned by Guice
-   */
-  protected abstract List<? extends AbstractModule> addModules(
-      T configuration, Environment environment);
-
-  /**
    * Access the Dropwizard {@link Environment} and/or the Guice {@link Injector} when the
    * application is run. Override it to add providers, resources, etc. for your application as an
    * alternative to accessing {@link #run} .
@@ -138,12 +129,29 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
     logger.info("op=register_start configuration={}", configuration.toString());
     registerHealthChecks(environment, injector);
     registerProviders(environment, injector);
-    registerResources(environment, injector);
     registerTasks(environment, injector);
     addManagedApps(configuration, environment, injector);
+    registerResources(environment, injector);
     logger.info("op=register_end configuration={}", configuration.toString());
   }
 
+  /**
+   * Supply a list of modules to be used by Guice.
+   *
+   * @param configuration the app configuration
+   * @return a list of modules to be provisioned by Guice
+   */
+  protected abstract List<? extends AbstractModule> addModules(
+      T configuration, Environment environment);
+
+  /**
+   * Supply a list of managed apps.
+   *
+   * @param configuration
+   * @param environment
+   * @param injector
+   * @return
+   */
   protected abstract List<Managed> addManagedApps(
       T configuration, Environment environment, Injector injector);
 
