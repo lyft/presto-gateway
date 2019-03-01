@@ -12,4 +12,7 @@ public class GatewayConfiguration extends Configuration {
 
   // List of Modules with FQCN (Fully Qualified Class Name)
   private List<String> modules;
+
+  // List of ManagedApps with FQCN (Fully Qualified Class Name)
+  private List<String> managedApps;
 }

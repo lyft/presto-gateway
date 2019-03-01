@@ -14,4 +14,7 @@ public abstract class AppModule<T extends Configuration, E> extends AbstractModu
     this.configuration = config;
     this.environment = env;
   }
+
+  @Override
+  protected void configure() {}
 }

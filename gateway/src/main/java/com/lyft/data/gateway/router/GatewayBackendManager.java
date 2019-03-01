@@ -7,6 +7,8 @@ import java.util.List;
 public interface GatewayBackendManager {
   List<ProxyBackendConfiguration> getAllBackends();
 
+  List<ProxyBackendConfiguration> getAllActiveBackends();
+
   List<ProxyBackendConfiguration> getActiveAdhocBackends();
 
   List<ProxyBackendConfiguration> getActiveScheduledBackends();

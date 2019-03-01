@@ -30,6 +30,9 @@ modules:
   - com.lyft.data.gateway.module.ProxyBackendProviderModule
   - com.lyft.data.gateway.module.GatewayProviderModule
 
+managedApps:
+  - com.lyft.data.gateway.GatewayManagedApp
+
 # Logging settings.
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
