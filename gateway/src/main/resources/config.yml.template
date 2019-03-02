@@ -26,12 +26,21 @@ server:
     - type: http
       port: 8091
 
+notifier:
+  smtpHost: localhost
+  smtpPort: 587
+  sender: presto-gw-monitor-noreply@lyft.com
+  recipients:
+    - prestodev@yourorg.com
+
 modules:
   - com.lyft.data.gateway.module.ProxyBackendProviderModule
   - com.lyft.data.gateway.module.GatewayProviderModule
+  - com.lyft.data.gateway.module.NotifierModule
 
 managedApps:
   - com.lyft.data.gateway.GatewayManagedApp
+  - com.lyft.data.gateway.ActiveClusterMonitor
 
 # Logging settings.
 logging:

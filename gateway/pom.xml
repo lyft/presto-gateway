@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.4.2</version>
+        <version>1.4.3</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -82,7 +82,11 @@
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
         <!-- Test deps -->
         <dependency>
             <groupId>org.testng</groupId>

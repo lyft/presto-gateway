@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class GatewayConfiguration extends Configuration {
   private RequestRouterConfiguration requestRouter;
-
+  private NotifierConfiguration notifier;
   private List<ProxyBackendConfiguration> backends;
 
   // List of Modules with FQCN (Fully Qualified Class Name)
