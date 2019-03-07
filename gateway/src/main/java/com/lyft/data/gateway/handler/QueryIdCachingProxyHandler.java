@@ -19,6 +19,8 @@ import io.dropwizard.server.SimpleServerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +42,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String SCHEDULED_QUERY_HEADER = "X-Presto-Scheduled-Query";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
+  private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -110,7 +113,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     // Only load balance presto query APIs.
     if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
         || request.getRequestURI().startsWith(V1_QUERY_PATH)) {
-      String queryId = extractQueryIdIfPresent(request.getRequestURI(), request.getQueryString());
+      String queryId = extractQueryIdIfPresent(request);
 
       // Find query id and get url from cache
       if (!Strings.isNullOrEmpty(queryId)) {
@@ -141,11 +144,32 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return targetLocation;
   }
 
-  protected String extractQueryIdIfPresent(String path, String queryParams) {
+  protected String extractQueryIdIfPresent(HttpServletRequest request) {
+    String path = request.getRequestURI();
+    String queryParams = request.getQueryString();
+    try {
+      String queryText = CharStreams.toString(request.getReader());
+      if (!Strings.isNullOrEmpty(queryText)
+          && queryText.toLowerCase().contains("system.runtime.kill_query")) {
+        // extract and return the queryId
+        String[] parts = queryText.split(",");
+        for (String part : parts) {
+          if (part.contains("query_id")) {
+            Matcher m = EXTRACT_BETWEEN_SINGLE_QUOTES.matcher(part);
+            if (m.find()) {
+              return m.group().replace('\'', '\u0000');
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error extracting query payload from request", e);
+    }
     if (path == null) {
       return null;
     }
     String queryId = null;
+
     log.debug("trying to extract query id from path [{}] or queryString [{}]", path, queryParams);
     if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
       String[] tokens = path.split("/");
