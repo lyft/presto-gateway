@@ -59,7 +59,7 @@ public class ActiveClusterMonitor implements Managed {
                 if (!clusterStats.isHealthy()) {
                   notifyUnhealthyCluster(clusterStats);
                 } else {
-                  if (clusterStats.getQueuedQueryCount() > 80) {
+                  if (clusterStats.getQueuedQueryCount() > 100) {
                     notifyForTooManyQueuedQueries(clusterStats);
                   }
                   if (clusterStats.getNumWorkerNodes() < 1) {
