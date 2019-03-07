@@ -58,12 +58,13 @@ public class ActiveClusterMonitor implements Managed {
                 ClusterStats clusterStats = clusterStatsFuture.get();
                 if (!clusterStats.isHealthy()) {
                   notifyUnhealthyCluster(clusterStats);
-                }
-                if (clusterStats.getQueuedQueryCount() > 70) {
-                  notifyForTooManyQueuedQueries(clusterStats);
-                }
-                if (clusterStats.getNumWorkerNodes() < 1) {
-                  notifyForNoWorkers(clusterStats);
+                } else {
+                  if (clusterStats.getQueuedQueryCount() > 100) {
+                    notifyForTooManyQueuedQueries(clusterStats);
+                  }
+                  if (clusterStats.getNumWorkerNodes() < 1) {
+                    notifyForNoWorkers(clusterStats);
+                  }
                 }
               }
             } catch (Exception e) {
@@ -125,6 +126,8 @@ public class ActiveClusterMonitor implements Managed {
 
   public void stop() throws Exception {
     this.monitorActive = false;
+    this.executorService.shutdown();
+    this.singleTaskExecutor.shutdown();
   }
 
   @Data

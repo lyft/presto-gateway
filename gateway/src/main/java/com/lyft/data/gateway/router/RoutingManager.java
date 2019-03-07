@@ -122,7 +122,7 @@ public abstract class RoutingManager {
    * @return
    */
   private String findBackendForUnknownQueryId(String queryId) {
-    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getAllBackends();
+    List<ProxyBackendConfiguration> backends = gatewayBackendManager.getAllBackends();
 
     Map<String, Future<Integer>> responseCodes = new HashMap<>();
     try {
@@ -154,6 +154,7 @@ public abstract class RoutingManager {
     } catch (Exception e) {
       log.warn("Query id [{}] not found", queryId);
     }
-    return backends.get(0).getProxyTo();
+    // Fallback on first active backend if queryId mapping not found.
+    return gatewayBackendManager.getActiveAdhocBackends().get(0).getProxyTo();
   }
 }
