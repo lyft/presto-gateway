@@ -157,7 +157,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           if (part.contains("query_id")) {
             Matcher m = EXTRACT_BETWEEN_SINGLE_QUOTES.matcher(part);
             if (m.find()) {
-              return m.group().replace('\'', '\u0000');
+              String queryQuoted = m.group();
+              if (!Strings.isNullOrEmpty(queryQuoted) && queryQuoted.length() > 0) {
+                return queryQuoted.substring(1, queryQuoted.length() - 1);
+              }
             }
           }
         }
