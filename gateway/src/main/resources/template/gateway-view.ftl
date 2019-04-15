@@ -36,7 +36,7 @@
 </head>
 <body>
 <div><h3>Gateway Server started at
-    : ${gatewayStartTime?number_to_datetime}</h3></div>
+    : <script>document.write(new Date(${gatewayStartTime?long?c}).toLocaleString());</script></h3></div>
 
 <div>
     <h3>All active backends:</h3>
@@ -90,7 +90,7 @@
                     </#if>
                 </td>
                 <td>${q.queryText}</td>
-                <td data-order="${q.captureTime}">${q.captureTime?number_to_datetime}</td>
+                <td data-order="${q.captureTime}"><script>document.write(new Date(${q.captureTime?long?c}).toLocaleString());</script></td>
             </tr>
             </#list>
         </tbody>
