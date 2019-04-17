@@ -22,10 +22,11 @@ public interface QueryHistoryManager {
 
     @Override
     public int compareTo(QueryDetail o) {
-      if (o == null) {
-        return 1;
+      if (this.captureTime < o.captureTime) {
+        return -1;
+      } else {
+        return this.captureTime == o.captureTime ? 0 : 1;
       }
-      return o.captureTime > this.captureTime ? 1 : -1;
     }
   }
 }

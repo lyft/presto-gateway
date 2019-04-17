@@ -38,7 +38,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PROXY_TARGET_HEADER = "proxytarget";
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
-  public static final String QUERY_HTML_PATH = "/query.html";
+  public static final String QUERY_HTML_PATH = "/ui/query.html";
   public static final String SCHEDULED_QUERY_HEADER = "X-Presto-Scheduled-Query";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
