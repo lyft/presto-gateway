@@ -20,6 +20,9 @@ public class QueryHistoryManagerImpl implements QueryHistoryManager {
 
   @Override
   public void submitQueryDetail(QueryDetail queryDetail) {
+    if (queryDetail.getQueryText().startsWith("EXPLAIN (TYPE VALIDATE) ")) {
+      return;
+    }
     int pos = (int) queryCounter.incrementAndGet() % size;
     queryHistory[pos] = queryDetail;
     if (queryCounter.get() >= Long.MAX_VALUE - 1) {
