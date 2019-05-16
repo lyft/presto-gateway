@@ -2,6 +2,7 @@
 <#setting datetime_format = "MM/dd/yyyy hh:mm:ss a '('zzz')'">
 <html>
 <head>
+    <meta charset="UTF-8"/>
     <style>
         .pull-left {
             float: left !important
