@@ -23,9 +23,9 @@ public interface QueryHistoryManager {
     @Override
     public int compareTo(QueryDetail o) {
       if (this.captureTime < o.captureTime) {
-        return -1;
+        return 1;
       } else {
-        return this.captureTime == o.captureTime ? 0 : 1;
+        return this.captureTime == o.captureTime ? 0 : -1;
       }
     }
   }
