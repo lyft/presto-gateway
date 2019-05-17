@@ -112,7 +112,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
     // Only load balance presto query APIs.
     if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
-        || request.getRequestURI().startsWith(V1_QUERY_PATH)) {
+        || request.getRequestURI().startsWith(V1_QUERY_PATH)
+            || request.getRequestURI().startsWith(QUERY_HTML_PATH)) {
       String queryId = extractQueryIdIfPresent(request);
 
       // Find query id and get url from cache
