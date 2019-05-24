@@ -2,8 +2,11 @@ package com.lyft.data.proxyserver.wrapper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -17,19 +20,25 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 
-  private String body;
+  private byte[] content;
   private final Map<String, String> headerMap = new HashMap<>();
+
+  public static void copy(InputStream in, OutputStream out) throws IOException {
+
+    byte[] buffer = new byte[1024];
+    while (true) {
+      int bytesRead = in.read(buffer);
+      if (bytesRead == -1)
+        break;
+      out.write(buffer, 0, bytesRead);
+    }
+  }
 
   public MultiReadHttpServletRequest(HttpServletRequest request) throws IOException {
     super(request);
-    StringBuffer sb = new StringBuffer("");
-    BufferedReader bufferedReader = request.getReader();
-    String line;
-    while ((line = bufferedReader.readLine()) != null) {
-      sb.append(line);
-      sb.append("\n");
-    }
-    body = sb.toString();
+    ByteArrayOutputStream bodyInOutputStream = new ByteArrayOutputStream();
+    copy(request.getInputStream(), bodyInOutputStream);
+    content = bodyInOutputStream.toByteArray();
   }
 
   /**
@@ -74,7 +83,7 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 
   @Override
   public ServletInputStream getInputStream() throws IOException {
-    final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body.getBytes());
+    final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
     return new ServletInputStream() {
       @Override
       public boolean isFinished() {
