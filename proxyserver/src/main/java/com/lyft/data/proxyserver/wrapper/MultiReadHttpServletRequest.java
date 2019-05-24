@@ -28,8 +28,9 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     byte[] buffer = new byte[1024];
     while (true) {
       int bytesRead = in.read(buffer);
-      if (bytesRead == -1)
+      if (bytesRead == -1) {
         break;
+      }
       out.write(buffer, 0, bytesRead);
     }
   }
