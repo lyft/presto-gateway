@@ -43,6 +43,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String SCHEDULED_QUERY_HEADER = "X-Presto-Scheduled-Query";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
+
+  public static final String TRANSACTION_ID_HEADER = "X-Presto-Transaction-Id";
+  public static final String STARTED_TRANSACTION_ID = "X-Presto-Started-Transaction-Id";
+
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -106,28 +110,40 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     }
   }
 
+  private boolean isPathWhiteListed(String path) {
+    return path.startsWith(V1_STATEMENT_PATH)
+        || path.startsWith(V1_QUERY_PATH)
+        || path.startsWith(QUERY_HTML_PATH)
+        || path.startsWith(V1_INFO_PATH);
+  }
+
   @Override
   public String rewriteTarget(HttpServletRequest request) {
-    /* Here comes the load balancer / gateway */
+    /* Here comes the load balancer */
     String backendAddress = "http://localhost:" + localApplicationPort;
 
     // Only load balance presto query APIs.
-    if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
-        || request.getRequestURI().startsWith(V1_QUERY_PATH)
-        || request.getRequestURI().startsWith(QUERY_HTML_PATH)
-        || request.getRequestURI().startsWith(V1_INFO_PATH)) {
-      String queryId = extractQueryIdIfPresent(request);
-
-      // Find query id and get url from cache
-      if (!Strings.isNullOrEmpty(queryId)) {
-        backendAddress = routingManager.findBackendForQueryId(queryId);
-      } else {
-        String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
-        if ("true".equalsIgnoreCase(scheduledHeader)) {
-          // This falls back on adhoc backends if there are no scheduled backends active.
-          backendAddress = routingManager.provideScheduledBackendForThisRequest();
+    if (isPathWhiteListed(request.getRequestURI())) {
+      backendAddress = null;
+      String transactionId = request.getHeader(TRANSACTION_ID_HEADER);
+      // If there is a transaction id present in header, route the request to cluster where it
+      // belongs.
+      if (!Strings.isNullOrEmpty(transactionId) && !"NONE".equalsIgnoreCase(transactionId)) {
+        backendAddress = routingManager.findBackendForTransactionId(transactionId);
+      }
+      if (Strings.isNullOrEmpty(backendAddress)) {
+        String queryId = extractQueryIdIfPresent(request);
+        // Find query id and get url from cache
+        if (!Strings.isNullOrEmpty(queryId)) {
+          backendAddress = routingManager.findBackendForQueryId(queryId);
         } else {
-          backendAddress = routingManager.provideAdhocBackendForThisRequest();
+          String scheduledHeader = request.getHeader(SCHEDULED_QUERY_HEADER);
+          if ("true".equalsIgnoreCase(scheduledHeader)) {
+            // This falls back on adhoc backends if there are no scheduled backend active.
+            backendAddress = routingManager.provideScheduledBackendForThisRequest();
+          } else {
+            backendAddress = routingManager.provideAdhocBackendForThisRequest();
+          }
         }
       }
       // set target backend so that we could save queryId to backend mapping later.
@@ -225,8 +241,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         if (response.getStatus() == HttpStatus.OK_200) {
           HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
           queryDetail.setQueryId(results.get("id"));
-
-          if (!Strings.isNullOrEmpty(queryDetail.getQueryId())) {
+          // Set query id and backend mapping
+          if (!Strings.isNullOrEmpty(queryDetail.getQueryId())
+              && !Strings.isNullOrEmpty(queryDetail.getBackendUrl())) {
             routingManager.setBackendForQueryId(
                 queryDetail.getQueryId(), queryDetail.getBackendUrl());
             log.debug(
@@ -245,7 +262,27 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         // Saving history at gateway.
         queryHistoryManager.submitQueryDetail(queryDetail);
       } else {
-        log.debug("SKIPPING For {}", requestPath);
+        // Reading next uri response
+        if (requestPath.endsWith("/1") && requestPath.startsWith(V1_STATEMENT_PATH)) {
+          // This is first page reading. If response has StartTransaction Headers, save backend
+          // mapping with transaction id.
+          String startTransactionHeader = response.getHeader(STARTED_TRANSACTION_ID);
+          if (!Strings.isNullOrEmpty(startTransactionHeader)) {
+            log.debug("Found started transaction id for path [{}]", requestPath);
+            String[] uriParts = requestPath.split("/");
+            if (uriParts.length >= 4) {
+              String queryId = uriParts[3];
+              if (!Strings.isNullOrEmpty(queryId)) {
+                String backend = routingManager.findBackendForQueryId(queryId);
+                if (!Strings.isNullOrEmpty(backend)) {
+                  routingManager.setBackendForTransactionId(startTransactionHeader, backend);
+                }
+              }
+            }
+          }
+        } else {
+          log.debug("SKIPPING response interception For read request of path {}", requestPath);
+        }
       }
     } catch (Exception e) {
       log.error("Error in proxying defaulting to super call", e);
@@ -262,7 +299,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
-        queryText.length() > 400 ? queryText.substring(0, 400) + "..." : queryText);
+        queryText.length() > 400 ? queryText.substring(0, 200) + "..." : queryText);
     return queryDetail;
   }
 }

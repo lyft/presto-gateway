@@ -36,17 +36,22 @@ public abstract class RoutingManager {
   private final AtomicLong requestAdhocCounter = new AtomicLong(0);
   private final AtomicLong requestScheduledCounter = new AtomicLong(0);
   private final Cache<String, String> queryIdBackendCache;
+  private final Cache<String, String> transactionIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
 
   public RoutingManager(GatewayBackendManager gatewayBackendManager, String cacheDataDir) {
     this.gatewayBackendManager = gatewayBackendManager;
+    this.queryIdBackendCache = buildCache(cacheDataDir, "queryIdBackendCache");
+    this.transactionIdBackendCache = buildCache(cacheDataDir, "transactionIdBackendCache");
+  }
 
+  private Cache<String, String> buildCache(String cacheDataDir, String namespace) {
     PersistentCacheManager persistentCacheManager =
         CacheManagerBuilder.newCacheManagerBuilder()
-            .with(CacheManagerBuilder.persistence(new File(cacheDataDir, "queryIdBackendMapping")))
+            .with(CacheManagerBuilder.persistence(new File(cacheDataDir, namespace)))
             .withCache(
-                "queryIdBackendPersistentCache",
+                namespace,
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(
                     String.class,
                     String.class,
@@ -55,13 +60,15 @@ public abstract class RoutingManager {
                         .offheap(100, MemoryUnit.MB)
                         .disk(1, MemoryUnit.GB, true)))
             .build(true);
-    this.queryIdBackendCache =
-        persistentCacheManager.getCache(
-            "queryIdBackendPersistentCache", String.class, String.class);
+    return persistentCacheManager.getCache(namespace, String.class, String.class);
   }
 
   public void setBackendForQueryId(String queryId, String backend) {
     queryIdBackendCache.put(queryId, backend);
+  }
+
+  public void setBackendForTransactionId(String transactionId, String backend) {
+    transactionIdBackendCache.put(transactionId, backend);
   }
 
   /**
@@ -70,7 +77,7 @@ public abstract class RoutingManager {
    * @return
    */
   public String provideAdhocBackendForThisRequest() {
-    List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
+    List<ProxyBackendConfiguration> backends = gatewayBackendManager.getActiveAdhocBackends();
     int backendId = (int) (requestAdhocCounter.incrementAndGet() % backends.size());
     if (requestAdhocCounter.get() >= Long.MAX_VALUE - 1) {
       requestAdhocCounter.set(0);
@@ -85,8 +92,7 @@ public abstract class RoutingManager {
    * @return
    */
   public String provideScheduledBackendForThisRequest() {
-    List<ProxyBackendConfiguration> backends =
-        this.gatewayBackendManager.getActiveScheduledBackends();
+    List<ProxyBackendConfiguration> backends = gatewayBackendManager.getActiveScheduledBackends();
     if (backends.isEmpty()) {
       return provideAdhocBackendForThisRequest();
     }
@@ -110,6 +116,14 @@ public abstract class RoutingManager {
       log.error("Could not find mapping for query id {}", queryId);
       // for now resort to defaulting to first backend
       backendAddress = findBackendForUnknownQueryId(queryId);
+    }
+    return backendAddress;
+  }
+
+  public String findBackendForTransactionId(String transactionId) {
+    String backendAddress = transactionIdBackendCache.get(transactionId);
+    if (Strings.isNullOrEmpty(backendAddress)) {
+      log.error("Could not find mapping for transactionId {}", transactionId);
     }
     return backendAddress;
   }
