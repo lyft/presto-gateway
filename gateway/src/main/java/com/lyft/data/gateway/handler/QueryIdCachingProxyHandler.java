@@ -263,9 +263,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         queryHistoryManager.submitQueryDetail(queryDetail);
       } else {
         // Reading next uri response
-        if (requestPath.endsWith("/1") && requestPath.startsWith(V1_STATEMENT_PATH)) {
-          // This is first page reading. If response has StartTransaction Headers, save backend
-          // mapping with transaction id.
+        if (requestPath.startsWith(V1_STATEMENT_PATH)) {
+          // If response has StartTransaction Headers, save backend mapping with transaction id.
           String startTransactionHeader = response.getHeader(STARTED_TRANSACTION_ID);
           if (!Strings.isNullOrEmpty(startTransactionHeader)) {
             log.debug("Found started transaction id for path [{}]", requestPath);
@@ -299,7 +298,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
-        queryText.length() > 400 ? queryText.substring(0, 200) + "..." : queryText);
+        queryText.length() > 200 ? queryText.substring(0, 200) + "..." : queryText);
     return queryDetail;
   }
 }
