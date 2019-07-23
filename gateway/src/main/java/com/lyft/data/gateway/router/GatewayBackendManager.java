@@ -11,7 +11,7 @@ public interface GatewayBackendManager {
 
   List<ProxyBackendConfiguration> getActiveAdhocBackends();
 
-  List<ProxyBackendConfiguration> getActiveScheduledBackends();
+  List<ProxyBackendConfiguration> getActiveBackends(String routingGroup);
 
   void deactivateBackend(String backendName);
 

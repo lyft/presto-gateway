@@ -10,11 +10,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.ws.rs.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +33,7 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public abstract class RoutingManager {
-  private final AtomicLong requestAdhocCounter = new AtomicLong(0);
-  private final AtomicLong requestScheduledCounter = new AtomicLong(0);
+  private static final Random RANDOM = new Random();
   private final Cache<String, String> queryIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
@@ -69,31 +68,25 @@ public abstract class RoutingManager {
    *
    * @return
    */
-  public String provideAdhocBackendForThisRequest() {
+  public String provideAdhocBackend() {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
-    int backendId = (int) (requestAdhocCounter.incrementAndGet() % backends.size());
-    if (requestAdhocCounter.get() >= Long.MAX_VALUE - 1) {
-      requestAdhocCounter.set(0);
-    }
+    int backendId = Math.abs(RANDOM.nextInt()) % backends.size();
     return backends.get(backendId).getProxyTo();
   }
 
   /**
-   * Performs routing to a scheduled backend. This falls back to an adhoc backend, if no scheduled
+   * Performs routing to a given cluster group. This falls back to an adhoc backend, if no scheduled
    * backend is found.
    *
    * @return
    */
-  public String provideScheduledBackendForThisRequest() {
+  public String provideBackendForRoutingGroup(String routingGroup) {
     List<ProxyBackendConfiguration> backends =
-        this.gatewayBackendManager.getActiveScheduledBackends();
+            this.gatewayBackendManager.getActiveBackends(routingGroup);
     if (backends.isEmpty()) {
-      return provideAdhocBackendForThisRequest();
+      return provideAdhocBackend();
     }
-    int backendId = (int) (requestScheduledCounter.incrementAndGet() % backends.size());
-    if (requestScheduledCounter.get() >= Long.MAX_VALUE - 1) {
-      requestScheduledCounter.set(0);
-    }
+    int backendId = Math.abs(RANDOM.nextInt()) % backends.size();
     return backends.get(backendId).getProxyTo();
   }
 
@@ -108,7 +101,7 @@ public abstract class RoutingManager {
     String backendAddress = queryIdBackendCache.get(queryId);
     if (Strings.isNullOrEmpty(backendAddress)) {
       log.error("Could not find mapping for query id {}", queryId);
-      // for now resort to defaulting to first backend
+      // for now fall back to the first backend as default
       backendAddress = findBackendForUnknownQueryId(queryId);
     }
     return backendAddress;

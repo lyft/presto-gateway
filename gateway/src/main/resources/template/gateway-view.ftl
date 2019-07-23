@@ -47,7 +47,7 @@
             <th>ClusterName</th>
             <th>URL</th>
             <th>LocalPort</th>
-            <th>ScheduledCluster</th>
+            <th>RoutingGroup</th>
         </tr>
         </thead>
         <tbody>
@@ -56,7 +56,7 @@
             <td>  ${bc.name}</td>
             <td><a href="${bc.proxyTo}" target="_blank">${bc.proxyTo}</a></td>
             <td> ${bc.localPort}</td>
-            <td> ${bc.scheduledCluster?c}</td>
+            <td> ${bc.routingGroup}</td>
         </tr>
         </#list>
         </tbody>

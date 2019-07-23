@@ -5,7 +5,6 @@ import com.google.inject.Inject;
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.notifier.Notifier;
 import com.lyft.data.gateway.router.GatewayBackendManager;
-import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.lifecycle.Managed;
 
 import java.io.BufferedReader;
@@ -48,7 +47,7 @@ public class ActiveClusterMonitor implements Managed {
               List<ProxyBackendConfiguration> activeClusters =
                   gatewayBackendManager.getAllActiveBackends();
               List<Future<ClusterStats>> futures = new ArrayList<>();
-              for (ProxyServerConfiguration backend : activeClusters) {
+              for (ProxyBackendConfiguration backend : activeClusters) {
                 Future<ClusterStats> call =
                     executorService.submit(() -> getPrestoClusterStats(backend));
                 futures.add(call);
@@ -91,7 +90,7 @@ public class ActiveClusterMonitor implements Managed {
     emailNotifier.sendNotification("Number of workers", clusterStats.toString());
   }
 
-  private ClusterStats getPrestoClusterStats(ProxyServerConfiguration backend) {
+  private ClusterStats getPrestoClusterStats(ProxyBackendConfiguration backend) {
     ClusterStats clusterStats = new ClusterStats();
     clusterStats.setClusterId(backend.getName());
 
@@ -108,7 +107,7 @@ public class ActiveClusterMonitor implements Managed {
         BufferedReader reader =
             new BufferedReader(new InputStreamReader((InputStream) conn.getContent()));
         StringBuilder sb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = reader.readLine()) != null) {
           sb.append(line + "\n");
         }
@@ -117,6 +116,7 @@ public class ActiveClusterMonitor implements Managed {
         clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
         clusterStats.setRunningQueryCount((int) result.get("runningQueries"));
         clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
+        conn.disconnect();
       }
     } catch (Exception e) {
       log.error("Error fetching cluster stats from [" + target + "]", e);

@@ -20,8 +20,12 @@ PrestoGateway records history of recent queries and displays links to check quer
 
 ### Adhoc vs Scheduled query routing
 In the [config](gateway/src/main/resources/config.yml.template) 
-you can specify if a backend cluster is designated as `Scheduled Cluster`.
-Default router will route any request to scheduled clusters if it contains header `X-Presto-Scheduled-Query: true`  
+you can specify if a backend cluster is a part of a routing group. 
+If not specified, cluster will be part of `adhoc` routing group by default.
+
+PrestoGateway router will route any request to `scheduled` group of clusters if request contains header `X-Presto-Routing-Group: scheduled` and there are clusters present with config `routingGroup: scheduled`.
+
+If no matching `routingGroup` found, router will route to `adhoc` group of clusters. Please make sure there are clusters under `adhoc` routing group.  
 
 ## Gateway API
 
@@ -38,7 +42,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -49,7 +53,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "scheduledCluster": true,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -60,7 +64,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     }
 ]
@@ -79,7 +83,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -90,7 +94,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -101,7 +105,7 @@ Default router will route any request to scheduled clusters if it contains heade
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "scheduledCluster": true,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     }
 ]
@@ -122,7 +126,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -133,7 +137,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "scheduledCluster": true,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     }
 ]
@@ -155,7 +159,7 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -166,7 +170,7 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "scheduledCluster": false,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     },
     {
@@ -177,7 +181,7 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
         "prefix": "/",
         "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "scheduledCluster": true,
+        "routingGroup": "adhoc",
         "trustAll": "true"
     }
 ]

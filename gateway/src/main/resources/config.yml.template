@@ -1,6 +1,6 @@
 requestRouter:
   port: 8080
-  name: Proxly
+  name: prestoRouter
   cacheDir: /var/log/prestoproxy/cache
   historySize: 1000
 
@@ -8,15 +8,17 @@ backends:
   - localPort: 8081
     name: presto1
     proxyTo: http://presto1.lyft.com
+    routingGroup: adhoc
 
   - localPort: 8082
     name: presto2
     proxyTo: http://presto2.lyft.com
+    routingGroup: adhoc
 
   - localPort: 8083
     name: presto3
     proxyTo: http://presto3.lyft.com
-    scheduledCluster: true
+    routingGroup: scheduled
 
 server:
   applicationConnectors:

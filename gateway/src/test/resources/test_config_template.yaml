@@ -1,0 +1,21 @@
+requestRouter:
+  port: REQUEST_ROUTER_PORT
+  name: testPrestoRouter
+  cacheDir: CACHE_DIR
+  historySize: 1000
+
+server:
+  applicationConnectors:
+    - type: http
+      port: APPLICATION_CONNECTOR_PORT
+  adminConnectors:
+    - type: http
+      port: ADMIN_CONNECTOR_PORT
+
+modules:
+  - com.lyft.data.gateway.module.ProxyBackendProviderModule
+  - com.lyft.data.gateway.module.GatewayProviderModule
+
+managedApps:
+  - com.lyft.data.gateway.GatewayManagedApp
+
