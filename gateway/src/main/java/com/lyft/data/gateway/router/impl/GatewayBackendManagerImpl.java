@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +43,10 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
     return ImmutableList.copyOf(backendMap.values());
   }
 
+  public List<ProxyBackendConfiguration> getActiveAdhocBackends() {
+    return getActiveBackends(QueryIdCachingProxyHandler.ADHOC_ROUTING_GROUP);
+  }
+
   public List<ProxyBackendConfiguration> getAllActiveBackends() {
     return backendMap
         .values()
@@ -51,21 +55,12 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
         .collect(Collectors.toList());
   }
 
-  public List<ProxyBackendConfiguration> getActiveAdhocBackends() {
+  public List<ProxyBackendConfiguration> getActiveBackends(String routingGroup) {
     return backendMap
         .values()
         .stream()
         .filter(backend -> backend.isActive())
-        .filter(backend -> !backend.isScheduledCluster())
-        .collect(Collectors.toList());
-  }
-
-  public List<ProxyBackendConfiguration> getActiveScheduledBackends() {
-    return backendMap
-        .values()
-        .stream()
-        .filter(backend -> backend.isActive())
-        .filter(backend -> backend.isScheduledCluster())
+        .filter(backend -> backend.getRoutingGroup().equalsIgnoreCase(routingGroup))
         .collect(Collectors.toList());
   }
 
@@ -74,11 +69,15 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       throw new IllegalArgumentException("Backend name [" + backendName + "] not found");
     }
     ProxyBackendConfiguration backendToRemove = backendMap.get(backendName);
-    if (!backendToRemove.isScheduledCluster()) {
+
+    // if adhoc cluster then check availability of at least one cluster before disabling current
+    // adhoc cluster
+    if (QueryIdCachingProxyHandler.ADHOC_ROUTING_GROUP.equalsIgnoreCase(
+        backendToRemove.getRoutingGroup())) {
       List<ProxyBackendConfiguration> activeBackends = getActiveAdhocBackends();
       if (activeBackends.size() <= 1) {
         throw new IllegalArgumentException(
-            "Active backend size is 1, can't deactivate the backend");
+            "Active adhoc backend size is 1, can't deactivate the backend");
       }
     }
     backendToRemove.setActive(false);
@@ -114,9 +113,7 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
       }
       String prestoClusterStateJson = sb.toString();
 
-      Map<String, ProxyBackendConfiguration> previousClusterStateMap = new HashMap<>();
-
-      previousClusterStateMap =
+      Map<String, ProxyBackendConfiguration> previousClusterStateMap =
           OBJECT_MAPPER.readValue(
               prestoClusterStateJson,
               new TypeReference<Map<String, ProxyBackendConfiguration>>() {});
@@ -131,7 +128,7 @@ public class GatewayBackendManagerImpl implements GatewayBackendManager {
             }
           });
     } catch (Exception e) {
-      log.error("Could not read previous backend cluster state", e);
+      log.warn("No previous backend cluster state found - " + e.getMessage());
     }
   }
 }

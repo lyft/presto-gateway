@@ -8,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true, exclude = {"active"})
 public class ProxyBackendConfiguration extends ProxyServerConfiguration {
   private boolean includeInRouter = true;
-  private boolean scheduledCluster = false;
   private boolean active = true;
+  private String routingGroup = "adhoc";
 }
