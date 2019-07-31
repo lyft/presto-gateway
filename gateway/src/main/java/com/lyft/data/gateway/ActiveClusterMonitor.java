@@ -25,10 +25,14 @@ import javax.ws.rs.HttpMethod;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 
 @Slf4j
 public class ActiveClusterMonitor implements Managed {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final int BACKEND_CONNECT_TIMEOUT_SECONDS = 15;
+  private static final int MAX_THRESHOLD_QUEUED_QUERY_COUNT = 100;
+
   private static final int MONITOR_TASK_DELAY_MIN = 1;
 
   @Inject private Notifier emailNotifier;
@@ -58,7 +62,7 @@ public class ActiveClusterMonitor implements Managed {
                 if (!clusterStats.isHealthy()) {
                   notifyUnhealthyCluster(clusterStats);
                 } else {
-                  if (clusterStats.getQueuedQueryCount() > 100) {
+                  if (clusterStats.getQueuedQueryCount() > MAX_THRESHOLD_QUEUED_QUERY_COUNT) {
                     notifyForTooManyQueuedQueries(clusterStats);
                   }
                   if (clusterStats.getNumWorkerNodes() < 1) {
@@ -98,11 +102,11 @@ public class ActiveClusterMonitor implements Managed {
     try {
       URL url = new URL(target);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
-      conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(5));
+      conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(BACKEND_CONNECT_TIMEOUT_SECONDS));
+      conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(BACKEND_CONNECT_TIMEOUT_SECONDS));
       conn.setRequestMethod(HttpMethod.GET);
       conn.connect();
-      if (conn.getResponseCode() == 200) {
+      if (conn.getResponseCode() == HttpStatus.SC_OK) {
         clusterStats.setHealthy(true);
         BufferedReader reader =
             new BufferedReader(new InputStreamReader((InputStream) conn.getContent()));

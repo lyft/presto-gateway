@@ -33,8 +33,8 @@ public class ProxyImpl extends ProxyServlet.Transparent {
     sslFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
 
     HttpClient httpClient = new HttpClient(sslFactory);
-    httpClient.setMaxConnectionsPerDestination(200); // overriding default 64
-    httpClient.setConnectTimeout(TimeUnit.MINUTES.toMillis(1));
+    httpClient.setMaxConnectionsPerDestination(2000);
+    httpClient.setConnectTimeout(TimeUnit.SECONDS.toMillis(60));
     return httpClient;
   }
 
