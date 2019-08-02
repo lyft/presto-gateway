@@ -108,16 +108,20 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     }
   }
 
+  private boolean isPathWhiteListed(String path) {
+    return path.startsWith(V1_STATEMENT_PATH)
+            || path.startsWith(V1_QUERY_PATH)
+            || path.startsWith(QUERY_HTML_PATH)
+            || path.startsWith(V1_INFO_PATH);
+  }
+
   @Override
   public String rewriteTarget(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
     String backendAddress = "http://localhost:" + localApplicationPort;
 
     // Only load balance presto query APIs.
-    if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
-        || request.getRequestURI().startsWith(V1_QUERY_PATH)
-        || request.getRequestURI().startsWith(QUERY_HTML_PATH)
-        || request.getRequestURI().startsWith(V1_INFO_PATH)) {
+    if (isPathWhiteListed(request.getRequestURI())) {
       String queryId = extractQueryIdIfPresent(request);
 
       // Find query id and get url from cache
