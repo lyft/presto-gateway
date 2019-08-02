@@ -62,7 +62,7 @@ public class ProxyHandler {
     }
   }
 
-  protected void logHeaders(HttpServletRequest request) {
+  protected void debugLogHeaders(HttpServletRequest request) {
     if (log.isDebugEnabled()) {
       log.debug("-------HttpServletRequest headers---------");
       Enumeration<String> headers = request.getHeaderNames();
@@ -73,7 +73,7 @@ public class ProxyHandler {
     }
   }
 
-  protected void logHeaders(HttpServletResponse response) {
+  protected void debugLogHeaders(HttpServletResponse response) {
     if (log.isDebugEnabled()) {
       log.debug("-------HttpServletResponse headers---------");
       Collection<String> headers = response.getHeaderNames();
@@ -83,7 +83,7 @@ public class ProxyHandler {
     }
   }
 
-  protected void logHeaders(Request proxyRequest) {
+  protected void debugLogHeaders(Request proxyRequest) {
     if (log.isDebugEnabled()) {
       log.debug("-------Request proxyRequest headers---------");
       HttpFields httpFields = proxyRequest.getHeaders();

@@ -15,7 +15,7 @@ import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 @Slf4j
-public class ProxyImpl extends ProxyServlet.Transparent {
+public class ProxyServletImpl extends ProxyServlet.Transparent {
   private ProxyHandler proxyHandler;
 
   public void setProxyHandler(ProxyHandler proxyHandler) {

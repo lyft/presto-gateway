@@ -76,8 +76,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     Stream<ConnectorFactory> connectors =
         configuration.getServerFactory() instanceof DefaultServerFactory
             ? ((DefaultServerFactory) configuration.getServerFactory())
-                .getApplicationConnectors()
-                .stream()
+                .getApplicationConnectors().stream()
             : Stream.of((SimpleServerFactory) configuration.getServerFactory())
                 .map(SimpleServerFactory::getConnector);
 
@@ -102,6 +101,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             "Processing request endpoint: [{}], payload: [{}]",
             request.getRequestURI(),
             requestBody);
+        debugLogHeaders(request);
       } catch (Exception e) {
         log.warn("Error fetching the request payload", e);
       }
