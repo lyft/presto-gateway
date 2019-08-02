@@ -39,33 +39,24 @@ If no matching `routingGroup` found, router will route to `adhoc` group of clust
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8083,
         "name": "presto3",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8082,
         "name": "presto2",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     }
 ]
 ```
@@ -80,33 +71,24 @@ If no matching `routingGroup` found, router will route to `adhoc` group of clust
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8082,
         "name": "presto2",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8083,
         "name": "presto3",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     }
 ]
 ```
@@ -123,22 +105,16 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8083,
         "name": "presto3",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     }
 ]
 ```
@@ -156,33 +132,24 @@ curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
         "includeInRouter": true,
         "localPort": 8081,
         "name": "presto1",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8082,
         "name": "presto2",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     },
     {
         "active": true,
         "includeInRouter": true,
         "localPort": 8083,
         "name": "presto3",
-        "prefix": "/",
-        "preserveHost": "true",
         "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc",
-        "trustAll": "true"
+        "routingGroup": "adhoc"
     }
 ]
 ```

@@ -39,7 +39,7 @@ public class ProxyServer implements Closeable {
     ConnectHandler proxyConnectHandler = new ConnectHandler();
     this.server.setHandler(proxyConnectHandler);
 
-    ProxyImpl proxy = new ProxyImpl();
+    ProxyServletImpl proxy = new ProxyServletImpl();
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
     }

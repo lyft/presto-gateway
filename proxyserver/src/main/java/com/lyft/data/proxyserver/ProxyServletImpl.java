@@ -15,7 +15,7 @@ import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 @Slf4j
-public class ProxyImpl extends ProxyServlet.Transparent {
+public class ProxyServletImpl extends ProxyServlet.Transparent {
   private ProxyHandler proxyHandler;
 
   public void setProxyHandler(ProxyHandler proxyHandler) {
@@ -33,8 +33,8 @@ public class ProxyImpl extends ProxyServlet.Transparent {
     sslFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
 
     HttpClient httpClient = new HttpClient(sslFactory);
-    httpClient.setMaxConnectionsPerDestination(200); // overriding default 64
-    httpClient.setConnectTimeout(TimeUnit.MINUTES.toMillis(1));
+    httpClient.setMaxConnectionsPerDestination(2000);
+    httpClient.setConnectTimeout(TimeUnit.SECONDS.toMillis(60));
     return httpClient;
   }
 

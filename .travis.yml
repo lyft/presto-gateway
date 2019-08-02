@@ -1,4 +1,9 @@
 language: java
 
-env:
-  - JDK=openjdk8
+jdk: openjdk8
+
+cache:
+  directories:
+    - $HOME/.m2/repository
+
+install: true

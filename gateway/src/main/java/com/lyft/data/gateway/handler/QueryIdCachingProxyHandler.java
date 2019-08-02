@@ -76,8 +76,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     Stream<ConnectorFactory> connectors =
         configuration.getServerFactory() instanceof DefaultServerFactory
             ? ((DefaultServerFactory) configuration.getServerFactory())
-                .getApplicationConnectors()
-                .stream()
+                .getApplicationConnectors().stream()
             : Stream.of((SimpleServerFactory) configuration.getServerFactory())
                 .map(SimpleServerFactory::getConnector);
 
@@ -102,10 +101,18 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             "Processing request endpoint: [{}], payload: [{}]",
             request.getRequestURI(),
             requestBody);
+        debugLogHeaders(request);
       } catch (Exception e) {
         log.warn("Error fetching the request payload", e);
       }
     }
+  }
+
+  private boolean isPathWhiteListed(String path) {
+    return path.startsWith(V1_STATEMENT_PATH)
+            || path.startsWith(V1_QUERY_PATH)
+            || path.startsWith(QUERY_HTML_PATH)
+            || path.startsWith(V1_INFO_PATH);
   }
 
   @Override
@@ -114,10 +121,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     String backendAddress = "http://localhost:" + localApplicationPort;
 
     // Only load balance presto query APIs.
-    if (request.getRequestURI().startsWith(V1_STATEMENT_PATH)
-        || request.getRequestURI().startsWith(V1_QUERY_PATH)
-        || request.getRequestURI().startsWith(QUERY_HTML_PATH)
-        || request.getRequestURI().startsWith(V1_INFO_PATH)) {
+    if (isPathWhiteListed(request.getRequestURI())) {
       String queryId = extractQueryIdIfPresent(request);
 
       // Find query id and get url from cache
