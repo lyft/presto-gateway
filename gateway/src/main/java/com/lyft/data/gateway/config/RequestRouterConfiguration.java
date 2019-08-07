@@ -13,5 +13,10 @@ public class RequestRouterConfiguration {
   // Cache dir to store query id <-> backend mapping
   private String cacheDir;
 
+  // Use SSL?
+  private String ssl;
+  private String keystorePath;
+  private String keystorePass;
+
   private int historySize = 2000;
 }

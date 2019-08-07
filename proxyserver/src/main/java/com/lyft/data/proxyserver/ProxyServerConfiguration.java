@@ -10,6 +10,9 @@ public class ProxyServerConfiguration {
   private String prefix = "/";
   private String trustAll = "true";
   private String preserveHost = "true";
+  private String ssl = "false";
+  private String keystorePath;
+  private String keystorePass;
 
   protected String getPrefix() {
     return prefix;
@@ -21,5 +24,9 @@ public class ProxyServerConfiguration {
 
   protected String getPreserveHost() {
     return preserveHost;
+  }
+
+  protected boolean getSsl() {
+    return Boolean.parseBoolean(ssl);
   }
 }
