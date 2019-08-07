@@ -1,18 +1,26 @@
 package com.lyft.data.proxyserver;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.proxy.ConnectHandler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 @Slf4j
 public class ProxyServer implements Closeable {
@@ -28,7 +36,39 @@ public class ProxyServer implements Closeable {
   }
 
   private void setupContext(ProxyServerConfiguration config) {
-    ServerConnector connector = new ServerConnector(server);
+    ServerConnector connector = null;
+
+    if (config.getSsl()) {
+      String keystorePath = config.getKeystorePath();
+      String keystorePass = config.getKeystorePass();
+      File keystoreFile = new File(keystorePath);
+
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      sslContextFactory.setTrustAll(true);
+      sslContextFactory.setStopTimeout(TimeUnit.SECONDS.toMillis(15));
+      sslContextFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
+
+      if (!(keystorePath == null || keystorePath.isEmpty())) {
+        sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
+        sslContextFactory.setKeyStorePassword(keystorePass);
+        sslContextFactory.setKeyManagerPassword(keystorePass);
+      }
+
+      HttpConfiguration httpsConfig = new HttpConfiguration();
+      httpsConfig.setSecureScheme("https");
+      httpsConfig.setSecurePort(config.getLocalPort());
+      httpsConfig.setOutputBufferSize(32768);
+
+      SecureRequestCustomizer src = new SecureRequestCustomizer();
+      src.setStsMaxAge(2000);
+      src.setStsIncludeSubDomains(true);
+      httpsConfig.addCustomizer(src);
+      connector = new ServerConnector(server,
+              new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
+              new HttpConnectionFactory(httpsConfig));
+    } else {
+      connector = new ServerConnector(server);
+    }
     connector.setHost("0.0.0.0");
     connector.setPort(config.getLocalPort());
     connector.setName(config.getName());
