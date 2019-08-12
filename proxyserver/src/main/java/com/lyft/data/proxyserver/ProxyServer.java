@@ -10,6 +10,8 @@ import javax.servlet.Filter;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.http.util.TextUtils;
+import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.proxy.ConnectHandler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -38,7 +40,7 @@ public class ProxyServer implements Closeable {
   private void setupContext(ProxyServerConfiguration config) {
     ServerConnector connector = null;
 
-    if (config.getSsl()) {
+    if (config.isSsl()) {
       String keystorePath = config.getKeystorePath();
       String keystorePass = config.getKeystorePass();
       File keystoreFile = new File(keystorePath);
@@ -48,22 +50,24 @@ public class ProxyServer implements Closeable {
       sslContextFactory.setStopTimeout(TimeUnit.SECONDS.toMillis(15));
       sslContextFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
 
-      if (!(keystorePath == null || keystorePath.isEmpty())) {
+      if (!TextUtils.isBlank(keystorePath)) {
         sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
         sslContextFactory.setKeyStorePassword(keystorePass);
         sslContextFactory.setKeyManagerPassword(keystorePass);
       }
 
       HttpConfiguration httpsConfig = new HttpConfiguration();
-      httpsConfig.setSecureScheme("https");
+      httpsConfig.setSecureScheme(HttpScheme.HTTPS.asString());
       httpsConfig.setSecurePort(config.getLocalPort());
       httpsConfig.setOutputBufferSize(32768);
 
       SecureRequestCustomizer src = new SecureRequestCustomizer();
-      src.setStsMaxAge(2000);
+      src.setStsMaxAge(TimeUnit.SECONDS.toSeconds(2000));
       src.setStsIncludeSubDomains(true);
       httpsConfig.addCustomizer(src);
-      connector = new ServerConnector(server,
+      connector =
+          new ServerConnector(
+              server,
               new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
               new HttpConnectionFactory(httpsConfig));
     } else {
