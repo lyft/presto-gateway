@@ -39,11 +39,12 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String V1_INFO_PATH = "/v1/info";
-  public static final String QUERY_HTML_PATH = "/ui/query.html";
+  public static final String PRESTO_UI_PATH = "/ui";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
   public static final String ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
   public static final String ADHOC_ROUTING_GROUP = "adhoc";
+  static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
@@ -80,14 +81,12 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             : Stream.of((SimpleServerFactory) configuration.getServerFactory())
                 .map(SimpleServerFactory::getConnector);
 
-    int port =
-        connectors
-            .filter(connector -> connector.getClass().isAssignableFrom(HttpConnectorFactory.class))
-            .map(connector -> (HttpConnectorFactory) connector)
-            .mapToInt(HttpConnectorFactory::getPort)
-            .findFirst()
-            .orElseThrow(IllegalStateException::new);
-    return port;
+    return connectors
+        .filter(connector -> connector.getClass().isAssignableFrom(HttpConnectorFactory.class))
+        .map(connector -> (HttpConnectorFactory) connector)
+        .mapToInt(HttpConnectorFactory::getPort)
+        .findFirst()
+        .orElseThrow(IllegalStateException::new);
   }
 
   @Override
@@ -110,9 +109,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
   private boolean isPathWhiteListed(String path) {
     return path.startsWith(V1_STATEMENT_PATH)
-            || path.startsWith(V1_QUERY_PATH)
-            || path.startsWith(QUERY_HTML_PATH)
-            || path.startsWith(V1_INFO_PATH);
+        || path.startsWith(V1_QUERY_PATH)
+        || path.startsWith(PRESTO_UI_PATH)
+        || path.startsWith(V1_INFO_PATH);
   }
 
   @Override
@@ -192,7 +191,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       if (tokens.length >= 4) {
         queryId = tokens[3];
       }
-    } else if (path.startsWith(QUERY_HTML_PATH)) {
+    } else if (path.startsWith(PRESTO_UI_PATH)) {
       queryId = queryParams;
     }
     log.debug("query id in url [{}]", queryId);
@@ -272,7 +271,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
-        queryText.length() > 400 ? queryText.substring(0, 400) + "..." : queryText);
+        queryText.length() > QUERY_TEXT_LENGTH_FOR_HISTORY
+            ? queryText.substring(0, QUERY_TEXT_LENGTH_FOR_HISTORY) + "..."
+            : queryText);
     return queryDetail;
   }
 }

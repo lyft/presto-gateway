@@ -77,7 +77,7 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
       routerProxyConfig.setLocalPort(routerConfiguration.getPort());
       routerProxyConfig.setName(routerConfiguration.getName());
       routerProxyConfig.setProxyTo("");
-      routerProxyConfig.setSsl(routerConfiguration.getSsl());
+      routerProxyConfig.setSsl(routerConfiguration.isSsl());
       routerProxyConfig.setKeystorePath(routerConfiguration.getKeystorePath());
       routerProxyConfig.setKeystorePass(routerConfiguration.getKeystorePass());
 

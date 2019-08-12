@@ -14,7 +14,7 @@ public class RequestRouterConfiguration {
   private String cacheDir;
 
   // Use SSL?
-  private String ssl;
+  private boolean ssl;
   private String keystorePath;
   private String keystorePass;
 
