@@ -189,8 +189,14 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
       String[] tokens = path.split("/");
       if (tokens.length >= 4) {
-        queryId = tokens[3];
-      }
+          // for prestosql/presto api support link  https://github.com/prestosql/presto/blob/master/presto-main/src/main/java/io/prestosql/server/protocol/ExecutingStatementResource.java
+          if(path.indexOf("queued")>-1||path.indexOf("scheduled")>-1||path.indexOf("executing")>-1||path.indexOf("partialCancel")>-1){
+            queryId = tokens[4];
+          }
+          else {
+            queryId = tokens[3];
+          }
+       }
     } else if (path.startsWith(PRESTO_UI_PATH)) {
       queryId = queryParams;
     }
