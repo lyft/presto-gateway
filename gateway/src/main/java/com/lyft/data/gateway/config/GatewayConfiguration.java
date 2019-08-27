@@ -1,18 +1,12 @@
 package com.lyft.data.gateway.config;
 
-import io.dropwizard.Configuration;
+import com.lyft.data.baseapp.AppConfiguration;
 import java.util.List;
 import lombok.Data;
 
 @Data
-public class GatewayConfiguration extends Configuration {
+public class GatewayConfiguration extends AppConfiguration {
   private RequestRouterConfiguration requestRouter;
   private NotifierConfiguration notifier;
   private List<ProxyBackendConfiguration> backends;
-
-  // List of Modules with FQCN (Fully Qualified Class Name)
-  private List<String> modules;
-
-  // List of ManagedApps with FQCN (Fully Qualified Class Name)
-  private List<String> managedApps;
 }

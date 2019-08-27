@@ -3,7 +3,6 @@ package com.lyft.data.baseapp;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -12,16 +11,19 @@ import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.Configuration;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.Provider;
 
+import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -45,7 +47,8 @@ import org.slf4j.LoggerFactory;
  * <p>GuiceApplication also makes {@link com.codahale.metrics.MetricRegistry} available for
  * injection.
  */
-public abstract class BaseApp<T extends Configuration> extends Application<T> {
+@Slf4j
+public abstract class BaseApp<T extends AppConfiguration> extends Application<T> {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseApp.class);
 
@@ -141,8 +144,26 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
    * @param configuration the app configuration
    * @return a list of modules to be provisioned by Guice
    */
-  protected abstract List<? extends AbstractModule> addModules(
-      T configuration, Environment environment);
+  protected List<AppModule> addModules(T configuration, Environment environment) {
+    List<AppModule> modules = new ArrayList<>();
+    if (configuration.getModules() == null) {
+      log.warn("No modules to load.");
+      return modules;
+    }
+    for (String clazz : configuration.getModules()) {
+      try {
+        log.info("Trying to load module [{}]", clazz);
+        Object ob =
+            Class.forName(clazz)
+                .getConstructor(configuration.getClass(), Environment.class)
+                .newInstance(configuration, environment);
+        modules.add((AppModule) ob);
+      } catch (Exception e) {
+        log.error("Could not instantiate module [" + clazz + "]", e);
+      }
+    }
+    return modules;
+  }
 
   /**
    * Supply a list of managed apps.
@@ -152,13 +173,31 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
    * @param injector
    * @return
    */
-  protected abstract List<Managed> addManagedApps(
-      T configuration, Environment environment, Injector injector);
+  protected List<Managed> addManagedApps(
+      T configuration, Environment environment, Injector injector) {
+    List<Managed> managedApps = new ArrayList<>();
+    if (configuration.getManagedApps() == null) {
+      log.error("No managed apps found");
+      return managedApps;
+    }
+    configuration.getManagedApps().stream()
+        .forEach(
+            clazz -> {
+              try {
+                Class c = Class.forName(clazz);
+                LifecycleEnvironment lifecycle = environment.lifecycle();
+                lifecycle.manage((Managed) injector.getInstance(c));
+                log.info("op=register type=managed item={}", c);
+              } catch (Exception e) {
+                log.error("Error loading managed app", e);
+              }
+            });
+    return managedApps;
+  }
 
   private void registerTasks(Environment environment, Injector injector) {
     final Set<Class<? extends Task>> classes = reflections.getSubTypesOf(Task.class);
-    classes
-        .stream()
+    classes.stream()
         .forEach(
             c -> {
               environment.admin().addTask(injector.getInstance(c));
@@ -168,8 +207,7 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
 
   private void registerHealthChecks(Environment environment, Injector injector) {
     final Set<Class<? extends HealthCheck>> classes = reflections.getSubTypesOf(HealthCheck.class);
-    classes
-        .stream()
+    classes.stream()
         .forEach(
             c -> {
               environment.healthChecks().register(c.getSimpleName(), injector.getInstance(c));
@@ -179,8 +217,7 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
 
   private void registerProviders(Environment environment, Injector injector) {
     final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Provider.class);
-    classes
-        .stream()
+    classes.stream()
         .forEach(
             c -> {
               environment.jersey().register(injector.getInstance(c));
@@ -190,8 +227,7 @@ public abstract class BaseApp<T extends Configuration> extends Application<T> {
 
   private void registerResources(Environment environment, Injector injector) {
     final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Path.class);
-    classes
-        .stream()
+    classes.stream()
         .forEach(
             c -> {
               environment.jersey().register(injector.getInstance(c));
