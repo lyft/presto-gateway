@@ -1,12 +1,10 @@
 package com.lyft.data.baseapp;
 
 import com.google.inject.AbstractModule;
-
-import io.dropwizard.Configuration;
 import lombok.Getter;
 
 @Getter
-public abstract class AppModule<T extends Configuration, E> extends AbstractModule {
+public abstract class AppModule<T extends AppConfiguration, E> extends AbstractModule {
   private final T configuration;
   private final E environment;
 
