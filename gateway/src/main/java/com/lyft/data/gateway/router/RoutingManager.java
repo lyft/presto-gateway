@@ -59,6 +59,10 @@ public abstract class RoutingManager {
             "queryIdBackendPersistentCache", String.class, String.class);
   }
 
+  protected GatewayBackendManager getGatewayBackendManager() {
+    return gatewayBackendManager;
+  }
+
   public void setBackendForQueryId(String queryId, String backend) {
     queryIdBackendCache.put(queryId, backend);
   }
@@ -70,6 +74,9 @@ public abstract class RoutingManager {
    */
   public String provideAdhocBackend() {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
+    if (backends.size() == 0) {
+      throw new IllegalStateException("Number of active backends found zero");
+    }
     int backendId = Math.abs(RANDOM.nextInt()) % backends.size();
     return backends.get(backendId).getProxyTo();
   }
@@ -82,7 +89,7 @@ public abstract class RoutingManager {
    */
   public String provideBackendForRoutingGroup(String routingGroup) {
     List<ProxyBackendConfiguration> backends =
-            this.gatewayBackendManager.getActiveBackends(routingGroup);
+        this.gatewayBackendManager.getActiveBackends(routingGroup);
     if (backends.isEmpty()) {
       return provideAdhocBackend();
     }
@@ -114,7 +121,7 @@ public abstract class RoutingManager {
    * @param queryId
    * @return
    */
-  private String findBackendForUnknownQueryId(String queryId) {
+  protected String findBackendForUnknownQueryId(String queryId) {
     List<ProxyBackendConfiguration> backends = gatewayBackendManager.getAllBackends();
 
     Map<String, Future<Integer>> responseCodes = new HashMap<>();
