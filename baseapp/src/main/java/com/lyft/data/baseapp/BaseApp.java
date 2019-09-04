@@ -121,14 +121,13 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
   private Injector configureGuice(T configuration, Environment environment) throws Exception {
     appModules.add(new MetricRegistryModule(environment.metrics()));
     appModules.addAll(addModules(configuration, environment));
-    Injector injector = Guice.createInjector(ImmutableList.copyOf(this.appModules));
+    Injector injector = Guice.createInjector(ImmutableList.copyOf(appModules));
     injector.injectMembers(this);
     registerWithInjector(configuration, environment, injector);
     return injector;
   }
 
-  private void registerWithInjector(T configuration, Environment environment, Injector injector)
-      throws Exception {
+  private void registerWithInjector(T configuration, Environment environment, Injector injector) {
     logger.info("op=register_start configuration={}", configuration.toString());
     registerHealthChecks(environment, injector);
     registerProviders(environment, injector);
@@ -180,7 +179,8 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
       log.error("No managed apps found");
       return managedApps;
     }
-    configuration.getManagedApps().stream()
+    configuration
+        .getManagedApps()
         .forEach(
             clazz -> {
               try {
@@ -197,41 +197,37 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
 
   private void registerTasks(Environment environment, Injector injector) {
     final Set<Class<? extends Task>> classes = reflections.getSubTypesOf(Task.class);
-    classes.stream()
-        .forEach(
-            c -> {
-              environment.admin().addTask(injector.getInstance(c));
-              logger.info("op=register type=task item={}", c);
-            });
+    classes.forEach(
+        c -> {
+          environment.admin().addTask(injector.getInstance(c));
+          logger.info("op=register type=task item={}", c);
+        });
   }
 
   private void registerHealthChecks(Environment environment, Injector injector) {
     final Set<Class<? extends HealthCheck>> classes = reflections.getSubTypesOf(HealthCheck.class);
-    classes.stream()
-        .forEach(
-            c -> {
-              environment.healthChecks().register(c.getSimpleName(), injector.getInstance(c));
-              logger.info("op=register type=healthcheck item={}", c);
-            });
+    classes.forEach(
+        c -> {
+          environment.healthChecks().register(c.getSimpleName(), injector.getInstance(c));
+          logger.info("op=register type=healthcheck item={}", c);
+        });
   }
 
   private void registerProviders(Environment environment, Injector injector) {
     final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Provider.class);
-    classes.stream()
-        .forEach(
-            c -> {
-              environment.jersey().register(injector.getInstance(c));
-              logger.info("op=register type=provider item={}", c);
-            });
+    classes.forEach(
+        c -> {
+          environment.jersey().register(injector.getInstance(c));
+          logger.info("op=register type=provider item={}", c);
+        });
   }
 
   private void registerResources(Environment environment, Injector injector) {
     final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Path.class);
-    classes.stream()
-        .forEach(
-            c -> {
-              environment.jersey().register(injector.getInstance(c));
-              logger.info("op=register type=resource item={}", c);
-            });
+    classes.forEach(
+        c -> {
+          environment.jersey().register(injector.getInstance(c));
+          logger.info("op=register type=resource item={}", c);
+        });
   }
 }

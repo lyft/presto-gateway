@@ -43,6 +43,9 @@ public class TestPrestoGatewaySingleBackend {
             routerPort, Arrays.asList(proxyBackendConfiguration));
     String[] args = {"server", configPath};
     GatewayLauncher.main(args);
+
+
+
   }
 
   @Test

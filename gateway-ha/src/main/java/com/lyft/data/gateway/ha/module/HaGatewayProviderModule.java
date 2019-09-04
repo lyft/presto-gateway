@@ -1,60 +1,59 @@
-package com.lyft.data.gateway.module;
+package com.lyft.data.gateway.ha.module;
 
 import com.codahale.metrics.Meter;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
-import com.lyft.data.gateway.config.GatewayConfiguration;
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.config.RequestRouterConfiguration;
+import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
+import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
+import com.lyft.data.gateway.ha.router.HaGatewayManager;
+import com.lyft.data.gateway.ha.router.HaQueryHistoryManager;
+import com.lyft.data.gateway.ha.router.HaRoutingManager;
 import com.lyft.data.gateway.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.router.GatewayBackendManager;
 import com.lyft.data.gateway.router.QueryHistoryManager;
 import com.lyft.data.gateway.router.RoutingManager;
-import com.lyft.data.gateway.router.impl.DefaultRoutingManager;
-import com.lyft.data.gateway.router.impl.GatewayBackendManagerImpl;
-import com.lyft.data.gateway.router.impl.QueryHistoryManagerImpl;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class GatewayProviderModule extends AppModule<GatewayConfiguration, Environment> {
+public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
   private final GatewayBackendManager gatewayBackendManager;
   private final QueryHistoryManager queryHistoryManager;
   private final RoutingManager routingManager;
+  private final JdbcConnectionManager connectionManager;
 
-  public GatewayProviderModule(GatewayConfiguration configuration, Environment environment) {
+  public HaGatewayProviderModule(HaGatewayConfiguration configuration, Environment environment) {
     super(configuration, environment);
-    List<ProxyBackendConfiguration> gatewayBackends = new ArrayList<>();
-    for (ProxyBackendConfiguration backend : getConfiguration().getBackends()) {
-      if (backend.isIncludeInRouter()) {
-        gatewayBackends.add(backend);
-      }
-    }
-    this.queryHistoryManager =
-        new QueryHistoryManagerImpl(getConfiguration().getRequestRouter().getHistorySize());
-    this.gatewayBackendManager =
-        new GatewayBackendManagerImpl(
-            gatewayBackends, getConfiguration().getRequestRouter().getCacheDir());
-    this.routingManager =
-        new DefaultRoutingManager(
-            gatewayBackendManager, getConfiguration().getRequestRouter().getCacheDir());
+    connectionManager = new JdbcConnectionManager(configuration.getDataStore());
+    gatewayBackendManager = new HaGatewayManager(connectionManager);
+    queryHistoryManager = new HaQueryHistoryManager(connectionManager);
+    routingManager =
+        new HaRoutingManager(
+            gatewayBackendManager,
+            (HaQueryHistoryManager) queryHistoryManager,
+            getConfiguration().getRequestRouter().getCacheDir());
   }
 
-  /* @return Provides instance of RoutingProxyHandler. */
   protected ProxyHandler getProxyHandler() {
     Meter requestMeter =
         getEnvironment()
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
-    // Return the Proxy Handler for RequestRouter.
     return new QueryIdCachingProxyHandler(
         queryHistoryManager, routingManager, getApplicationPort(), requestMeter);
+  }
+
+  @Provides
+  @Singleton
+  public JdbcConnectionManager getConnectionManager() {
+    return this.connectionManager;
   }
 
   @Provides
@@ -89,5 +88,12 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
   @Singleton
   public QueryHistoryManager getQueryHistoryManager() {
     return this.queryHistoryManager;
+  }
+
+  @Provides
+  @Singleton
+  public List<ProxyServer> getProxyServers() {
+    // Since this is needed in GatewayManagedApp
+    return ImmutableList.of();
   }
 }
