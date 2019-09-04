@@ -29,4 +29,12 @@ public class ProxyServerConfiguration {
   protected boolean isSsl() {
     return ssl;
   }
+
+  protected String getKeystorePath() {
+    return keystorePath;
+  }
+
+  protected String getKeystorePass() {
+    return keystorePass;
+  }
 }

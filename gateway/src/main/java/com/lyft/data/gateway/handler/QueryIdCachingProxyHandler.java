@@ -4,24 +4,15 @@ import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
-import com.lyft.data.gateway.config.GatewayConfiguration;
-import com.lyft.data.gateway.router.GatewayBackendManager;
 import com.lyft.data.gateway.router.QueryHistoryManager;
 import com.lyft.data.gateway.router.RoutingManager;
-import com.lyft.data.gateway.router.impl.DefaultRoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
-
-import io.dropwizard.jetty.ConnectorFactory;
-import io.dropwizard.jetty.HttpConnectorFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.SimpleServerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +35,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String SOURCE_HEADER = "X-Presto-Source";
   public static final String ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
   public static final String ADHOC_ROUTING_GROUP = "adhoc";
-  static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
+  private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
@@ -54,39 +45,17 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   private final QueryHistoryManager queryHistoryManager;
 
   private final Meter requestMeter;
-  private final int localApplicationPort;
+  private final int serverApplicationPort;
 
   public QueryIdCachingProxyHandler(
-      GatewayBackendManager gatewayBackendManager,
       QueryHistoryManager queryHistoryManager,
-      GatewayConfiguration appConfig,
+      RoutingManager routingManager,
+      int serverApplicationPort,
       Meter requestMeter) {
     this.requestMeter = requestMeter;
-    this.routingManager =
-        new DefaultRoutingManager(
-            gatewayBackendManager, appConfig.getRequestRouter().getCacheDir());
+    this.routingManager = routingManager;
     this.queryHistoryManager = queryHistoryManager;
-    this.localApplicationPort = getApplicationPort(appConfig);
-  }
-
-  protected RoutingManager getRoutingManager() {
-    return this.routingManager;
-  }
-
-  private int getApplicationPort(GatewayConfiguration configuration) {
-    Stream<ConnectorFactory> connectors =
-        configuration.getServerFactory() instanceof DefaultServerFactory
-            ? ((DefaultServerFactory) configuration.getServerFactory())
-                .getApplicationConnectors().stream()
-            : Stream.of((SimpleServerFactory) configuration.getServerFactory())
-                .map(SimpleServerFactory::getConnector);
-
-    return connectors
-        .filter(connector -> connector.getClass().isAssignableFrom(HttpConnectorFactory.class))
-        .map(connector -> (HttpConnectorFactory) connector)
-        .mapToInt(HttpConnectorFactory::getPort)
-        .findFirst()
-        .orElseThrow(IllegalStateException::new);
+    this.serverApplicationPort = serverApplicationPort;
   }
 
   @Override
@@ -117,7 +86,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   @Override
   public String rewriteTarget(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
-    String backendAddress = "http://localhost:" + localApplicationPort;
+    String backendAddress = "http://localhost:" + serverApplicationPort;
 
     // Only load balance presto query APIs.
     if (isPathWhiteListed(request.getRequestURI())) {
@@ -190,9 +159,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       String[] tokens = path.split("/");
       if (tokens.length >= 4) {
         if (path.contains("queued")
-                || path.contains("scheduled")
-                || path.contains("executing")
-                || path.contains("partialCancel")) {
+            || path.contains("scheduled")
+            || path.contains("executing")
+            || path.contains("partialCancel")) {
           queryId = tokens[4];
         } else {
           queryId = tokens[3];
@@ -205,16 +174,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return queryId;
   }
 
-  /**
-   * Response interceptor default.
-   *
-   * @param request
-   * @param response
-   * @param buffer
-   * @param offset
-   * @param length
-   * @param callback
-   */
   protected void postConnectionHook(
       HttpServletRequest request,
       HttpServletResponse response,

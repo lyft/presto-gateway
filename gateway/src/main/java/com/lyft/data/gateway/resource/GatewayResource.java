@@ -47,10 +47,7 @@ public class GatewayResource {
       this.gatewayBackendManager.deactivateBackend(name);
     } catch (Exception e) {
       log.error(e.getMessage(), e);
-      return Response.status(Response.Status.NOT_FOUND)
-          .entity(e.getMessage())
-          .type("text/plain")
-          .build();
+      return throwError(e);
     }
     return Response.ok().build();
   }
@@ -62,11 +59,15 @@ public class GatewayResource {
       this.gatewayBackendManager.activateBackend(name);
     } catch (Exception e) {
       log.error(e.getMessage(), e);
-      return Response.status(Response.Status.NOT_FOUND)
-          .entity(e.getMessage())
-          .type("text/plain")
-          .build();
+      return throwError(e);
     }
     return Response.ok().build();
+  }
+
+  private Response throwError(Exception e) {
+    return Response.status(Response.Status.NOT_FOUND)
+        .entity(e.getMessage())
+        .type("text/plain")
+        .build();
   }
 }

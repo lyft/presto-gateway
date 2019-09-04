@@ -43,7 +43,7 @@ public class ActiveClusterMonitor implements Managed {
   private ExecutorService executorService = Executors.newFixedThreadPool(10);
   private ExecutorService singleTaskExecutor = Executors.newSingleThreadExecutor();
 
-  public void start() throws Exception {
+  public void start() {
     singleTaskExecutor.submit(
         () -> {
           while (monitorActive) {
@@ -128,7 +128,7 @@ public class ActiveClusterMonitor implements Managed {
     return clusterStats;
   }
 
-  public void stop() throws Exception {
+  public void stop() {
     this.monitorActive = false;
     this.executorService.shutdown();
     this.singleTaskExecutor.shutdown();

@@ -13,27 +13,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import lombok.Data;
 
 @Path("/")
-@Produces(MediaType.TEXT_HTML)
 public class GatewayViewResource {
   private static final long START_TIME = System.currentTimeMillis();
   @Inject private GatewayBackendManager gatewayBackendManager;
   @Inject private QueryHistoryManager queryHistoryManager;
 
   @GET
+  @Produces(MediaType.TEXT_HTML)
   public GatewayView getAdminUi() {
     GatewayView gatewayView = new GatewayView("/template/gateway-view.ftl");
     // Get All active backends
     gatewayView.setBackendConfigurations(
-        gatewayBackendManager
-            .getAllBackends()
-            .stream()
-            .filter(b -> b.isActive())
+        gatewayBackendManager.getAllBackends().stream()
+            .filter(ProxyBackendConfiguration::isActive)
             .collect(Collectors.toList()));
 
     gatewayView.setQueryHistory(queryHistoryManager.fetchQueryHistory());
@@ -52,10 +51,8 @@ public class GatewayViewResource {
   @Path("api/activeBackends")
   @Produces(MediaType.APPLICATION_JSON)
   public List<ProxyBackendConfiguration> getActiveBackends() {
-    return gatewayBackendManager
-        .getAllBackends()
-        .stream()
-        .filter(b -> b.isActive())
+    return gatewayBackendManager.getAllBackends().stream()
+        .filter(ProxyBackendConfiguration::isActive)
         .collect(Collectors.toList());
   }
 
@@ -66,7 +63,6 @@ public class GatewayViewResource {
     Map<String, String> urlToNameMap = new HashMap<>();
     gatewayBackendManager
         .getAllBackends()
-        .stream()
         .forEach(
             backend -> {
               urlToNameMap.put(backend.getProxyTo(), backend.getName());
@@ -77,14 +73,14 @@ public class GatewayViewResource {
         .fetchQueryHistory()
         .forEach(
             q -> {
-              String cluster = urlToNameMap.get(q.getBackendUrl());
-              if (cluster == null) {
-                cluster = q.getBackendUrl();
+              String backend = urlToNameMap.get(q.getBackendUrl());
+              if (backend == null) {
+                backend = q.getBackendUrl();
               }
-              if (!clusterToQueryCount.containsKey(cluster)) {
-                clusterToQueryCount.put(cluster, 0);
+              if (!clusterToQueryCount.containsKey(backend)) {
+                clusterToQueryCount.put(backend, 0);
               }
-              clusterToQueryCount.put(cluster, clusterToQueryCount.get(cluster) + 1);
+              clusterToQueryCount.put(backend, clusterToQueryCount.get(backend) + 1);
             });
     return clusterToQueryCount;
   }
