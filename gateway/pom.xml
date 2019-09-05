@@ -62,11 +62,11 @@
             <artifactId>dropwizard-assets</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>${ehcache.version}</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.ehcache</groupId>-->
+        <!--<artifactId>ehcache</artifactId>-->
+        <!--<version>${ehcache.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
