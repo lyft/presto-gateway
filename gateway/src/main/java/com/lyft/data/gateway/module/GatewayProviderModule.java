@@ -54,7 +54,7 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
     // Return the Proxy Handler for RequestRouter.
     return new QueryIdCachingProxyHandler(
-        queryHistoryManager, routingManager, getApplicationPort(), requestMeter);
+        getQueryHistoryManager(), getRoutingManager(), getApplicationPort(), requestMeter);
   }
 
   @Provides
@@ -89,5 +89,11 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
   @Singleton
   public QueryHistoryManager getQueryHistoryManager() {
     return this.queryHistoryManager;
+  }
+
+  @Provides
+  @Singleton
+  public RoutingManager getRoutingManager() {
+    return this.routingManager;
   }
 }
