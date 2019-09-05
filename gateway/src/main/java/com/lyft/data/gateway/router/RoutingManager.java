@@ -1,31 +1,27 @@
 package com.lyft.data.gateway.router;
 
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.ehcache.Cache;
-import org.ehcache.PersistentCacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.config.units.EntryUnit;
-import org.ehcache.config.units.MemoryUnit;
 
 /**
  * This class performs health check, stats counts for each backend and provides a backend given
@@ -34,29 +30,23 @@ import org.ehcache.config.units.MemoryUnit;
 @Slf4j
 public abstract class RoutingManager {
   private static final Random RANDOM = new Random();
-  private final Cache<String, String> queryIdBackendCache;
+  private final LoadingCache<String, String> queryIdBackendCache;
   private ExecutorService executorService = Executors.newFixedThreadPool(5);
   private GatewayBackendManager gatewayBackendManager;
 
-  public RoutingManager(GatewayBackendManager gatewayBackendManager, String cacheDataDir) {
+  public RoutingManager(GatewayBackendManager gatewayBackendManager) {
     this.gatewayBackendManager = gatewayBackendManager;
-
-    PersistentCacheManager persistentCacheManager =
-        CacheManagerBuilder.newCacheManagerBuilder()
-            .with(CacheManagerBuilder.persistence(new File(cacheDataDir, "queryIdBackendMapping")))
-            .withCache(
-                "queryIdBackendPersistentCache",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                    String.class,
-                    String.class,
-                    ResourcePoolsBuilder.newResourcePoolsBuilder()
-                        .heap(1000, EntryUnit.ENTRIES)
-                        .offheap(100, MemoryUnit.MB)
-                        .disk(1, MemoryUnit.GB, true)))
-            .build(true);
-    this.queryIdBackendCache =
-        persistentCacheManager.getCache(
-            "queryIdBackendPersistentCache", String.class, String.class);
+    queryIdBackendCache =
+        CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .build(
+                new CacheLoader<String, String>() {
+                  @Override
+                  public String load(String queryId) {
+                    return findBackendForUnknownQueryId(queryId);
+                  }
+                });
   }
 
   protected GatewayBackendManager getGatewayBackendManager() {
@@ -105,10 +95,14 @@ public abstract class RoutingManager {
    * @return
    */
   public String findBackendForQueryId(String queryId) {
-    String backendAddress = queryIdBackendCache.get(queryId);
+    String backendAddress = null;
+    try {
+      backendAddress = queryIdBackendCache.get(queryId);
+    } catch (ExecutionException e) {
+      log.error("Exception while loading queryId from cache {}", e.getLocalizedMessage());
+    }
     if (Strings.isNullOrEmpty(backendAddress)) {
       log.error("Could not find mapping for query id {}", queryId);
-      // for now fall back to the first backend as default
       backendAddress = findBackendForUnknownQueryId(queryId);
     }
     return backendAddress;

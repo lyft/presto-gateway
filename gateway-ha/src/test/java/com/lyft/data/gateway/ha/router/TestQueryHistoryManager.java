@@ -7,10 +7,9 @@ import com.lyft.data.gateway.router.QueryHistoryManager;
 import com.lyft.data.gateway.router.QueryHistoryManager.QueryDetail;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.List;
-
 import org.javalite.activejdbc.Base;
-import org.terracotta.statistics.Time;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -42,8 +41,8 @@ public class TestQueryHistoryManager {
     queryDetail.setUser("test@ea.com");
     queryDetail.setQueryText("select 1");
     for (int i = 0; i < 2; i++) {
-      queryDetail.setQueryId(String.valueOf(Time.absoluteTime()));
-      queryDetail.setCaptureTime(Time.absoluteTime());
+      queryDetail.setQueryId(String.valueOf(new Timestamp(System.currentTimeMillis()).getTime()));
+      queryDetail.setCaptureTime(new Timestamp(System.currentTimeMillis()).getTime());
       queryHistoryManager.submitQueryDetail(queryDetail);
     }
     queryDetails = queryHistoryManager.fetchQueryHistory();

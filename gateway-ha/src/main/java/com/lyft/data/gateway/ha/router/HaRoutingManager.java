@@ -13,7 +13,7 @@ public class HaRoutingManager extends RoutingManager {
       GatewayBackendManager gatewayBackendManager,
       HaQueryHistoryManager queryHistoryManager,
       String cacheDataDir) {
-    super(gatewayBackendManager, cacheDataDir);
+    super(gatewayBackendManager);
     this.queryHistoryManager = queryHistoryManager;
   }
 
