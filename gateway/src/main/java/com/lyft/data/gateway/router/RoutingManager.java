@@ -38,8 +38,8 @@ public abstract class RoutingManager {
     this.gatewayBackendManager = gatewayBackendManager;
     queryIdBackendCache =
         CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .maximumSize(5000)
+            .expireAfterAccess(30, TimeUnit.MINUTES)
             .build(
                 new CacheLoader<String, String>() {
                   @Override
@@ -58,7 +58,9 @@ public abstract class RoutingManager {
   }
 
   /**
-   * Performs routing to an adhoc backend.
+   * Performs routing to an adhoc backen
+   *
+   * <p>d.
    *
    * @return
    */

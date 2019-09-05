@@ -41,8 +41,8 @@ public class TestQueryHistoryManager {
     queryDetail.setUser("test@ea.com");
     queryDetail.setQueryText("select 1");
     for (int i = 0; i < 2; i++) {
-      queryDetail.setQueryId(String.valueOf(new Timestamp(System.currentTimeMillis()).getTime()));
-      queryDetail.setCaptureTime(new Timestamp(System.currentTimeMillis()).getTime());
+      queryDetail.setQueryId(String.valueOf(System.currentTimeMillis()));
+      queryDetail.setCaptureTime(System.currentTimeMillis());
       queryHistoryManager.submitQueryDetail(queryDetail);
     }
     queryDetails = queryHistoryManager.fetchQueryHistory();
