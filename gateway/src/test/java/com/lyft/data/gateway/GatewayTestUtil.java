@@ -34,7 +34,7 @@ public final class GatewayTestUtil {
     String configStr =
         sb.toString()
             .replace("REQUEST_ROUTER_PORT", String.valueOf(routerPort))
-            .replace("CACHE_DIR", tempDir.getAbsolutePath())
+            .replace("GATEWAY_STATE_DIR", tempDir.getAbsolutePath())
             .replace(
                 "APPLICATION_CONNECTOR_PORT", String.valueOf(30000 + (int) (Math.random() * 1000)))
             .replace("ADMIN_CONNECTOR_PORT", String.valueOf(31000 + (int) (Math.random() * 1000)));

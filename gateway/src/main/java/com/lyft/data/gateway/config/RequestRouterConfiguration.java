@@ -10,6 +10,8 @@ public class RequestRouterConfiguration {
   // Name of the routing gateway name (for metrics purposes)
   private String name;
 
+  private String gatewayStateDir;
+
   // Use SSL?
   private boolean ssl;
   private String keystorePath;
