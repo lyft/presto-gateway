@@ -75,24 +75,18 @@ server /path/to/gateway-ha/src/test/resources/config-template.yml
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
         "name": "presto3",
         "proxyTo": "http://presto3.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
@@ -112,16 +106,12 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
@@ -132,7 +122,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 ### Add a backend to the gateway
 
 ```
-curl -v -H "Content-Type: application/json" -d '{"name": "presto3","localPort": 8083,"proxyTo": "http://presto3.lyft.com","includeInRouter": true,"active": false,"routingGroup": "adhoc"}' http://prestogateway.lyft.com/gateway/backend/modify/add
+curl -v -H "Content-Type: application/json" -d '{"name": "presto3","proxyTo": "http://presto3.lyft.com","active": false,"routingGroup": "adhoc"}' http://prestogateway.lyft.com/gateway/backend/modify/add
 ```
 
 Verify this by calling get active backends
@@ -142,24 +132,18 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
     },
     {
          "active": true,
-         "includeInRouter": true,
-         "localPort": 8083,
          "name": "presto3",
          "proxyTo": "http://presto3.lyft.com",
          "routingGroup": "adhoc"
@@ -179,24 +163,18 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
     },
     {
          "active": true,
-         "includeInRouter": true,
-         "localPort": 8084,
          "name": "presto3",
          "proxyTo": "http://presto3.lyft.com",
          "routingGroup": "adhoc"
@@ -210,24 +188,18 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
         "name": "presto3",
         "proxyTo": "http://presto3.lyft.com",
         "routingGroup": "adhoc"
@@ -244,16 +216,12 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
         "name": "presto3",
         "proxyTo": "http://presto3.lyft.com",
         "routingGroup": "adhoc"
@@ -271,24 +239,18 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
 [
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
         "name": "presto1",
         "proxyTo": "http://presto1.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
         "name": "presto2",
         "proxyTo": "http://presto2.lyft.com",
         "routingGroup": "adhoc"
     },
     {
         "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
         "name": "presto3",
         "proxyTo": "http://presto3.lyft.com",
         "routingGroup": "adhoc"

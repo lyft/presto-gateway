@@ -38,7 +38,7 @@ public abstract class RoutingManager {
     this.gatewayBackendManager = gatewayBackendManager;
     queryIdBackendCache =
         CacheBuilder.newBuilder()
-            .maximumSize(5000)
+            .maximumSize(10000)
             .expireAfterAccess(30, TimeUnit.MINUTES)
             .build(
                 new CacheLoader<String, String>() {
@@ -58,7 +58,7 @@ public abstract class RoutingManager {
   }
 
   /**
-   * Performs routing to an adhoc backen
+   * Performs routing to an adhoc backend.
    *
    * <p>d.
    *
@@ -102,10 +102,6 @@ public abstract class RoutingManager {
       backendAddress = queryIdBackendCache.get(queryId);
     } catch (ExecutionException e) {
       log.error("Exception while loading queryId from cache {}", e.getLocalizedMessage());
-    }
-    if (Strings.isNullOrEmpty(backendAddress)) {
-      log.error("Could not find mapping for query id {}", queryId);
-      backendAddress = findBackendForUnknownQueryId(queryId);
     }
     return backendAddress;
   }
