@@ -1,155 +1,36 @@
 # presto-gateway
+
 A load balancer / proxy / gateway for presto compute engine.
 
-## Getting Started 
 
-### Build and run
-run `mvn clean install` to build `presto-gateway`
+##### Table of Contents
 
-Edit the [config file](gateway/src/main/resources/config.yml.template) and update backend urls 
-
-```
-cd gateway/target/
-java -jar gateway-{{VERSION}}-jar-with-dependencies.jar server ../src/presto-gateway/gateway/src/main/resources/config.yml.template
-```
-Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
- 
-### Query History UI - check query plans etc.
-PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.  
-![prestogateway.lyft.com](docs/assets/prestogateway_query_history.png) 
-
-### Adhoc vs Scheduled query routing
-In the [config](gateway/src/main/resources/config.yml.template) 
-you can specify if a backend cluster is a part of a routing group. 
-If not specified, cluster will be part of `adhoc` routing group by default.
-
-PrestoGateway router will route any request to `scheduled` group of clusters if request contains header `X-Presto-Routing-Group: scheduled` and there are clusters present with config `routingGroup: scheduled`.
-
-If no matching `routingGroup` found, router will route to `adhoc` group of clusters. Please make sure there are clusters under `adhoc` routing group.  
-
-## Gateway API
-
-### Get all backends behind the gateway
-
-`curl -X GET prestogateway.lyft.com/gateway/backend/all | python -m json.tool`
-```
-[
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
-        "name": "presto1",
-        "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
-        "name": "presto3",
-        "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
-        "name": "presto2",
-        "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc"
-    }
-]
-```
-
-### Get active backends behind the Gateway
-
-`curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool`
-```
-[
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
-        "name": "presto1",
-        "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
-        "name": "presto2",
-        "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
-        "name": "presto3",
-        "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc"
-    }
-]
-```
-### Deactivate a backend 
-
-`curl -X POST prestogateway.lyft.com/gateway/backend/deactivate/presto2`
-
-Verify this by calling get active backends
-```
-curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
-[
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
-        "name": "presto1",
-        "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
-        "name": "presto3",
-        "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc"
-    }
-]
-```
-### Activate a backend 
-
-curl -X POST prestogateway.lyft.com/gateway/backend/activate/presto2
-
-Verify this by calling get active backends
-```
-curl -X GET localhost:8090/gateway/backend/active | python -m json.tool
-
-[
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8081,
-        "name": "presto1",
-        "proxyTo": "http://presto1.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8082,
-        "name": "presto2",
-        "proxyTo": "http://presto2.lyft.com",
-        "routingGroup": "adhoc"
-    },
-    {
-        "active": true,
-        "includeInRouter": true,
-        "localPort": 8083,
-        "name": "presto3",
-        "proxyTo": "http://presto3.lyft.com",
-        "routingGroup": "adhoc"
-    }
-]
-```
+   * [Standalone Gateway](/gateway/#standalone-gateway)
+      * [Getting Started](/gateway/#getting-started)
+         * [Build and run](/gateway/#build-and-run)
+         * [Query History UI - check query plans etc.](/gateway/#query-history-ui---check-query-plans-etc)
+         * [Adhoc vs Scheduled query routing](/gateway/#adhoc-vs-scheduled-query-routing)
+      * [Gateway API](/gateway/#gateway-api)
+         * [Get all backends behind the gateway](/gateway/#get-all-backends-behind-the-gateway)
+         * [Get active backends behind the Gateway](/gateway/#get-active-backends-behind-the-gateway)
+         * [Deactivate a backend](/gateway/#deactivate-a-backend)
+         * [Activate a backend](/gateway/#activate-a-backend)
+         
+   * [Gateway-HA](/gateway-ha#gateway-ha)
+      * [Getting Started](/gateway-ha/#getting-started)
+         * [Build and run](/gateway-ha/#build-and-run)
+         * [Query History UI - check query plans etc.](/gateway-ha/#query-history-ui---check-query-plans-etc)
+         * [Gateway Admin UI - add and modify backend information](/gateway-ha/#gateway-admin-ui---add-and-modify-backend-information)
+      * [How to setup a dev environment](/gateway-ha/#how-to-setup-a-dev-environment)
+      * [Gateway HA API](/gateway-ha/#gateway-api)
+         * [Get all backends behind the gateway](/gateway-ha/#get-all-backends-behind-the-gateway)
+         * [Delete a backend from the gateway](/gateway-ha/#delete-a-backend-from-the-gateway)
+         * [Add a backend to the gateway](/gateway-ha/#add-a-backend-to-the-gateway)
+         * [Update backend information](/gateway-ha/#update-backend-information)
+         * [Get active all backend behind the Gateway](/gateway-ha/#get-active-all-backend-behind-the-gateway)
+         * [Deactivate a backend](/gateway-ha/#deactivate-a-backend)
+         * [Activate a backend](/gateway-ha/#activate-a-backend)   
+         
+   * [Gateway Design Document](/docs/design.md)
+   
+   * [Contributing to Presto Gateway](CONTRIBUTING.md)
