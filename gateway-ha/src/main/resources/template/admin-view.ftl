@@ -16,7 +16,6 @@
 
 </head>
 <body>
-HELLO
 
 <div id="entity-editor-place-holder"></div>
 
