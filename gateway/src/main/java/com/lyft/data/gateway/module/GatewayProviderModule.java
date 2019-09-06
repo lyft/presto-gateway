@@ -40,10 +40,10 @@ public class GatewayProviderModule extends AppModule<GatewayConfiguration, Envir
         new QueryHistoryManagerImpl(getConfiguration().getRequestRouter().getHistorySize());
     this.gatewayBackendManager =
         new GatewayBackendManagerImpl(
-            gatewayBackends, getConfiguration().getRequestRouter().getCacheDir());
+            gatewayBackends, getConfiguration().getRequestRouter().getGatewayStateDir());
     this.routingManager =
         new DefaultRoutingManager(
-            gatewayBackendManager, getConfiguration().getRequestRouter().getCacheDir());
+            gatewayBackendManager, getConfiguration().getRequestRouter().getGatewayStateDir());
   }
 
   /* @return Provides instance of RoutingProxyHandler. */
