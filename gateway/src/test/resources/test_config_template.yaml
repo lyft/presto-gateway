@@ -1,7 +1,7 @@
 requestRouter:
   port: REQUEST_ROUTER_PORT
   name: testPrestoRouter
-  cacheDir: CACHE_DIR
+  gatewayStateDir: GATEWAY_STATE_DIR
   historySize: 1000
 
 server:
