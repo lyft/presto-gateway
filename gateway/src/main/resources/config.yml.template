@@ -1,7 +1,7 @@
 requestRouter:
   port: 8080
   name: prestoRouter
-  cacheDir: /var/log/prestoproxy/cache
+  gatewayStateDir: /var/log/prestoproxy/state/
   historySize: 1000
 
 backends:

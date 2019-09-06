@@ -1,7 +1,6 @@
 requestRouter:
   port: REQUEST_ROUTER_PORT
   name: testPrestoRouter
-  cacheDir: CACHE_DIR
   historySize: 1000
 
 server:
