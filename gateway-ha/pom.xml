@@ -20,8 +20,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <ehcache.version>2.7.4</ehcache.version>
+        <activejdbc.version>2.2</activejdbc.version>
+        <mysqlconnector.version>8.0.17</mysqlconnector.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <environments>development</environments>
         <app.main.class>com.lyft.data.gateway.ha.HaGatewayLauncher</app.main.class>
     </properties>
 
@@ -45,7 +48,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.17</version>
+            <version>${mysqlconnector.version}</version>
         </dependency>
         <!-- Test deps -->
         <dependency>
@@ -62,7 +65,7 @@
         <dependency>
             <groupId>org.javalite</groupId>
             <artifactId>activejdbc</artifactId>
-            <version>2.2</version>
+            <version>${activejdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.ehcache</groupId>
@@ -131,6 +134,31 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.javalite</groupId>
+                <artifactId>db-migrator-maven-plugin</artifactId>
+                <version>${activejdbc.version}</version>
+                <configuration>
+                    <configFile>${project.basedir}/src/main/resources/database.properties</configFile>
+                    <environments>${environments}</environments>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>dev_migrations</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${mysqlconnector.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
