@@ -10,9 +10,6 @@ public class RequestRouterConfiguration {
   // Name of the routing gateway name (for metrics purposes)
   private String name;
 
-  // Cache dir to store query id <-> backend mapping
-  private String cacheDir;
-
   // Use SSL?
   private boolean ssl;
   private String keystorePath;
