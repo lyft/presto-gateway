@@ -140,18 +140,9 @@
                 <artifactId>db-migrator-maven-plugin</artifactId>
                 <version>${activejdbc.version}</version>
                 <configuration>
-                    <configFile>${project.basedir}/src/main/resources/database.properties</configFile>
+                    <configFile>${project.basedir}/src/migrations/database.properties</configFile>
                     <environments>${environments}</environments>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>dev_migrations</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>migrate</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <dependencies>
                     <dependency>
                         <groupId>mysql</groupId>
