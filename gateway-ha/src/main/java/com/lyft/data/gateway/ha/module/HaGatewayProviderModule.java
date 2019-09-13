@@ -46,13 +46,7 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
     return new QueryIdCachingProxyHandler(
-        queryHistoryManager, routingManager, getApplicationPort(), requestMeter);
-  }
-
-  @Provides
-  @Singleton
-  public JdbcConnectionManager getConnectionManager() {
-    return this.connectionManager;
+        getQueryHistoryManager(), getRoutingManager(), getApplicationPort(), requestMeter);
   }
 
   @Provides
@@ -87,6 +81,18 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   @Singleton
   public QueryHistoryManager getQueryHistoryManager() {
     return this.queryHistoryManager;
+  }
+
+  @Provides
+  @Singleton
+  public RoutingManager getRoutingManager() {
+    return this.routingManager;
+  }
+
+  @Provides
+  @Singleton
+  public JdbcConnectionManager getConnectionManager() {
+    return this.connectionManager;
   }
 
   @Provides
