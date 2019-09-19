@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.6.2-snapshot</version>
+        <version>1.6.3</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -50,17 +50,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysqlconnector.version}</version>
         </dependency>
-        <!-- Test deps -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.192</version>
-        </dependency>
         <!--db -->
         <dependency>
             <groupId>org.javalite</groupId>
@@ -71,6 +60,23 @@
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
+        </dependency>
+        <!-- Test deps -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.24.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.192</version>
         </dependency>
     </dependencies>
     <build>
