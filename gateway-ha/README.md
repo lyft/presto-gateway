@@ -1,23 +1,6 @@
 Gateway-HA
 ==========
 
-### Table of Contents
-
-   * [Gateway-HA](#gateway-ha)
-      * [Getting Started](#getting-started)
-         * [Build and run](#build-and-run)
-         * [Query History UI - check query plans etc.](#query-history-ui---check-query-plans-etc)
-         * [Gateway Admin UI - add and modify backend information](#gateway-admin-ui---add-and-modify-backend-information)
-      * [How to setup a dev environment](#how-to-setup-a-dev-environment)
-      * [Gateway HA API](#gateway-api)
-         * [Get all backends behind the gateway](#get-all-backends-behind-the-gateway)
-         * [Delete a backend from the gateway](#delete-a-backend-from-the-gateway)
-         * [Add a backend to the gateway](#add-a-backend-to-the-gateway)
-         * [Update backend information](#update-backend-information)
-         * [Get active all backend behind the Gateway](#get-active-all-backend-behind-the-gateway)
-         * [Deactivate a backend](#deactivate-a-backend)
-         * [Activate a backend](#activate-a-backend)
-
 ## Getting Started 
 
 ### Build and run
@@ -181,7 +164,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
     }
 ]
 ```
-### Get active all backend behind the Gateway
+### Get all active backend behind the Gateway
 
 `curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool`
 ```

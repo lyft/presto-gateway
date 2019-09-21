@@ -17,7 +17,6 @@ public class HaGatewayLauncher extends BaseApp<HaGatewayConfiguration> {
     super.initialize(bootstrap);
     bootstrap.addBundle(new ViewBundle<>());
     bootstrap.addBundle(new AssetsBundle("/assets", "/assets", null, "assets"));
-    bootstrap.addBundle(new AssetsBundle("/web", "/web", null, "web"));
   }
 
   public static void main(String[] args) throws Exception {

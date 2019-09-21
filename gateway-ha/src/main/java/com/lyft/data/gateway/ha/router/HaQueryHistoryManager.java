@@ -2,8 +2,6 @@ package com.lyft.data.gateway.ha.router;
 
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.QueryHistory;
-import com.lyft.data.gateway.router.QueryHistoryManager;
-
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 

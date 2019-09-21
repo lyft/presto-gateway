@@ -1,26 +1,23 @@
 package com.lyft.data.gateway.ha.module;
 
 import com.codahale.metrics.Meter;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
-import com.lyft.data.gateway.config.RequestRouterConfiguration;
 import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
+import com.lyft.data.gateway.ha.config.RequestRouterConfiguration;
+import com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
+import com.lyft.data.gateway.ha.router.GatewayBackendManager;
 import com.lyft.data.gateway.ha.router.HaGatewayManager;
 import com.lyft.data.gateway.ha.router.HaQueryHistoryManager;
 import com.lyft.data.gateway.ha.router.HaRoutingManager;
-import com.lyft.data.gateway.handler.QueryIdCachingProxyHandler;
-import com.lyft.data.gateway.router.GatewayBackendManager;
-import com.lyft.data.gateway.router.QueryHistoryManager;
-import com.lyft.data.gateway.router.RoutingManager;
+import com.lyft.data.gateway.ha.router.QueryHistoryManager;
+import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
-
-import java.util.List;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
@@ -35,9 +32,7 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
     gatewayBackendManager = new HaGatewayManager(connectionManager);
     queryHistoryManager = new HaQueryHistoryManager(connectionManager);
     routingManager =
-        new HaRoutingManager(
-            gatewayBackendManager,
-            (HaQueryHistoryManager) queryHistoryManager);
+        new HaRoutingManager(gatewayBackendManager, (HaQueryHistoryManager) queryHistoryManager);
   }
 
   protected ProxyHandler getProxyHandler() {
@@ -93,12 +88,5 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   @Singleton
   public JdbcConnectionManager getConnectionManager() {
     return this.connectionManager;
-  }
-
-  @Provides
-  @Singleton
-  public List<ProxyServer> getProxyServers() {
-    // Since this is needed in GatewayManagedApp
-    return ImmutableList.of();
   }
 }

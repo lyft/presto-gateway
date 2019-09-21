@@ -1,9 +1,9 @@
 package com.lyft.data.gateway.ha.resource;
 
 import com.google.inject.Inject;
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.ha.router.GatewayBackendManager;
 import com.lyft.data.gateway.ha.router.HaGatewayManager;
-import com.lyft.data.gateway.router.GatewayBackendManager;
 
 import javax.ws.rs.POST;
 
