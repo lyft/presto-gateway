@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.6.2-snapshot</version>
+        <version>1.6.3</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -20,8 +20,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <ehcache.version>2.7.4</ehcache.version>
+        <activejdbc.version>2.2</activejdbc.version>
+        <mysqlconnector.version>8.0.17</mysqlconnector.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <environments>development</environments>
         <app.main.class>com.lyft.data.gateway.ha.HaGatewayLauncher</app.main.class>
     </properties>
 
@@ -45,7 +48,18 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.17</version>
+            <version>${mysqlconnector.version}</version>
+        </dependency>
+        <!--db -->
+        <dependency>
+            <groupId>org.javalite</groupId>
+            <artifactId>activejdbc</artifactId>
+            <version>${activejdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>${ehcache.version}</version>
         </dependency>
         <!-- Test deps -->
         <dependency>
@@ -54,20 +68,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.24.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.192</version>
-        </dependency>
-        <!--db -->
-        <dependency>
-            <groupId>org.javalite</groupId>
-            <artifactId>activejdbc</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>${ehcache.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -131,6 +140,22 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.javalite</groupId>
+                <artifactId>db-migrator-maven-plugin</artifactId>
+                <version>${activejdbc.version}</version>
+                <configuration>
+                    <configFile>${project.basedir}/src/migrations/database.properties</configFile>
+                    <environments>${environments}</environments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${mysqlconnector.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
