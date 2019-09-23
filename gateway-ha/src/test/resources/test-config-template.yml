@@ -21,4 +21,4 @@ modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
 
 managedApps:
-  - com.lyft.data.gateway.GatewayManagedApp
+  - com.lyft.data.gateway.ha.GatewayManagedApp

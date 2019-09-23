@@ -1,6 +1,6 @@
 package com.lyft.data.gateway.ha.persistence.dao;
 
-import com.lyft.data.gateway.router.QueryHistoryManager.QueryDetail;
+import static com.lyft.data.gateway.ha.router.QueryHistoryManager.QueryDetail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +36,13 @@ public class QueryHistory extends Model {
     return queryDetails;
   }
 
-  public static void create(QueryHistory dao, QueryDetail queryDetail) {
-    dao.set(queryId, queryDetail.getQueryId());
-    dao.set(queryText, queryDetail.getQueryText());
-    dao.set(backendUrl, queryDetail.getBackendUrl());
-    dao.set(userName, queryDetail.getUser());
-    dao.set(source, queryDetail.getSource());
-    dao.set(created, queryDetail.getCaptureTime());
-    dao.insert();
+  public static void create(QueryHistory model, QueryDetail queryDetail) {
+    model.set(queryId, queryDetail.getQueryId());
+    model.set(queryText, queryDetail.getQueryText());
+    model.set(backendUrl, queryDetail.getBackendUrl());
+    model.set(userName, queryDetail.getUser());
+    model.set(source, queryDetail.getSource());
+    model.set(created, queryDetail.getCaptureTime());
+    model.insert();
   }
 }

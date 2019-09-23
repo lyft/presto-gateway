@@ -28,7 +28,7 @@ modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
 
 managedApps:
-  - com.lyft.data.gateway.GatewayManagedApp
+  - com.lyft.data.gateway.ha.GatewayManagedApp
 
 # Logging settings.
 logging:
@@ -36,8 +36,8 @@ logging:
   level: INFO
 
   # Logger-specific levels.
-  #loggers:
-    #com.lyft: DEBUG
+  loggers:
+    com.lyft: DEBUG
 
   appenders:
     - type: console

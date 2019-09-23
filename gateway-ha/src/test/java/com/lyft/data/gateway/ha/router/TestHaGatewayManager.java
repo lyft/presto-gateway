@@ -1,13 +1,12 @@
 package com.lyft.data.gateway.ha.router;
 
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.HaGatewayTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
+import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import java.io.File;
 import java.util.List;
 
-import org.javalite.activejdbc.Base;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -23,11 +22,10 @@ public class TestHaGatewayManager {
     File tempH2DbDir = new File(baseDir, "h2db-" + System.currentTimeMillis());
     tempH2DbDir.deleteOnExit();
     String jdbcUrl = "jdbc:h2:" + tempH2DbDir.getAbsolutePath();
+    HaGatewayTestUtils.seedRequiredData(
+        new HaGatewayTestUtils.TestConfig("", tempH2DbDir.getAbsolutePath()));
     DataStoreConfiguration db = new DataStoreConfiguration(jdbcUrl, "sa", "sa", "org.h2.Driver");
     JdbcConnectionManager connectionManager = new JdbcConnectionManager(db);
-    connectionManager.open();
-    Base.exec(HaGatewayTestUtils.getResourceFileContent("gateway-ha-persistence.sql"));
-    connectionManager.close();
     haGatewayManager = new HaGatewayManager(connectionManager);
   }
 
@@ -77,7 +75,6 @@ public class TestHaGatewayManager {
     backends = haGatewayManager.getAllBackends();
     Assert.assertEquals(backends.size(), 2);
     Assert.assertEquals(backends.get(1).getRoutingGroup(), "etl");
-
   }
 
   @Test(dependsOnMethods = {"testUpdateBackend"})
@@ -91,6 +88,5 @@ public class TestHaGatewayManager {
   }
 
   @AfterClass(alwaysRun = true)
-  public void cleanUp() {
-  }
+  public void cleanUp() {}
 }

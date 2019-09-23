@@ -1,6 +1,6 @@
 package com.lyft.data.gateway.ha.persistence.dao;
 
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +21,12 @@ public class GatewayBackend extends Model {
 
   public static List<ProxyBackendConfiguration> upcast(List<GatewayBackend> gatewayBackendList) {
     List<ProxyBackendConfiguration> proxyBackendConfigurations = new ArrayList<>();
-    for (GatewayBackend dao : gatewayBackendList) {
+    for (GatewayBackend model : gatewayBackendList) {
       ProxyBackendConfiguration backendConfig = new ProxyBackendConfiguration();
-      backendConfig.setActive(dao.getBoolean(active));
-      backendConfig.setRoutingGroup(dao.getString(routingGroup));
-      backendConfig.setProxyTo(dao.getString(backendUrl));
-      backendConfig.setName(dao.getString(name));
+      backendConfig.setActive(model.getBoolean(active));
+      backendConfig.setRoutingGroup(model.getString(routingGroup));
+      backendConfig.setProxyTo(model.getString(backendUrl));
+      backendConfig.setName(model.getString(name));
       proxyBackendConfigurations.add(backendConfig);
     }
     return proxyBackendConfigurations;

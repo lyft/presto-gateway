@@ -1,13 +1,11 @@
 package com.lyft.data.gateway.ha.router;
 
 import com.google.common.collect.ImmutableList;
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
+import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.GatewayBackend;
-import com.lyft.data.gateway.router.GatewayBackendManager;
 
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -18,7 +16,6 @@ public class HaGatewayManager implements GatewayBackendManager {
     this.connectionManager = connectionManager;
   }
 
-  // TODO: implement HA - loading cache
   @Override
   public List<ProxyBackendConfiguration> getAllBackends() {
     try {
@@ -91,8 +88,7 @@ public class HaGatewayManager implements GatewayBackendManager {
   public ProxyBackendConfiguration addBackend(ProxyBackendConfiguration backend) {
     try {
       connectionManager.open();
-      GatewayBackend model = new GatewayBackend();
-      GatewayBackend.create(model, backend);
+      GatewayBackend.create(new GatewayBackend(), backend);
     } finally {
       connectionManager.close();
     }
