@@ -26,7 +26,23 @@ public class GatewayViewResource {
 
   @GET
   @Produces(MediaType.TEXT_HTML)
-  public GatewayView getAdminUi() {
+  public GatewayView getQueryDetailsView() {
+    GatewayView queryHistoryView = new GatewayView("/template/query-history-view.ftl");
+    // Get All active backends
+    queryHistoryView.setBackendConfigurations(
+        gatewayBackendManager.getAllBackends().stream()
+            .filter(ProxyBackendConfiguration::isActive)
+            .collect(Collectors.toList()));
+
+    queryHistoryView.setQueryHistory(queryHistoryManager.fetchQueryHistory());
+    queryHistoryView.setQueryDistribution(getQueryHistoryDistribution());
+    return queryHistoryView;
+  }
+
+  @GET
+  @Produces(MediaType.TEXT_HTML)
+  @Path("viewgateway")
+  public GatewayView getGatewayView() {
     GatewayView gatewayView = new GatewayView("/template/gateway-view.ftl");
     // Get All active backends
     gatewayView.setBackendConfigurations(

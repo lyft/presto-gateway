@@ -30,8 +30,8 @@ function renderConfigSelector() {
     var html = "<table><tr><td>Select config type</td><td><select name='entityTypeSelector' id='entityTypeSelector' onchange='renderEntitySelector()'></select></td></tr>"
         + "<tr><td>Select entity to edit</td><td><select name='entitySelector' id='entitySelector' onchange='renderEntityEditor()'></select></td></tr>"
         + "</table>" + "<div id='entityEditorDiv'>"
-        + "<table><tr><td><div id='entityDetails' style='width: 700px; height: 500px;'></div></td>"
-        + "<td><div id='entityDetailsTextArea' style='width: 700px; height: 500px;'></div></td></tr></table>"
+        + "<table><tr><td><div id='entityDetails' style='width: 600px; height: 400px;'></div></td>"
+        + "<td><div id='entityDetailsTextArea' style='width: 600px; height: 400px;'></div></td></tr></table>"
         + "</div> <div id='entityEditorBottom'></div>";
 
     $("#entity-editor-place-holder").html(html);

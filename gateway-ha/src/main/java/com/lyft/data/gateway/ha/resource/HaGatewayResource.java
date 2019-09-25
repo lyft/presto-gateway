@@ -24,16 +24,14 @@ public class HaGatewayResource {
   @Path("/add")
   @POST
   public Response addBackend(ProxyBackendConfiguration backend) {
-    ProxyBackendConfiguration updatedBackend =
-        ((HaGatewayManager) haGatewayManager).addBackend(backend);
+    ProxyBackendConfiguration updatedBackend = haGatewayManager.addBackend(backend);
     return Response.ok(updatedBackend).build();
   }
 
   @Path("/update")
   @POST
   public Response updateBackend(ProxyBackendConfiguration backend) {
-    ProxyBackendConfiguration updatedBackend =
-        ((HaGatewayManager) haGatewayManager).updateBackend(backend);
+    ProxyBackendConfiguration updatedBackend = haGatewayManager.updateBackend(backend);
     return Response.ok(updatedBackend).build();
   }
 
