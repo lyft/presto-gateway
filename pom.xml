@@ -9,7 +9,7 @@
     <artifactId>prestogateway-parent</artifactId>
     <name>prestogateway-parent</name>
     <packaging>pom</packaging>
-    <version>1.6.4.0</version>
+    <version>1.6.4</version>
     <!-- enforcing a common checkstyle -->
     <parent>
         <groupId>com.lyft</groupId>
