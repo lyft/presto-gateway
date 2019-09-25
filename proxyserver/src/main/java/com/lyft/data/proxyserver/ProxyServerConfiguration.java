@@ -37,4 +37,8 @@ public class ProxyServerConfiguration {
   protected String getKeystorePass() {
     return keystorePass;
   }
+
+  protected int getLocalPort() {
+    return localPort;
+  }
 }
