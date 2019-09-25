@@ -2,12 +2,8 @@
 
 A load balancer / proxy / gateway for presto compute engine.
 
-## Getting started
-
-
 How to setup a dev environment
-----------------------------
-
+------------------------------
 Step 1: setup mysql. Install docker and run the below command when setting up first time:
 ```$xslt
 docker run -d -p 3306:3306  --name mysqldb -e MYSQL_ROOT_PASSWORD=root123 -e MYSQL_DATABASE=prestogateway -d mysql:5.7
@@ -108,6 +104,7 @@ PrestoGateway records history of recent queries and displays links to check quer
 
 ### Gateway Admin UI - add and modify backend information
 The Gateway admin page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
+![prestogateway.lyft.com/entity](/docs/assets/prestogateway_ha_admin.png) 
 
 ## Contributing
 
