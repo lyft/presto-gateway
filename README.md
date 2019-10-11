@@ -109,3 +109,10 @@ The Gateway admin page is used to configure the gateway to multiple backends. Ex
 ## Contributing
 
 Want to help build Presto Gateway? Check out our [contributing documentation](CONTRIBUTING.md)
+
+References :sparkles:
+--------------------
+[Scaling Presto Infra with gateway at Lyft](https://eng.lyft.com/presto-infrastructure-at-lyft-b10adb9db01)
+
+[Presto-gateway at Pinterest](https://medium.com/pinterest-engineering/presto-at-pinterest-a8bda7515e52)
+
