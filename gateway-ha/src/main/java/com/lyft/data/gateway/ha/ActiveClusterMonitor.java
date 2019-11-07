@@ -88,7 +88,7 @@ public class ActiveClusterMonitor implements Managed {
 
   private void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
     emailNotifier.sendNotification(String.format("%s - Too many queued queries",
-            clusterStats.toString()), clusterStats.toString());
+            clusterStats.getClusterId()), clusterStats.toString());
   }
 
   private void notifyForNoWorkers(ClusterStats clusterStats) {
