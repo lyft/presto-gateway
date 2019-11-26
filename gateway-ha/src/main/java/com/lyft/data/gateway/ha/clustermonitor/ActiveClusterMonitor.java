@@ -1,4 +1,4 @@
-package com.lyft.data.gateway.ha;
+package com.lyft.data.gateway.ha.clustermonitor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -20,8 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.ws.rs.HttpMethod;
-import lombok.Data;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 
@@ -29,12 +27,10 @@ import org.apache.http.HttpStatus;
 public class ActiveClusterMonitor implements Managed {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final int BACKEND_CONNECT_TIMEOUT_SECONDS = 15;
-  private static final int MAX_THRESHOLD_QUEUED_QUERY_COUNT = 100;
-
   private static final int MONITOR_TASK_DELAY_MIN = 1;
 
-  @Inject private Notifier emailNotifier;
-  @Inject private GatewayBackendManager gatewayBackendManager;
+ @Inject private List<PrestoClusterStatsObserver> clusterStatsObservers;
+ @Inject private GatewayBackendManager gatewayBackendManager;
 
   private volatile boolean monitorActive = true;
 
@@ -46,28 +42,26 @@ public class ActiveClusterMonitor implements Managed {
         () -> {
           while (monitorActive) {
             try {
-              List<ProxyBackendConfiguration> activeClusters =
-                  gatewayBackendManager.getAllActiveBackends();
-              List<Future<ClusterStats>> futures = new ArrayList<>();
-              for (ProxyBackendConfiguration backend : activeClusters) {
-                Future<ClusterStats> call =
-                    executorService.submit(() -> getPrestoClusterStats(backend));
-                futures.add(call);
-              }
-
-              for (Future<ClusterStats> clusterStatsFuture : futures) {
-                ClusterStats clusterStats = clusterStatsFuture.get();
-                if (!clusterStats.isHealthy()) {
-                  notifyUnhealthyCluster(clusterStats);
-                } else {
-                  if (clusterStats.getQueuedQueryCount() > MAX_THRESHOLD_QUEUED_QUERY_COUNT) {
-                    notifyForTooManyQueuedQueries(clusterStats);
-                  }
-                  if (clusterStats.getNumWorkerNodes() < 1) {
-                    notifyForNoWorkers(clusterStats);
-                  }
+                List<ProxyBackendConfiguration> activeClusters =
+                        gatewayBackendManager.getAllActiveBackends();
+                List<Future<ClusterStats>> futures = new ArrayList<>();
+                for (ProxyBackendConfiguration backend : activeClusters) {
+                    Future<ClusterStats> call =
+                            executorService.submit(() -> getPrestoClusterStats(backend));
+                    futures.add(call);
                 }
-              }
+                List<ClusterStats> stats = new ArrayList<>();
+                for (Future<ClusterStats> clusterStatsFuture : futures) {
+                    ClusterStats clusterStats = clusterStatsFuture.get();
+                    stats.add(clusterStats);
+                }
+
+                if (clusterStatsObservers != null) {
+                    for (PrestoClusterStatsObserver observer : clusterStatsObservers) {
+                        observer.observe(stats);
+                    }
+                 }
+
             } catch (Exception e) {
               log.error("Error performing backend monitor tasks", e);
             }
@@ -78,22 +72,6 @@ public class ActiveClusterMonitor implements Managed {
             }
           }
         });
-  }
-
-  private void notifyUnhealthyCluster(ClusterStats clusterStats) {
-    emailNotifier.sendNotification(String.format("%s - Cluster unhealthy",
-            clusterStats.getClusterId()),
-            clusterStats.toString());
-  }
-
-  private void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
-    emailNotifier.sendNotification(String.format("%s - Too many queued queries",
-            clusterStats.getClusterId()), clusterStats.toString());
-  }
-
-  private void notifyForNoWorkers(ClusterStats clusterStats) {
-    emailNotifier.sendNotification(String.format("%s - Number of workers",
-            clusterStats.getClusterId()), clusterStats.toString());
   }
 
   private ClusterStats getPrestoClusterStats(ProxyBackendConfiguration backend) {
@@ -122,6 +100,8 @@ public class ActiveClusterMonitor implements Managed {
         clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
         clusterStats.setRunningQueryCount((int) result.get("runningQueries"));
         clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
+        clusterStats.setProxyTo(backend.getProxyTo());
+        clusterStats.setRoutingGroup(backend.getRoutingGroup());
         conn.disconnect();
       }
     } catch (Exception e) {
@@ -136,14 +116,4 @@ public class ActiveClusterMonitor implements Managed {
     this.singleTaskExecutor.shutdown();
   }
 
-  @Data
-  @ToString
-  public static class ClusterStats {
-    private int runningQueryCount;
-    private int queuedQueryCount;
-    private int blockedQueryCount;
-    private int numWorkerNodes;
-    private boolean healthy;
-    private String clusterId;
-  }
 }
