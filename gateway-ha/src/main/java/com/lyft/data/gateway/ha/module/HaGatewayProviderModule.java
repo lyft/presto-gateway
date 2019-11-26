@@ -21,18 +21,11 @@ import io.dropwizard.setup.Environment;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
-  private final GatewayBackendManager gatewayBackendManager;
-  private final QueryHistoryManager queryHistoryManager;
-  private final RoutingManager routingManager;
   private final JdbcConnectionManager connectionManager;
 
   public HaGatewayProviderModule(HaGatewayConfiguration configuration, Environment environment) {
     super(configuration, environment);
     connectionManager = new JdbcConnectionManager(configuration.getDataStore());
-    gatewayBackendManager = new HaGatewayManager(connectionManager);
-    queryHistoryManager = new HaQueryHistoryManager(connectionManager);
-    routingManager =
-        new HaRoutingManager(gatewayBackendManager, (HaQueryHistoryManager) queryHistoryManager);
   }
 
   protected ProxyHandler getProxyHandler() {
@@ -69,24 +62,24 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   @Provides
   @Singleton
   public GatewayBackendManager getGatewayBackendManager() {
-    return this.gatewayBackendManager;
+    return new HaGatewayManager(getConnectionManager());
   }
 
   @Provides
   @Singleton
   public QueryHistoryManager getQueryHistoryManager() {
-    return this.queryHistoryManager;
-  }
-
-  @Provides
-  @Singleton
-  public RoutingManager getRoutingManager() {
-    return this.routingManager;
+    return new HaQueryHistoryManager(getConnectionManager());
   }
 
   @Provides
   @Singleton
   public JdbcConnectionManager getConnectionManager() {
     return this.connectionManager;
+  }
+
+  @Provides
+  @Singleton
+  public RoutingManager getRoutingManager() {
+    return new HaRoutingManager(getGatewayBackendManager(), (HaQueryHistoryManager) getQueryHistoryManager() );
   }
 }

@@ -5,20 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HaRoutingManager extends RoutingManager {
-  HaQueryHistoryManager queryHistoryManager;
+  QueryHistoryManager queryHistoryManager;
 
   public HaRoutingManager(
-      GatewayBackendManager gatewayBackendManager, HaQueryHistoryManager queryHistoryManager) {
+      GatewayBackendManager gatewayBackendManager, QueryHistoryManager queryHistoryManager) {
     super(gatewayBackendManager);
     this.queryHistoryManager = queryHistoryManager;
-  }
-
-  protected String findBackendForUnknownQueryId(String queryId) {
-    String backend;
-    backend = queryHistoryManager.getBackendForQueryId(queryId);
-    if (Strings.isNullOrEmpty(backend)) {
-      backend = super.findBackendForUnknownQueryId(queryId);
-    }
-    return backend;
   }
 }

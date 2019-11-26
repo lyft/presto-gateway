@@ -10,6 +10,8 @@ public interface QueryHistoryManager {
 
   List<QueryDetail> fetchQueryHistory();
 
+  String getBackendForQueryId(String queryId);
+
   @Data
   @ToString
   class QueryDetail implements Comparable<QueryDetail> {

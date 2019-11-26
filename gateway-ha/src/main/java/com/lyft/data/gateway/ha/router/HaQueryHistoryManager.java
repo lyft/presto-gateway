@@ -34,6 +34,7 @@ public class HaQueryHistoryManager implements QueryHistoryManager {
     }
   }
 
+  @Override
   public String getBackendForQueryId(String queryId) {
     String backend = null;
     try {
