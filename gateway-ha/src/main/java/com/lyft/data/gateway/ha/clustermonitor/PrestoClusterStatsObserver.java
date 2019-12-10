@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface PrestoClusterStatsObserver {
 
-    public void observe(List<ClusterStats> stats);
+  void observe(List<ClusterStats> stats);
 }

@@ -4,20 +4,26 @@ import com.codahale.metrics.Meter;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
+import com.lyft.data.gateway.ha.clustermonitor.HealthChecker;
+import com.lyft.data.gateway.ha.clustermonitor.PrestoClusterStatsObserver;
+import com.lyft.data.gateway.ha.clustermonitor.PrestoQueueLengthChecker;
 import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
 import com.lyft.data.gateway.ha.config.RequestRouterConfiguration;
 import com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler;
+import com.lyft.data.gateway.ha.notifier.EmailNotifier;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
 import com.lyft.data.gateway.ha.router.HaGatewayManager;
 import com.lyft.data.gateway.ha.router.HaQueryHistoryManager;
-import com.lyft.data.gateway.ha.router.HaRoutingManager;
+import com.lyft.data.gateway.ha.router.PrestoQueueLengthRoutingTable;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
 import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
@@ -37,6 +43,11 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
         getQueryHistoryManager(), getRoutingManager(), getApplicationPort(), requestMeter);
   }
 
+  /**
+   * Provides a HA Gateway.
+   *
+   * @return
+   */
   @Provides
   @Singleton
   public ProxyServer provideGateway() {
@@ -80,6 +91,25 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   @Provides
   @Singleton
   public RoutingManager getRoutingManager() {
-    return new HaRoutingManager(getGatewayBackendManager(), (HaQueryHistoryManager) getQueryHistoryManager() );
+    return new PrestoQueueLengthRoutingTable(getGatewayBackendManager(), getQueryHistoryManager());
   }
+
+  /**
+   * Injects observers of the
+   * {@link com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor} that can perform a custom
+   * action in reponse to the status updates.
+   *
+   * @return
+   */
+  @Provides
+  @Singleton
+  public List<PrestoClusterStatsObserver> getClusterStatsObservers() {
+    List<PrestoClusterStatsObserver> observers = new ArrayList<>();
+    observers.add(new HealthChecker(new EmailNotifier(getConfiguration().getNotifier())));
+    observers.add(new
+        PrestoQueueLengthChecker((PrestoQueueLengthRoutingTable) getRoutingManager()));
+    return observers;
+  }
+
+
 }
