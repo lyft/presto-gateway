@@ -1,3 +1,4 @@
+.editorconfig
 .idea
 **/target/*
 .DS_Store
