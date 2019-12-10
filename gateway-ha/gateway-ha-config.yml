@@ -22,16 +22,13 @@ notifier:
   smtpPort: 587
   sender: presto-gw-monitor-noreply@lyft.com
   recipients:
-    - presto-dev@lyft.com
-    - presto-low-urgency-.zjiy85la@lyft.pagerduty.com
+    - prestodev@yourorg.com
 
 modules:
-  - com.lyft.data.gateway.ha.module.ClusterStateListenerModule
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
 
 managedApps:
   - com.lyft.data.gateway.ha.GatewayManagedApp
-  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
 
 # Logging settings.
 logging:

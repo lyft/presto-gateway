@@ -26,7 +26,7 @@ public class HealthChecker implements PrestoClusterStatsObserver {
       }
     }
   }
-  
+
   private void notifyUnhealthyCluster(ClusterStats clusterStats) {
     notifier.sendNotification(String.format("%s - Cluster unhealthy",
         clusterStats.getClusterId()),
