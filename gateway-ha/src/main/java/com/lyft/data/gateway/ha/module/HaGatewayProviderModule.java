@@ -89,4 +89,5 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   public JdbcConnectionManager getConnectionManager() {
     return this.connectionManager;
   }
+
 }
