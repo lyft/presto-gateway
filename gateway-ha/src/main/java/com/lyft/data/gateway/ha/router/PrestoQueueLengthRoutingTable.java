@@ -78,7 +78,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
     } else if (lastButOneQueueLn == 0 || (lastButOneQueueLn == maxQueueLn)) {
       calculatedWtMaxQueue = MIN_WT;
     } else {
-      int lastButOneQueueWt = (int) Math.ceil((MAX_WT - (lastButOneQueueLn * MAX_WT / (double) maxQueueLn)));
+      int lastButOneQueueWt =
+          (int) Math.ceil((MAX_WT - (lastButOneQueueLn * MAX_WT / (double) maxQueueLn)));
       double fractionOfLastWt = (smallestQueueLn / (float) maxQueueLn);
       calculatedWtMaxQueue = (int) Math.ceil(fractionOfLastWt * lastButOneQueueWt);
 
@@ -153,7 +154,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         for (int i = 0; i < numBuckets - 1; i++) {
           // If all clusters have same queue length, assign same wt
           weight = (maxQueueLn == (Integer) queueLengths[i]) ? calculatedWtMaxQueue :
-              (int) Math.ceil(MAX_WT - (((Integer) queueLengths[i] * MAX_WT) / (double) maxQueueLn));
+              (int) Math.ceil(MAX_WT
+                  - (((Integer) queueLengths[i] * MAX_WT) / (double) maxQueueLn));
           sum += weight;
           weightsMap.put(sum, (String) clusterNames[i]);
         }
@@ -313,11 +315,4 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
       return backends.get(backendId).getProxyTo();
     }
   }
-
-
-  public static  void main (String[] args)
-  {
-    System.out.println((int)Math.ceil( 113/(float)112));
-  }
-
 }
