@@ -193,17 +193,15 @@ public class TestPrestoQueueLengthRoutingTable {
         //    + " Internal Routing table: "
         //    + routingTable.getInternalWeightedRoutingTable(mockRoutingGroup).toString()
         //    + " Distribution: " + routingDistribution.toString());
-        if (numBk > 1) {
-          if (routingDistribution.containsKey(mockRoutingGroup + (numBk - 1))) {
-            assert routingDistribution.get(mockRoutingGroup + (numBk - 1))
-                <= Math.ceil(numRequests / numBk);
-          } else {
-            assert routingDistribution.values().stream().mapToInt(Integer::intValue).sum()
-                == numRequests;
-          }
-        } else {
-          assert routingDistribution.get(mockRoutingGroup + '0') == numRequests;
+        if (numBk > 2 && routingDistribution.containsKey(mockRoutingGroup + (numBk - 1))) {
+          assert routingDistribution.get(mockRoutingGroup + (numBk - 1))
+              <= Math.ceil(numRequests / numBk);
+        } else  {
+          assert routingDistribution.values().stream().mapToInt(Integer::intValue).sum()
+              == numRequests;
         }
+
+
       }
     }
   }
