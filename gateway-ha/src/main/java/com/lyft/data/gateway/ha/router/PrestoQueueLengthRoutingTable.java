@@ -82,7 +82,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
       double fractionOfLastWt = (smallestQueueLn / (float) maxQueueLn);
       calculatedWtMaxQueue = (int) Math.ceil(fractionOfLastWt * lastButOneQueueWt);
 
-      if (lastButOneQueueLn < equalDistribution || (lastButOneQueueLn > equalDistribution && smallestQueueLn <= equalDistribution)) {
+      if (lastButOneQueueLn < equalDistribution
+          || (lastButOneQueueLn > equalDistribution && smallestQueueLn <= equalDistribution)) {
         calculatedWtMaxQueue = (smallestQueueLn == 0) ? MIN_WT :
             (int) Math.ceil(fractionOfLastWt * fractionOfLastWt * lastButOneQueueWt);
       }
