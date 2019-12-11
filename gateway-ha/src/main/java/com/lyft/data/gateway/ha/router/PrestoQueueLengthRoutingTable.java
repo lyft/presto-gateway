@@ -27,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   private static final Random RANDOM = new Random();
-  private final Object lockObject = new Object();
   private static final int MIN_WT = 1;
   private static final int MAX_WT = 100;
+  private final Object lockObject = new Object();
   private ConcurrentHashMap<String, Integer> routingGroupWeightSum;
   private ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> clusterQueueLengthMap;
   private Map<String, TreeMap<Integer, String>> weightedDistributionRouting;
@@ -37,9 +37,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   /**
    * A Routing Manager that distributes queries according to assigned weights based on
    * Presto cluster queue length.
-   *
-   * @param gatewayBackendManager
-   * @param queryHistoryManager
    */
   public PrestoQueueLengthRoutingTable(GatewayBackendManager gatewayBackendManager,
                                        QueryHistoryManager queryHistoryManager) {
@@ -49,13 +46,55 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
     weightedDistributionRouting = new HashMap<String, TreeMap<Integer, String>>();
   }
 
+  /**
+   * All wts are assigned as a fraction of maxQueueLn. Cluster with maxQueueLn should be
+   * given least weightage. What this value should be depends on the queueing on the rest of
+   * the clusters. since the list is sorted, the smallestQueueLn & lastButOneQueueLn give us
+   * the range. In an ideal situation all clusters should have equals distribution of
+   * queries, hence that is used as a threshold to check is a cluster queue is over
+   * provisioned or not.
+   */
+  private int getWeightForMaxQueueCluster(LinkedHashMap<String, Integer> sortedByQueueLength) {
+    int queueSum = 0;
+    int numBuckets = 1;
+    int equalDistribution = 0;
+    int calculatedWtMaxQueue = 0;
+
+    numBuckets = sortedByQueueLength.size();
+    queueSum = sortedByQueueLength.values().stream().mapToInt(Integer::intValue).sum();
+    equalDistribution = queueSum / numBuckets;
+
+    Object[] queueLengths = sortedByQueueLength.values().toArray();
+
+    int smallestQueueLn = (Integer) queueLengths[0];
+    int maxQueueLn = (Integer) queueLengths[queueLengths.length - 1];
+    int lastButOneQueueLn = smallestQueueLn;
+    if (queueLengths.length > 2) {
+      lastButOneQueueLn = (Integer) queueLengths[queueLengths.length - 2];
+    }
+
+    if (maxQueueLn == 0) {
+      calculatedWtMaxQueue = MAX_WT;
+    } else if (lastButOneQueueLn == 0) {
+      calculatedWtMaxQueue = MIN_WT;
+    } else {
+      int lastButOneQueueWt = (MAX_WT - (lastButOneQueueLn * MAX_WT / maxQueueLn));
+      double fractionOfLastWt = (smallestQueueLn / (float) maxQueueLn);
+      calculatedWtMaxQueue = (int) Math.ceil(fractionOfLastWt * lastButOneQueueWt);
+
+      if (lastButOneQueueLn < equalDistribution || (lastButOneQueueLn > equalDistribution && smallestQueueLn <= equalDistribution)) {
+        calculatedWtMaxQueue = (smallestQueueLn == 0) ? MIN_WT :
+            (int) Math.ceil(fractionOfLastWt * fractionOfLastWt * lastButOneQueueWt);
+      }
+    }
+
+    return calculatedWtMaxQueue;
+  }
 
   /**
    * Uses the queue length of a cluster to assign weights to all active clusters in a routing group.
    * The weights assigned ensure a fair distribution of routing for queries such that clusters with
    * the least queue length get assigned more queries.
-   *
-   * @param queueLengthMap
    */
   private void computeWeightsBasedOnQueueLength(ConcurrentHashMap<String,
       ConcurrentHashMap<String, Integer>> queueLengthMap) {
@@ -95,61 +134,20 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
           continue;
         }
 
-        Map<String, Integer> sortedByQueueLength = queueLengthMap.get(routingGroup).entrySet()
+        LinkedHashMap<String, Integer> sortedByQueueLength = queueLengthMap.get(routingGroup)
+            .entrySet()
             .stream().sorted(Comparator.comparing(Map.Entry::getValue))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                 (e1, e2) -> e1, LinkedHashMap::new));
 
         numBuckets = sortedByQueueLength.size();
         queueSum = sortedByQueueLength.values().stream().mapToInt(Integer::intValue).sum();
-        equalDistribution = queueSum / numBuckets;
 
         Object[] queueLengths = sortedByQueueLength.values().toArray();
         Object[] clusterNames = sortedByQueueLength.keySet().toArray();
 
-        smallestQueueLn = (Integer) queueLengths[0];
         maxQueueLn = (Integer) queueLengths[queueLengths.length - 1];
-        lastButOneQueueLn = smallestQueueLn;
-        if (queueLengths.length > 2) {
-          lastButOneQueueLn = (Integer) queueLengths[queueLengths.length - 2];
-        }
-
-        /**
-         *  All wts are assigned as a fraction of maxQueueLn. Cluster with maxQueueLn should be
-         *  given least weightage. What this value should be depends on the queueing on the rest of
-         *  the clusters. since the list is sorted, the smallestQueueLn & lastButOneQueueLn give us
-         *  the range. In an ideal situation all clusters should have equals distribution of
-         *  queries, hence that is used as a threshold to check is a cluster queue is over
-         *  provisioned or not.
-         */
-
-        if (maxQueueLn == 0) {
-          calculatedWtMaxQueue = MAX_WT;
-        } else if (lastButOneQueueLn == 0) {
-          calculatedWtMaxQueue = MIN_WT;
-        } else {
-          float fractionOfLastWt =
-              (lastButOneQueueLn / (float) maxQueueLn)
-                  * (MAX_WT - (lastButOneQueueLn * MAX_WT / maxQueueLn));
-
-          if (smallestQueueLn == 0) {
-            if (lastButOneQueueLn < equalDistribution) {
-              calculatedWtMaxQueue = MIN_WT;
-            } else {
-              calculatedWtMaxQueue = (int) fractionOfLastWt;
-            }
-          } else if (smallestQueueLn < equalDistribution) {
-            if (lastButOneQueueLn <= equalDistribution) {
-              calculatedWtMaxQueue = (fractionOfLastWt / 2 > 0)
-                  ? (int) fractionOfLastWt / 2 : MIN_WT;
-            } else {
-              calculatedWtMaxQueue = (fractionOfLastWt / 1.5 > 0)
-                  ? (int) (fractionOfLastWt / 1.5) : MIN_WT;
-            }
-          } else {
-            calculatedWtMaxQueue = (int) fractionOfLastWt;
-          }
-        }
+        calculatedWtMaxQueue = getWeightForMaxQueueCluster(sortedByQueueLength);
 
         for (int i = 0; i < numBuckets - 1; i++) {
           // If all clusters have same queue length, assign same wt
@@ -180,9 +178,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
    * Newly added backends are handled through
    * {@link PrestoQueueLengthRoutingTable#updateRoutingTable(Map)}
    * updateRoutingTable}
-   *
-   * @param routingGroup
-   * @param backends
    */
   public void updateRoutingTable(String routingGroup, Set<String> backends) {
 
@@ -208,8 +203,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
   /**
    * Update routing Table with new Queue Lengths.
-   *
-   * @param updatedQueueLengthMap
    */
   public void updateRoutingTable(Map<String, Map<String, Integer>> updatedQueueLengthMap) {
     synchronized (lockObject) {
@@ -228,9 +221,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
   /**
    * A convenience method to peak into the weights used by the routing Manager.
-   *
-   * @param routingGroup
-   * @return
    */
   public Map<String, Integer> getInternalWeightedRoutingTable(String routingGroup) {
     if (!weightedDistributionRouting.containsKey(routingGroup)) {
@@ -246,9 +236,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
   /**
    * A convienience method to get a peak into the state of the routing manager.
-   *
-   * @param routingGroup
-   * @return
    */
   public Map<String, Integer> getInternalClusterQueueLength(String routingGroup) {
     if (!clusterQueueLengthMap.containsKey(routingGroup)) {
@@ -260,9 +247,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
   /**
    * Looks up the closest weight to random number generated for a given routing group.
-   *
-   * @param routingGroup
-   * @return
    */
   public String getEligibleBackEnd(String routingGroup) {
     if (routingGroupWeightSum.containsKey(routingGroup)
@@ -277,8 +261,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   /**
    * Performs routing to a given cluster group. This falls back to an adhoc backend, if no scheduled
    * backend is found.
-   *
-   * @return
    */
   @Override
   public String provideBackendForRoutingGroup(String routingGroup) {
@@ -305,11 +287,9 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
 
   /**
-   * Performs routing to an adhoc backend based compute weights base don cluster queue depth.
+   * Performs routing to an adhoc backend based on computed weights.
    *
    * <p>d.
-   *
-   * @return
    */
   public String provideAdhocBackend() {
     Map<String, String> proxyMap = new HashMap<>();
