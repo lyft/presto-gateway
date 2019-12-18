@@ -43,6 +43,18 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
   }
 
   /**
+   * rewrite the body of this request with the given string.
+   *
+   * @param newBody
+   */
+  public void rewriteBody(String newBody) throws IOException {
+    ByteArrayInputStream newBodyReader = new ByteArrayInputStream(newBody.getBytes());
+    ByteArrayOutputStream bodyWriteStream = new ByteArrayOutputStream();
+    copy(newBodyReader, bodyWriteStream);
+    content = bodyWriteStream.toByteArray();
+  }
+
+  /**
    * add a header with given name and value.
    *
    * @param name
