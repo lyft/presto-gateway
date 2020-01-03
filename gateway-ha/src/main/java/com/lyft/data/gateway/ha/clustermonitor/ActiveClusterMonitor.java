@@ -89,7 +89,8 @@ public class ActiveClusterMonitor implements Managed {
       conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(BACKEND_CONNECT_TIMEOUT_SECONDS));
       conn.setRequestMethod(HttpMethod.GET);
       conn.connect();
-      if (conn.getResponseCode() == HttpStatus.SC_OK) {
+      int responseCode = conn.getResponseCode();
+      if (responseCode == HttpStatus.SC_OK) {
         clusterStats.setHealthy(true);
         BufferedReader reader =
             new BufferedReader(new InputStreamReader((InputStream) conn.getContent()));
@@ -105,10 +106,12 @@ public class ActiveClusterMonitor implements Managed {
         clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
         clusterStats.setProxyTo(backend.getProxyTo());
         clusterStats.setRoutingGroup(backend.getRoutingGroup());
-        conn.disconnect();
+      } else {
+        log.warn("Received non 200 response, response code: {}", responseCode);
       }
+      conn.disconnect();
     } catch (Exception e) {
-      log.error("Error fetching cluster stats from [" + target + "]", e);
+      log.error("Error fetching cluster stats from [{}]", target, e);
     }
     return clusterStats;
   }
