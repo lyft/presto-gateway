@@ -12,4 +12,16 @@ public class HaRoutingManager extends RoutingManager {
     super(gatewayBackendManager);
     this.queryHistoryManager = queryHistoryManager;
   }
+
+  @Override
+  protected String findBackendForUnknownQueryId(String queryId) {
+    log.debug("Querying history manager for [{}]", queryId);
+    String backend;
+    backend = queryHistoryManager.getBackendForQueryId(queryId);
+    if (Strings.isNullOrEmpty(backend)) {
+      backend = super.findBackendForUnknownQueryId(queryId);
+    }
+    return backend;
+  }
+
 }
