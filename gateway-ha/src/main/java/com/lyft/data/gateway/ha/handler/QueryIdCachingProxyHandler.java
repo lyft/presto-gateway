@@ -81,6 +81,13 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         || path.startsWith(V1_INFO_PATH);
   }
 
+  public boolean isAuthEnabled() {
+    return false;
+  }
+
+  public void handleAuthRequest(HttpServletRequest request) {
+  }
+
   @Override
   public String rewriteTarget(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
@@ -104,6 +111,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       }
       // set target backend so that we could save queryId to backend mapping later.
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
+    }
+    if (isAuthEnabled() && request.getHeader("Authorization") != null) {
+      handleAuthRequest(request);
     }
     String targetLocation =
         backendAddress

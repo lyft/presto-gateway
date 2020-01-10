@@ -79,6 +79,7 @@
         <module>gateway-ha</module>
     </modules>
 
+
     <build>
         <plugins>
             <plugin>
