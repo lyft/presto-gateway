@@ -86,6 +86,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   public boolean handleAuthRequest(HttpServletRequest request) {
+    return true;
   }
 
   @Override
