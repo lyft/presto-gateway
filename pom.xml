@@ -24,7 +24,7 @@
         <mockwebserver.version>1.2.1</mockwebserver.version>
 
         <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
-        <puppycrawl.tools.checkstyle.version>7.7</puppycrawl.tools.checkstyle.version>
+        <puppycrawl.tools.checkstyle.version>8.29</puppycrawl.tools.checkstyle.version>
         <checkstyle.violation.ignore>NonEmptyAtclauseDescription,JavadocMethod
         </checkstyle.violation.ignore>
     </properties>
