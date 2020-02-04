@@ -4,8 +4,8 @@ import com.lyft.data.gateway.ha.notifier.Notifier;
 import java.util.List;
 
 public class HealthChecker implements PrestoClusterStatsObserver {
-  private static final int MAX_THRESHOLD_QUEUED_QUERY_COUNT = 100;
-  private Notifier notifier;
+  public static final int MAX_THRESHOLD_QUEUED_QUERY_COUNT = 100;
+  protected Notifier notifier;
 
   public HealthChecker(Notifier notifier) {
     this.notifier = notifier;
@@ -27,18 +27,18 @@ public class HealthChecker implements PrestoClusterStatsObserver {
     }
   }
 
-  private void notifyUnhealthyCluster(ClusterStats clusterStats) {
+  protected void notifyUnhealthyCluster(ClusterStats clusterStats) {
     notifier.sendNotification(String.format("%s - Cluster unhealthy",
         clusterStats.getClusterId()),
         clusterStats.toString());
   }
 
-  private void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
+  protected void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
     notifier.sendNotification(String.format("%s - Too many queued queries",
         clusterStats.getClusterId()), clusterStats.toString());
   }
 
-  private void notifyForNoWorkers(ClusterStats clusterStats) {
+  protected void notifyForNoWorkers(ClusterStats clusterStats) {
     notifier.sendNotification(String.format("%s - Number of workers",
         clusterStats.getClusterId()), clusterStats.toString());
   }
