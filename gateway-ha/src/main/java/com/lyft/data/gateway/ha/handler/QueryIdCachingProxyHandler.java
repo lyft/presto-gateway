@@ -118,7 +118,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
       if (!handleAuthRequest(request)) {
         // This implies the AuthRequest was not authenticated, hence we error out from here.
-        log.debug("Could not authenticate Request: " + request.toString());
+        log.info("Could not authenticate Request: " + request.toString());
         return null;
       }
     }
