@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FaultTolerantHealthChecker extends HealthChecker {
 
     public static final int DEFAULT_CONSECUTIVE_FAILURE_ALERT_COUNT = 5;
-    protected Map<String, Integer> clusterHealthFailureCount;
-    protected Map<String, Integer> clusterMaxQueryCountFailureCount;
-    protected Map<String, Integer> clusterNoWorkerFailureCount;
+    private final Map<String, Integer> clusterHealthFailureCount;
+    private final Map<String, Integer> clusterMaxQueryCountFailureCount;
+    private final Map<String, Integer> clusterNoWorkerFailureCount;
 
     public FaultTolerantHealthChecker(Notifier notifier) {
         super(notifier);

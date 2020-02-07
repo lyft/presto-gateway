@@ -5,7 +5,7 @@ import java.util.List;
 
 public class HealthChecker implements PrestoClusterStatsObserver {
   public static final int MAX_THRESHOLD_QUEUED_QUERY_COUNT = 100;
-  protected Notifier notifier;
+  private final Notifier notifier;
 
   public HealthChecker(Notifier notifier) {
     this.notifier = notifier;
