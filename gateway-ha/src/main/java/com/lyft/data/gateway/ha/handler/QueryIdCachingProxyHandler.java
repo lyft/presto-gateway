@@ -28,6 +28,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String V1_INFO_PATH = "/v1/info";
+  public static final String V1_CLUSTER_PATH = "/v1/cluster";
   public static final String PRESTO_UI_PATH = "/ui";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
@@ -78,7 +79,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return path.startsWith(V1_STATEMENT_PATH)
         || path.startsWith(V1_QUERY_PATH)
         || path.startsWith(PRESTO_UI_PATH)
-        || path.startsWith(V1_INFO_PATH);
+        || path.startsWith(V1_INFO_PATH)
+        || path.startsWith(V1_CLUSTER_PATH);
   }
 
   public boolean isAuthEnabled() {
