@@ -87,7 +87,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return false;
   }
 
-  public void handleAuthRequest(HttpServletRequest request) {
+  public boolean handleAuthRequest(HttpServletRequest request) {
+    return true;
   }
 
   @Override
@@ -115,7 +116,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
-      handleAuthRequest(request);
+      if (!handleAuthRequest(request)) {
+        // This implies the AuthRequest was not authenticated, hence we error out from here.
+        log.info("Could not authenticate Request: " + request.toString());
+        return null;
+      }
     }
     String targetLocation =
         backendAddress
