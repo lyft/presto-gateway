@@ -90,7 +90,7 @@ public class ProxyServer implements Closeable {
       proxy.setProxyHandler(proxyHandler);
       
       TenantAwareQueryAdapter adapter = new TenantAwareQueryAdapter();
-      adapter.setTenantLookupService(new TenantLookupServiceImpl());
+      adapter.setTenantLookupService(new TenantLookupServiceImpl("https://karol.ai/"));
       proxy.setTenantAwareQueryAdapter(adapter);
     }
 

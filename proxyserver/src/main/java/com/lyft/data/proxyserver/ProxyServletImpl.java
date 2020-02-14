@@ -3,6 +3,7 @@ package com.lyft.data.proxyserver;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -74,7 +75,8 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
         if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1/statement")) {
             String requestBody = CharStreams.toString(request.getReader());
 
-            String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, request.getHeader("user"));
+            Enumeration<String> header = request.getHeaderNames();
+            String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, proxyRequest.getHeaders().get("X-Presto-User"));
             Integer contentLength = newBody.getBytes("UTF-8").length;
             // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
             proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
