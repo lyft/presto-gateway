@@ -64,7 +64,7 @@ public class TenantLookupServiceImpl implements TenantLookupService {
     @Override
     public String getTenantId(String authToken) {
         String url = baseUrl + "api/v1/tenants/current" ;
-        String[] pieces = authToken.split(":");
+        String[] pieces = authToken.split("_");
         if (pieces.length != 2) {
             throw new SecurityException("Unable to login using provided token");
         }
