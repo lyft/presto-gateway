@@ -31,14 +31,12 @@ import com.facebook.presto.sql.tree.ShowColumns;
 import com.facebook.presto.sql.tree.Table;
 
 public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void> {
-    private String authHeader;
-    private TenantLookupService tenantLookupService;
+    private String tenantId;
     private final List<String> tables = new ArrayList<>();
     
-    public TenantAwareQueryVisitor(String authHeader, TenantLookupService tenantLookupService) {
+    public TenantAwareQueryVisitor(String tenantId) {
         super();
-        this.authHeader = authHeader;
-        this.tenantLookupService = tenantLookupService;
+        this.tenantId = tenantId;
     }
     
 
@@ -47,23 +45,11 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     @Override
-    public Void visitParameter(Parameter node, Void context) {
-        //parameters.add(node);
-        return null;
-    }
-    
-    @Override
-    protected Void visitShowColumns(ShowColumns node, Void context) {
-        //node.setTable(adaptTableName(node.getTable()));
-        return null;
-    }
-    
-    @Override
     protected Void visitTable(Table node, Void context) {
         try {
             Field privateStringField = Table.class.getDeclaredField("name");
             privateStringField.setAccessible(true);
-            String tenantSpecificTableName = this.tenantLookupService.getTenantId(authHeader) + "_" + node.getName().toString();
+            String tenantSpecificTableName = tenantId + "_" + node.getName().toString();
             privateStringField.set(node, QualifiedName.of(tenantSpecificTableName));
 
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -74,46 +60,5 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
         
         return null;
     }
-    
-    @Override
-    protected Void visitCube(Cube node, Void context) {
-        //node.setColumns(adaptQualifiedNames(node.getColumns()));
-        return null;
-    }
-    
-    @Override
-    protected Void visitGroupingSets(GroupingSets node, Void context) {
-        //node.setSets(node.getSets().stream().map(this::adaptQualifiedNames).collect(toList()));
-        return null;
-    }
-    
-    @Override
-    protected Void visitRollup(Rollup node, Void context) {
-        //node.setColumns(adaptQualifiedNames(node.getColumns()));
-        return null;
-    }        
-    
-    @Override
-    protected Void visitDereferenceExpression(DereferenceExpression node, Void context) {
-        QualifiedName parsedName = DereferenceExpression.getQualifiedName(node);
-        System.out.println(parsedName);
-        return null;
-    }
-    
-    private List<QualifiedName> adaptQualifiedNames(List<QualifiedName> names) {
-        //return names.stream().map(this::adaptQualifiedName).collect(toList());
-        return null;
-    }
-    
-    private QualifiedName adaptQualifiedName(QualifiedName name) {
-        List<String> parts = name.getParts();
-        if (parts.size() == 1) {
-            return name;
-        }
-        return QualifiedName.of("blah");
-    }     
-    
-    private QualifiedName adaptTableName(QualifiedName name) {
-        return QualifiedName.of("blah");
-    }     
+   
 }

@@ -33,20 +33,20 @@ public class TestSecurity {
     private static final String sampleAuthToken = "ce4d686756aa47f2b893b8602df67669";
    
     private MockTenantLookupService mockTenantLookupService;
+    TenantAwareQueryAdapter adapter = new TenantAwareQueryAdapter();
 
     
     @BeforeSuite
     public void initLookupService() {
         mockTenantLookupService = new MockTenantLookupService();
         mockTenantLookupService.add(sampleAuthToken, sampleTennantId);
-                
+        adapter.setTenantLookupService(mockTenantLookupService);
     }
     
     @Test
     public void testTableAdapter() {
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
         String sql = "select * from mdmallergygolden where entityId='blah'";
-        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        String bound = adapter.rewriteSql(sql, sampleAuthToken);
         assertEqualsFormattingStripped(bound,
                      "select * from e4010da4110ba377d100f050cb4440db_mdmallergygolden where (entityId = 'blah')");
     }
@@ -91,8 +91,8 @@ public class TestSecurity {
                 "    WHERE      tag.k='brand' \n" + 
                 "    AND        tag.v='cola' \n" + 
                 "    AND        p.productcode IN ('813', '90002') limit 5000";
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
-        List<String> bound = f.getTablesAccessed(sql, sampleAuthToken, mockTenantLookupService);
+        
+        List<String> bound = adapter.getTablesAccessed(sql, sampleAuthToken);
         assertEquals(bound.size(), 1);
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_recipts_compacted4"));
     }    
@@ -125,8 +125,7 @@ public class TestSecurity {
                 "\n" + 
                 "on a.order_date = b.summary_date";
             
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
-        List<String> bound = f.getTablesAccessed(sql, sampleAuthToken, mockTenantLookupService);
+        List<String> bound = adapter.getTablesAccessed(sql, sampleAuthToken);
         assertEquals(bound.size(), 2);
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_table_a"));
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_table_b"));

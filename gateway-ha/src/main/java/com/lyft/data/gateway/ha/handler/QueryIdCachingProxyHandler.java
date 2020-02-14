@@ -65,10 +65,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         && request.getRequestURI().startsWith(V1_STATEMENT_PATH)) {
       requestMeter.mark();
       try {
-          rewriteQuery(request, proxyRequest);
         String requestBody = CharStreams.toString(request.getReader());
-        
-        
         log.info(
             "Processing request endpoint: [{}], payload: [{}]",
             request.getRequestURI(),
@@ -91,48 +88,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public boolean isAuthEnabled() {
     return false;
   }
-/*
-  private void rewriteProxyRequest(Request request) {
-      try {
-          String requestBody = request.getQuery();
-          System.out.println("Rewriting " + requestBody);
-          
-          if(requestBody.equalsIgnoreCase("select * from recipts limit 2")) {
-              requestBody = "select * from recipts limit 6";
-              Integer contentLength = requestBody.getBytes("UTF-8").length;
-              ((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
-              ((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-              //request.getContentLength().header(HttpHeader.CONTENT_LENGTH, contentLength);
-              //((MultiReadHttpServletRequest) request).addHeader("Content-Length", contentLength.toString());
-          }
-          
-      } catch (Exception e) {
-          log.warn("Error fetching the request payload", e);
-      }
-  }*/
-    private void rewriteQuery(HttpServletRequest request, Request proxyRequest) {
-        try {
-            String requestBody = CharStreams.toString(request.getReader());
-            System.out.println("Rewriting " + requestBody);
-            
-            if(requestBody.equalsIgnoreCase("select * from recipts limit 2")) {
-                requestBody = "select * from recipts limit 1226";
-                Integer contentLength = requestBody.getBytes("UTF-8").length;
-                //((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
-                //((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-                
-                
-                //proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-                //proxyRequest.content(new BytesContentProvider(requestBody.getBytes("UTF-8")));
-                
-                //request.getContentLength().header(HttpHeader.CONTENT_LENGTH, contentLength);
-                //((MultiReadHttpServletRequest) request).addHeader("Content-Length", contentLength.toString());
-            }
-            
-        } catch (Exception e) {
-            log.warn("Error fetching the request payload", e);
-        }
-    }
 
 
   public boolean handleAuthRequest(HttpServletRequest request) {

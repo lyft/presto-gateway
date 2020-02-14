@@ -19,55 +19,37 @@ package com.lyft.data.proxyserver.wrapper;
 
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import org.eclipse.jetty.client.api.Request;
 import com.facebook.presto.sql.SqlFormatter;
 import com.facebook.presto.sql.parser.ParsingOptions;
 import com.facebook.presto.sql.parser.SqlParser;
-import com.google.common.io.CharStreams;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class TenantAwareQueryAdapter {
     public static final String V1_STATEMENT_PATH = "/v1/statement";
-    
+
     // Inspired from
     // https://github.com/prestodb/presto/tree/master/presto-parser/src/test/java/com/facebook/presto/sql/parser
 
     private static final SqlParser SQL_PARSER = new SqlParser();
     private ParsingOptions parsingOptions = new ParsingOptions();
+    private TenantLookupService tenantLookupService;
 
-     public List<String> getTablesAccessed(String inputSql, String authHeader, TenantLookupService tenantLookupService) {
-         com.facebook.presto.sql.tree.Statement statement = SQL_PARSER.createStatement(inputSql, parsingOptions);
-         TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(authHeader, tenantLookupService);
-         statement.accept(visitor, null);
-         return visitor.getTables();
+    public void setTenantLookupService(TenantLookupService tenantLookupService) {
+        this.tenantLookupService = tenantLookupService;
     }
-    
-    public String bindTables(String inputSql, String authHeader, TenantLookupService tenantLookupService) {
+
+
+    public List<String> getTablesAccessed(String inputSql, String authHeader) {
         com.facebook.presto.sql.tree.Statement statement = SQL_PARSER.createStatement(inputSql, parsingOptions);
-        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(authHeader, tenantLookupService);
+        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantLookupService.getTenantId(authHeader));
+        statement.accept(visitor, null);
+        return visitor.getTables();
+    }
+
+    public String rewriteSql(String inputSql, String authHeader) {
+        com.facebook.presto.sql.tree.Statement statement = SQL_PARSER.createStatement(inputSql, parsingOptions);
+        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantLookupService.getTenantId(authHeader));
         statement.accept(visitor, null);
         return SqlFormatter.formatSql(statement, Optional.empty());
-    }    
-    
-    //TODO: Tackle show tables (enforce a "like" qualifier to narrow table list to those with your prefix
-    
-    public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
-        if (request.getMethod().equals("POST")
-            && request.getRequestURI().startsWith(V1_STATEMENT_PATH)) {
-          try {
-            String requestBody = CharStreams.toString(request.getReader());
-            
-            log.info(
-                "Processing request endpoint: [{}], payload: [{}]",
-                request.getRequestURI(),
-                requestBody);
-
-          } catch (Exception e) {
-            log.warn("Error fetching the request payload", e);
-          }
-        }
-      }
+    }
 
 }

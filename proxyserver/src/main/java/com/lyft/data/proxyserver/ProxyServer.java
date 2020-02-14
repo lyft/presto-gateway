@@ -23,6 +23,8 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import com.lyft.data.proxyserver.wrapper.TenantAwareQueryAdapter;
+import com.lyft.data.proxyserver.wrapper.TenantLookupServiceImpl;
 
 @Slf4j
 public class ProxyServer implements Closeable {
@@ -86,6 +88,10 @@ public class ProxyServer implements Closeable {
     ProxyServletImpl proxy = new ProxyServletImpl();
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
+      
+      TenantAwareQueryAdapter adapter = new TenantAwareQueryAdapter();
+      adapter.setTenantLookupService(new TenantLookupServiceImpl());
+      proxy.setTenantAwareQueryAdapter(adapter);
     }
 
     ServletHolder proxyServlet = new ServletHolder(config.getName(), proxy);

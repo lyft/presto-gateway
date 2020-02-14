@@ -23,6 +23,8 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import com.google.common.io.CharStreams;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 import com.lyft.data.proxyserver.wrapper.TenantAwareQueryAdapter;
+import com.lyft.data.proxyserver.wrapper.TenantLookupService;
+import com.lyft.data.proxyserver.wrapper.TenantLookupServiceImpl;
 
 @Slf4j
 public class ProxyServletImpl extends ProxyServlet.Transparent {
@@ -39,22 +41,8 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
       this.tenantAwareQueryAdapter = tenantAwareQueryAdapter;
   }
   
-  @Override
-  protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-      String requestBody = CharStreams.toString(request.getReader());
-      System.out.println("Rewriting " + requestBody);
-      
-      /*
-      if(requestBody.equalsIgnoreCase("select * from recipts limit 2")) {
-          requestBody = "select * from recipts limit 1226";
-          Integer contentLength = requestBody.getBytes("UTF-8").length;
-          ((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
-          ((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-      }*/
-      super.service(request, response);
-  }
 
-  // Overriding this method to support ssl
+// Overriding this method to support ssl
   @Override
   protected HttpClient newHttpClient() {
     SslContextFactory sslFactory = new SslContextFactory();
@@ -74,49 +62,30 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
     super.addProxyHeaders(request, proxyRequest);
     if (proxyHandler != null) {
       proxyHandler.preConnectionHook(request, proxyRequest);
-      //tenantAwareQueryAdapter.
     }
-    
   }
   
-  // Happens after QueryIdCachingProxyHandler, result sets stored wrong
-  
-  @Override
-  protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
-      if (request.getMethod().equals("POST")
-              && request.getRequestURI().startsWith("/v1/statement")) {
-          String requestBody = CharStreams.toString(request.getReader());
-          if(requestBody.equalsIgnoreCase("select * from recipts limit 2") || requestBody.equalsIgnoreCase("select * from recipts limit 1225")) {
-              requestBody = "select * from recipts limit 1";
-              Integer contentLength = requestBody.getBytes("UTF-8").length;
-              
-              ((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
-              ((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+ 
+  /**
+   * Rewrite our queries based on authentication header
+   */
+    @Override
+    protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
+        if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1/statement")) {
+            String requestBody = CharStreams.toString(request.getReader());
 
-              proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
-              proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-              //proxyRequest.content(new BytesContentProvider(requestBody.getBytes("UTF-8")));
-              
-              return new InputStreamContentProvider(new ByteArrayInputStream(requestBody.getBytes()));
-          } 
-      }
-      return new InputStreamContentProvider(request.getInputStream());
-  }
+            String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, request.getHeader("user"));
+            Integer contentLength = newBody.getBytes("UTF-8").length;
+            // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
+            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
+            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+            return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
+        }
+        return new InputStreamContentProvider(request.getInputStream());
+    }
 
   @Override
   protected String rewriteTarget(HttpServletRequest request) {
-      //System.out.println(proxyRequest.getContent().toString());
-      //long l = proxyRequest.getContent().toString().getBytes().length;
-      //System.out.println(l);
-      try {
-        String requestBody = CharStreams.toString(request.getReader());
-        System.out.println(requestBody);
-    } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-    }
-      
-      
     String target = null;
     if (proxyHandler != null) {
       target = proxyHandler.rewriteTarget(request);
