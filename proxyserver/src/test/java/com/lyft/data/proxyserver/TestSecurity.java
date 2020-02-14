@@ -51,6 +51,33 @@ public class TestSecurity {
                      "select * from e4010da4110ba377d100f050cb4440db_mdmallergygolden where (entityId = 'blah')");
     }
     
+    //@Test - Geny this one's for you
+    /*
+    public void testShowTables() {
+        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
+        String sql = "show tables";
+        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        assertEqualsFormattingStripped(bound, "show tables like 'e4010da4110ba377d100f050cb4440db%'");
+    }
+    
+    public void testShowSchemas() {
+        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
+        String sql = "show schemas";
+        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        assertEqualsFormattingStripped(bound, "show schemas like 'e4010da4110ba377d100f050cb4440db%'");
+    }  
+    
+    public void testShowCatalogs() {
+        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
+        String sql = "show schemas";
+        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        assertEqualsFormattingStripped(bound, "show catalogs like 'hive%'");
+    }          
+    
+    // probably ShowCreate as well, check if there's anything else worth visiting & rewriting https://github.com/prestodb/presto/blob/master/presto-parser/src/main/java/com/facebook/presto/sql/tree/AstVisitor.java
+         
+    */   
+    
     @Test
     public void testComplex() {
         String sql = "SELECT     receiptid, \n" + 

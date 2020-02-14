@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.Callback;
 
@@ -63,7 +65,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         && request.getRequestURI().startsWith(V1_STATEMENT_PATH)) {
       requestMeter.mark();
       try {
+          rewriteQuery(request, proxyRequest);
         String requestBody = CharStreams.toString(request.getReader());
+        
+        
         log.info(
             "Processing request endpoint: [{}], payload: [{}]",
             request.getRequestURI(),
@@ -86,6 +91,49 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public boolean isAuthEnabled() {
     return false;
   }
+/*
+  private void rewriteProxyRequest(Request request) {
+      try {
+          String requestBody = request.getQuery();
+          System.out.println("Rewriting " + requestBody);
+          
+          if(requestBody.equalsIgnoreCase("select * from recipts limit 2")) {
+              requestBody = "select * from recipts limit 6";
+              Integer contentLength = requestBody.getBytes("UTF-8").length;
+              ((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
+              ((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+              //request.getContentLength().header(HttpHeader.CONTENT_LENGTH, contentLength);
+              //((MultiReadHttpServletRequest) request).addHeader("Content-Length", contentLength.toString());
+          }
+          
+      } catch (Exception e) {
+          log.warn("Error fetching the request payload", e);
+      }
+  }*/
+    private void rewriteQuery(HttpServletRequest request, Request proxyRequest) {
+        try {
+            String requestBody = CharStreams.toString(request.getReader());
+            System.out.println("Rewriting " + requestBody);
+            
+            if(requestBody.equalsIgnoreCase("select * from recipts limit 2")) {
+                requestBody = "select * from recipts limit 1226";
+                Integer contentLength = requestBody.getBytes("UTF-8").length;
+                //((MultiReadHttpServletRequest) request).rewriteContent(requestBody.getBytes());
+                //((MultiReadHttpServletRequest) request).addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+                
+                
+                //proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+                //proxyRequest.content(new BytesContentProvider(requestBody.getBytes("UTF-8")));
+                
+                //request.getContentLength().header(HttpHeader.CONTENT_LENGTH, contentLength);
+                //((MultiReadHttpServletRequest) request).addHeader("Content-Length", contentLength.toString());
+            }
+            
+        } catch (Exception e) {
+            log.warn("Error fetching the request payload", e);
+        }
+    }
+
 
   public boolean handleAuthRequest(HttpServletRequest request) {
     return true;
@@ -141,6 +189,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   protected String extractQueryIdIfPresent(HttpServletRequest request) {
+      //rewriteQuery(request);
     String path = request.getRequestURI();
     String queryParams = request.getQueryString();
     try {
@@ -196,6 +245,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       int offset,
       int length,
       Callback callback) {
+      //rewriteQuery(request);
     try {
       String requestPath = request.getRequestURI();
       if (requestPath.startsWith(V1_STATEMENT_PATH)
@@ -250,6 +300,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setCaptureTime(System.currentTimeMillis());
     queryDetail.setUser(request.getHeader(USER_HEADER));
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
+    //rewriteQuery(request);
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
         queryText.length() > QUERY_TEXT_LENGTH_FOR_HISTORY
