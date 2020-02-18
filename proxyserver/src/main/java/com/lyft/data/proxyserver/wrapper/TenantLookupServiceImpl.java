@@ -18,11 +18,14 @@
 package com.lyft.data.proxyserver.wrapper;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -54,15 +57,22 @@ import com.google.gson.JsonParser;
 public class TenantLookupServiceImpl implements TenantLookupService {
 
     private String baseUrl;
-    private HttpClient client = new DefaultHttpClient();
+    private HttpClient client;
 
     public TenantLookupServiceImpl(String baseUrl) {
         super();
         this.baseUrl = baseUrl;
+        
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        connManager.setMaxTotal(100);
+        connManager.setDefaultMaxPerRoute(100);
+        connManager.closeIdleConnections(10, TimeUnit.MINUTES);
+        connManager.closeExpiredConnections();
+        client = HttpClients.custom().setConnectionManager(connManager).build();
     }
 
     @Override
-    public String getTenantId(String authToken) {
+    public TenantId getTenantId(String authToken) {
         String url = baseUrl + "api/v1/tenants/current" ;
         String[] pieces = authToken.split("_");
         if (pieces.length != 2) {
@@ -85,7 +95,7 @@ public class TenantLookupServiceImpl implements TenantLookupService {
             
             String content = EntityUtils.toString(entity);
             JsonElement je = new JsonParser().parse(content);
-            return je.getAsJsonObject().get("mdmTenantId").getAsString();
+            return new TenantId(je.getAsJsonObject().get("mdmTenantId").getAsString());
         } catch (IOException e) {
             throw new SecurityException(e);
         } finally {

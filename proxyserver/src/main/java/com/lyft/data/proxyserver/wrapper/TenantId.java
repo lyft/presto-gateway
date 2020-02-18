@@ -17,7 +17,16 @@
 
 package com.lyft.data.proxyserver.wrapper;
 
-public interface TenantLookupService {
-    TenantId getTenantId(String authToken);
+public class TenantId {
+    // Wrapper class around tenant Id
+    
+    private String id;
+    
+    public TenantId(String id) {
+        this.id = id;
+    }
 
+    public String get() {
+        return id;
+    }
 }

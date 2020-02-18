@@ -18,6 +18,7 @@
 package com.lyft.data.proxyserver;
 
 import org.testng.annotations.Test;
+import com.lyft.data.proxyserver.wrapper.TenantId;
 import com.lyft.data.proxyserver.wrapper.TenantLookupServiceImpl;
 import static org.testng.Assert.assertEquals;
 
@@ -27,7 +28,7 @@ public class TestTenantLookup {
     
     @Test
     public void testLookup() {
-        String tenantId = lookup.getTenantId("623cdc6dd7d343168805a47435d063e2_628c6f49379640b4bd1b0f1c33c9c346");
+        TenantId tenantId = lookup.getTenantId("623cdc6dd7d343168805a47435d063e2_628c6f49379640b4bd1b0f1c33c9c346");
         assertEquals(tenantId, "8cd6e43115e9416eb23609486fa053e3");
     }
 

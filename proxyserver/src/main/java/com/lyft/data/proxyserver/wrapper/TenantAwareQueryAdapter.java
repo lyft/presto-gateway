@@ -36,20 +36,25 @@ public class TenantAwareQueryAdapter {
     public void setTenantLookupService(TenantLookupService tenantLookupService) {
         this.tenantLookupService = tenantLookupService;
     }
+    
+    public TenantId authenticate(String authHeader) {
+        return tenantLookupService.getTenantId(authHeader);
+    }
 
 
-    public List<String> getTablesAccessed(String inputSql, String authHeader) {
+    public List<String> getTablesAccessed(String inputSql, TenantId tenantId) {
         com.facebook.presto.sql.tree.Statement statement = SQL_PARSER.createStatement(inputSql, parsingOptions);
-        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantLookupService.getTenantId(authHeader));
+        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantId.get());
         statement.accept(visitor, null);
         return visitor.getTables();
     }
 
-    public String rewriteSql(String inputSql, String authHeader) {
+    public String rewriteSql(String inputSql, TenantId tenantId) {
         com.facebook.presto.sql.tree.Statement statement = SQL_PARSER.createStatement(inputSql, parsingOptions);
-        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantLookupService.getTenantId(authHeader));
+        TenantAwareQueryVisitor visitor = new TenantAwareQueryVisitor(tenantId.get());
         statement.accept(visitor, null);
         return SqlFormatter.formatSql(statement, Optional.empty());
     }
+    
 
 }

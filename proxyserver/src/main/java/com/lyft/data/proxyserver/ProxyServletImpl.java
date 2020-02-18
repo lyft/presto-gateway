@@ -21,9 +21,11 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import com.facebook.presto.sql.parser.ParsingException;
 import com.google.common.io.CharStreams;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 import com.lyft.data.proxyserver.wrapper.TenantAwareQueryAdapter;
+import com.lyft.data.proxyserver.wrapper.TenantId;
 import com.lyft.data.proxyserver.wrapper.TenantLookupService;
 import com.lyft.data.proxyserver.wrapper.TenantLookupServiceImpl;
 
@@ -72,16 +74,22 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
    */
     @Override
     protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
+        TenantId tenantId = tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get("X-Presto-User"));
+        
         if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1/statement")) {
             String requestBody = CharStreams.toString(request.getReader());
 
-            Enumeration<String> header = request.getHeaderNames();
-            String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, proxyRequest.getHeaders().get("X-Presto-User"));
-            Integer contentLength = newBody.getBytes("UTF-8").length;
-            // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
-            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
-            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-            return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
+            try {
+                String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, tenantId);
+                Integer contentLength = newBody.getBytes("UTF-8").length;
+                // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
+                proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
+                proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+                return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
+                
+            } catch (ParsingException e) {
+                System.out.println(e);
+            }
         }
         return new InputStreamContentProvider(request.getInputStream());
     }

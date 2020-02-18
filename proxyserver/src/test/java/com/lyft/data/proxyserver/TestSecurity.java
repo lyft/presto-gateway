@@ -23,13 +23,14 @@ import java.util.Map;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import com.lyft.data.proxyserver.wrapper.TenantAwareQueryAdapter;
+import com.lyft.data.proxyserver.wrapper.TenantId;
 import com.lyft.data.proxyserver.wrapper.TenantLookupService;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class TestSecurity {
 
-    private static final String sampleTennantId = "e4010da4110ba377d100f050cb4440db";
+    private static final TenantId authenticatedTennantId = new TenantId("e4010da4110ba377d100f050cb4440db");
     private static final String sampleAuthToken = "ce4d686756aa47f2b893b8602df67669";
    
     private MockTenantLookupService mockTenantLookupService;
@@ -39,42 +40,97 @@ public class TestSecurity {
     @BeforeSuite
     public void initLookupService() {
         mockTenantLookupService = new MockTenantLookupService();
-        mockTenantLookupService.add(sampleAuthToken, sampleTennantId);
+        mockTenantLookupService.add(sampleAuthToken, authenticatedTennantId);
         adapter.setTenantLookupService(mockTenantLookupService);
     }
     
     @Test
     public void testTableAdapter() {
         String sql = "select * from mdmallergygolden where entityId='blah'";
-        String bound = adapter.rewriteSql(sql, sampleAuthToken);
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
+        assertEqualsFormattingStripped(bound,
+                     "select * from e4010da4110ba377d100f050cb4440db_mdmallergygolden where (entityId = 'blah')");
+    }
+    @Test
+    public void testTableAlreadyNamespaced() {
+        String sql = "select * from e4010da4110ba377d100f050cb4440db_mdmallergygolden where entityId='blah'";
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
         assertEqualsFormattingStripped(bound,
                      "select * from e4010da4110ba377d100f050cb4440db_mdmallergygolden where (entityId = 'blah')");
     }
     
-    //@Test - Geny this one's for you
-    /*
-    public void testShowTables() {
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
-        String sql = "show tables";
-        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
-        assertEqualsFormattingStripped(bound, "show tables like 'e4010da4110ba377d100f050cb4440db%'");
+    @Test
+    public void testSupersetShowColumns() {
+        String sql = "SHOW COLUMNS FROM \"default\".\"8cd6e43115e9416eb23609486fa053e3_recipts\"";
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
+        assertEqualsFormattingStripped(bound,
+                "SHOW COLUMNS FROM default.\"8cd6e43115e9416eb23609486fa053e3_recipts\"");
+        
     }
     
+    @Test
+    public void testSupersetDataPreviewQuery() {
+        String sql = "SELECT \"receiptid\" AS \"receiptid\",\n" + 
+                "       \"datetimeemission\" AS \"datetimeemission\",\n" + 
+                "       \"mdmtaxid\" AS \"mdmtaxid\",\n" + 
+                "       \"mdmstatetaxid\" AS \"mdmstatetaxid\",\n" + 
+                "       \"mdmcompanyname\" AS \"mdmcompanyname\",\n" + 
+                "       \"mdmdba\" AS \"mdmdba\",\n" + 
+                "       \"cnae\" AS \"cnae\",\n" + 
+                "       \"mdmaddress\" AS \"mdmaddress\",\n" + 
+                "       \"additionalinformatio\" AS \"additionalinformatio\",\n" + 
+                "       \"customerobj\" AS \"customerobj\",\n" + 
+                "       \"products\" AS \"products\",\n" + 
+                "       \"originalcnae\" AS \"originalcnae\",\n" + 
+                "       \"environment\" AS \"environment\",\n" + 
+                "       \"mdmcounterforentity\" AS \"mdmcounterforentity\",\n" + 
+                "       \"mdmid\" AS \"mdmid\",\n" + 
+                "       \"mdmcreated\" AS \"mdmcreated\",\n" + 
+                "       \"mdmlastupdated\" AS \"mdmlastupdated\",\n" + 
+                "       \"mdmtenantid\" AS \"mdmtenantid\",\n" + 
+                "       \"mdmentitytype\" AS \"mdmentitytype\",\n" + 
+                "       \"mdmsourceentitynames\" AS \"mdmsourceentitynames\",\n" + 
+                "       \"mdmcrosswalk\" AS \"mdmcrosswalk\",\n" + 
+                "       \"mdmapplicationidmasterrecordid\" AS \"mdmapplicationidmasterrecordid\"\n" + 
+                "FROM \"default\".\"8cd6e43115e9416eb23609486fa053e3_recipts\"\n" + 
+                "LIMIT 100";
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
+        assertEqualsFormattingStripped(bound, "select \"receiptid\" \"receiptid\" , \"datetimeemission\" \"datetimeemission\" , \"mdmtaxid\" \"mdmtaxid\" , \"mdmstatetaxid\" \"mdmstatetaxid\" , \"mdmcompanyname\" \"mdmcompanyname\" , \"mdmdba\" \"mdmdba\" , \"cnae\" \"cnae\" , \"mdmaddress\" \"mdmaddress\" , \"additionalinformatio\" \"additionalinformatio\" , \"customerobj\" \"customerobj\" , \"products\" \"products\" , \"originalcnae\" \"originalcnae\" , \"environment\" \"environment\" , \"mdmcounterforentity\" \"mdmcounterforentity\" , \"mdmid\" \"mdmid\" , \"mdmcreated\" \"mdmcreated\" , \"mdmlastupdated\" \"mdmlastupdated\" , \"mdmtenantid\" \"mdmtenantid\" , \"mdmentitytype\" \"mdmentitytype\" , \"mdmsourceentitynames\" \"mdmsourceentitynames\" , \"mdmcrosswalk\" \"mdmcrosswalk\" , \"mdmapplicationidmasterrecordid\" \"mdmapplicationidmasterrecordid\" from \"e4010da4110ba377d100f050cb4440db_default.8cd6e43115e9416eb23609486fa053e3_recipts\" limit 100");
+        
+    }
+
+    
+    @Test
+    public void testShowTables() {
+        String sql = "show tables";
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
+        assertEqualsFormattingStripped(bound, "show tables like 'e4010da4110ba377d100f050cb4440db_%'");
+    }
+    
+    @Test
+    public void testShowTablesModify() {
+        String sql = "show tables like 'recipt%'";
+        String bound = adapter.rewriteSql(sql, authenticatedTennantId);
+        assertEqualsFormattingStripped(bound, "show tables like 'e4010da4110ba377d100f050cb4440db_%recipt%'");
+    }    
+
+    //@Test - Geny this one's for you
+    /*
+    
     public void testShowSchemas() {
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
         String sql = "show schemas";
-        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        String bound = adapter.rewriteSql(sql, sampleAuthToken);
         assertEqualsFormattingStripped(bound, "show schemas like 'e4010da4110ba377d100f050cb4440db%'");
     }  
     
     public void testShowCatalogs() {
-        TenantAwareQueryAdapter f = new TenantAwareQueryAdapter();
         String sql = "show schemas";
-        String bound = f.bindTables(sql, sampleAuthToken, mockTenantLookupService);
+        String bound = adapter.rewriteSql(sql, sampleAuthToken);
         assertEqualsFormattingStripped(bound, "show catalogs like 'hive%'");
     }          
     
     // probably ShowCreate as well, check if there's anything else worth visiting & rewriting https://github.com/prestodb/presto/blob/master/presto-parser/src/main/java/com/facebook/presto/sql/tree/AstVisitor.java
+     * 
          
     */   
     
@@ -92,7 +148,7 @@ public class TestSecurity {
                 "    AND        tag.v='cola' \n" + 
                 "    AND        p.productcode IN ('813', '90002') limit 5000";
         
-        List<String> bound = adapter.getTablesAccessed(sql, sampleAuthToken);
+        List<String> bound = adapter.getTablesAccessed(sql, authenticatedTennantId);
         assertEquals(bound.size(), 1);
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_recipts_compacted4"));
     }    
@@ -125,7 +181,7 @@ public class TestSecurity {
                 "\n" + 
                 "on a.order_date = b.summary_date";
             
-        List<String> bound = adapter.getTablesAccessed(sql, sampleAuthToken);
+        List<String> bound = adapter.getTablesAccessed(sql, authenticatedTennantId);
         assertEquals(bound.size(), 2);
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_table_a"));
         assertTrue(bound.contains("e4010da4110ba377d100f050cb4440db_table_b"));
@@ -142,14 +198,14 @@ public class TestSecurity {
 
     
     private class MockTenantLookupService implements TenantLookupService {
-        private Map<String, String> authToTenantId = new HashMap<>();
+        private Map<String, TenantId> authToTenantId = new HashMap<>();
         
         @Override
-        public String getTenantId(String authToken) {
+        public TenantId getTenantId(String authToken) {
             return authToTenantId.get(authToken);
         }
         
-        public void add(String authToken, String tenantId) {
+        public void add(String authToken, TenantId tenantId) {
             authToTenantId.put(authToken, tenantId);
         }
     }
