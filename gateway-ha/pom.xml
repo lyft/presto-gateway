@@ -26,8 +26,8 @@
         <guice.version>4.1.0</guice.version>
         <guava.version>23.0</guava.version>
         <reflections.version>0.9.10</reflections.version>
-        <ehcache.version>2.7.4</ehcache.version>
-        <activejdbc.version>2.2</activejdbc.version>
+        <ehcache.version>3.8.1</ehcache.version>
+        <activejdbc.version>2.3</activejdbc.version>
         <mysqlconnector.version>8.0.17</mysqlconnector.version>
         <environments>development</environments>
         <app.main.class>com.lyft.data.gateway.ha.HaGatewayLauncher</app.main.class>
@@ -91,7 +91,7 @@
             <version>${activejdbc.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.ehcache</groupId>
+            <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
         </dependency>
