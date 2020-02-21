@@ -69,6 +69,34 @@ public class TestSecurity {
     }
     
     @Test
+    public void testPreiods () {
+        String sql = "SELECT \"receiptid\" AS \"receiptid\",\n" + 
+                "       \"datetimeemission\" AS \"datetimeemission\",\n" + 
+                "       \"mdmtaxid\" AS \"mdmtaxid\",\n" + 
+                "       \"mdmstatetaxid\" AS \"mdmstatetaxid\",\n" + 
+                "       \"mdmcompanyname\" AS \"mdmcompanyname\",\n" + 
+                "       \"mdmdba\" AS \"mdmdba\",\n" + 
+                "       \"cnae\" AS \"cnae\",\n" + 
+                "       \"mdmaddress\" AS \"mdmaddress\",\n" + 
+                "       \"additionalinformatio\" AS \"additionalinformatio\",\n" + 
+                "       \"customerobj\" AS \"customerobj\",\n" + 
+                "       \"products\" AS \"products\",\n" + 
+                "       \"originalcnae\" AS \"originalcnae\",\n" + 
+                "       \"environment\" AS \"environment\",\n" + 
+                "       \"mdmcounterforentity\" AS \"mdmcounterforentity\",\n" + 
+                "       \"mdmid\" AS \"mdmid\",\n" + 
+                "       \"mdmcreated\" AS \"mdmcreated\",\n" + 
+                "       \"mdmlastupdated\" AS \"mdmlastupdated\",\n" + 
+                "       \"mdmtenantid\" AS \"mdmtenantid\",\n" + 
+                "       \"mdmentitytype\" AS \"mdmentitytype\",\n" + 
+                "       \"mdmsourceentitynames\" AS \"mdmsourceentitynames\",\n" + 
+                "       \"mdmcrosswalk\" AS \"mdmcrosswalk\",\n" + 
+                "       \"mdmapplicationidmasterrecordid\" AS \"mdmapplicationidmasterrecordid\"\n" + 
+                "FROM \"default\".\"recipts\"\n" + 
+                "LIMIT 100";
+    }
+    
+    @Test
     public void testSupersetDataPreviewQuery() {
         String sql = "SELECT \"receiptid\" AS \"receiptid\",\n" + 
                 "       \"datetimeemission\" AS \"datetimeemission\",\n" + 

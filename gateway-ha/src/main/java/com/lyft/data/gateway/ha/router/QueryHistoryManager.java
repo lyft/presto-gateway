@@ -1,7 +1,6 @@
 package com.lyft.data.gateway.ha.router;
 
 import java.util.List;
-
 import lombok.Data;
 import lombok.ToString;
 
@@ -21,6 +20,11 @@ public interface QueryHistoryManager {
     private String source;
     private String backendUrl;
     private long captureTime;
+    private String modifiedQuery;
+    private String prestoUser;
+    private String tenantId;
+    private long initiatedTime;
+
 
     @Override
     public int compareTo(QueryDetail o) {

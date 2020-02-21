@@ -70,11 +70,39 @@ public class TenantLookupServiceImpl implements TenantLookupService {
         connManager.closeExpiredConnections();
         client = HttpClients.custom().setConnectionManager(connManager).build();
     }
-
-    @Override
-    public TenantId getTenantId(String authToken) {
+    
+    /*
+    public TenantId getByOauth(String oauth) {
+        if(oauth.length() != 32) {
+            throw new SecurityException("Invalid oauth token");
+        }
+        String url = baseUrl + "api/v2/oauth2/token" + oauth ;
+        HttpGet request = new HttpGet(url);
+        try {
+            request.addHeader("x-auth-token", oauth);
+            request.addHeader("accept", "application/json");
+            HttpResponse response = client.execute(request);
+            HttpEntity entity = response.getEntity();
+            Integer statusCode = response.getStatusLine().getStatusCode();
+            if(statusCode > 201 && statusCode < 500) {
+                throw new SecurityException("Invalid oauth token");
+            } else if (statusCode >= 500) {
+                throw new SecurityException("Failure authenticating with carol API, status code " + statusCode);
+            }
+            
+            String content = EntityUtils.toString(entity);
+            JsonElement je = new JsonParser().parse(content);
+            return new TenantId(je.getAsJsonObject().get("mdmTenantId").getAsString());
+        } catch (IOException e) {
+            throw new SecurityException(e);
+        } finally {
+            request.releaseConnection();    
+        }        
+    }*/
+    
+    public TenantId getByConnectorToken(String token) {
         String url = baseUrl + "api/v1/tenants/current" ;
-        String[] pieces = authToken.split("_");
+        String[] pieces = token.split("_");
         if (pieces.length != 2) {
             throw new SecurityException("Unable to login using provided token");
         }
@@ -101,6 +129,17 @@ public class TenantLookupServiceImpl implements TenantLookupService {
         } finally {
             request.releaseConnection();    
         }
+    }
+
+    @Override
+    public TenantId getTenantId(String authToken) {
+        if(authToken.length() == 65) {
+            return getByConnectorToken(authToken);
+        } else {
+            //TODO: Need to return tenant ID in the oauth rest API for this to be an option 
+            //return getByOauth(authToken);
+        }
+        throw new SecurityException("Failure authenticating with carol API");   
     }
 
 }

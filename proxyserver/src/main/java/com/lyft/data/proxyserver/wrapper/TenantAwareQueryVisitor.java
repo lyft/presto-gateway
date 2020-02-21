@@ -38,27 +38,24 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     /**
-     * Swap out the table name with the full namespaced table name used in hive
-     * customer -> [tenant UUID]_customer
+     * Swap out the table name with the full namespaced table name used in hive customer -> [tenant
+     * UUID]_customer
      */
     @Override
     protected Void visitTable(Table node, Void context) {
         try {
             String tenantPrefix = tenantId + "_";
             String inputTableName = node.getName().getParts().get(node.getName().getParts().size() - 1);
-            if(!inputTableName.startsWith(tenantPrefix)) {
+            if (!inputTableName.startsWith(tenantPrefix)) {
                 Field privateStringField = Table.class.getDeclaredField("name");
                 privateStringField.setAccessible(true);
                 String tenantSpecificTableName = tenantPrefix + node.getName().toString();
                 privateStringField.set(node, QualifiedName.of(tenantSpecificTableName));
-                
             }
-
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             throw new SecurityException("Unable to execute query");
         }
         tables.add(node.getName().toString());
-
         return null;
     }
 
@@ -69,6 +66,7 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     protected Void visitShowTables(ShowTables node, Void context) {
         try {
             StringBuilder sb = new StringBuilder();
+            //TODO: Handle an already rewritten show table statement like we do with visitTable
             sb.append(tenantId).append("_%");
 
             if (node.getLikePattern().isPresent()) {
@@ -90,12 +88,12 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     protected Void visitShowCatalogs(ShowCatalogs node, Void context) {
-        //TODO: Fill in
+        // TODO: Fill in
         return null;
     }
 
     protected Void visitShowColumns(ShowColumns node, Void context) {
-        //TODO: Is this covered by the table visitor? If not, implement
+        // TODO: Is this covered by the table visitor? If not, implement
         return null;
     }
 
@@ -104,7 +102,7 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     protected Void visitShowCreate(ShowCreate node, Void context) {
-        //TODO: Is this covered by the table visitor? If not, implement        
+        // TODO: Is this covered by the table visitor? If not, implement
         return null;
     }
 
@@ -113,28 +111,28 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     protected Void visitUse(Use node, Void context) {
-        //TODO: implement
+        // TODO: implement
         return null;
     }
 
     protected Void visitShowSession(ShowSession node, Void context) {
-        //?, breakpoint and see if this even gets used by BI tooling
+        // ?, breakpoint and see if this even gets used by BI tooling
         return null;
     }
 
     protected Void visitSetSession(SetSession node, Void context) {
-        //?, breakpoint and see if this even gets used by BI tooling
+        // ?, breakpoint and see if this even gets used by BI tooling
         return null;
     }
 
     protected Void visitResetSession(ResetSession node, Void context) {
-        //?, breakpoint and see if this even gets used by BI tooling
+        // ?, breakpoint and see if this even gets used by BI tooling
         return null;
     }
 
 
     protected Void visitWithQuery(WithQuery node, Void context) {
-        //?
+        // ?
         return null;
     }
 
@@ -186,16 +184,17 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     protected Void visitCreateView(CreateView node, Void context) {
-        //TODO: This one's a maybe, starting off restricted until we can think it through
+        // TODO: This one's a maybe, starting off restricted until we can think it through
         throw new SecurityException("Create view not allowed");
     }
 
     protected Void visitDropView(DropView node, Void context) {
-      //TODO: This one's a maybe, starting off restricted until we can think it through
-        throw new SecurityException("Create view not allowed");    }
+        // TODO: This one's a maybe, starting off restricted until we can think it through
+        throw new SecurityException("Create view not allowed");
+    }
 
     protected Void visitCreateFunction(CreateFunction node, Void context) {
-      //TODO: This one's a maybe, starting off restricted until we can think it through
+        // TODO: This one's a maybe, starting off restricted until we can think it through
         throw new SecurityException("Create view not allowed");
     }
 
@@ -204,7 +203,7 @@ public class TenantAwareQueryVisitor extends DefaultTraversalVisitor<Void, Void>
     }
 
     protected Void visitCall(Call node, Void context) {
-        //?
+        // ?
         return null;
     }
 

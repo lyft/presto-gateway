@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.util.Callback;
 
@@ -50,6 +51,7 @@ public class ProxyHandler {
   protected void postConnectionHook(
       HttpServletRequest request,
       HttpServletResponse response,
+      Response proxyResponse,
       byte[] buffer,
       int offset,
       int length,

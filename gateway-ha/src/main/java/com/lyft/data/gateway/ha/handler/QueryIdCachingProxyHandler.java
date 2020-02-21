@@ -7,18 +7,21 @@ import com.google.common.io.CharStreams;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
 import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
+import com.lyft.data.proxyserver.ProxyServletImpl;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
-
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
@@ -196,11 +199,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   protected void postConnectionHook(
       HttpServletRequest request,
       HttpServletResponse response,
+      Response proxyResponse,
       byte[] buffer,
       int offset,
       int length,
       Callback callback) {
-      //rewriteQuery(request);
     try {
       String requestPath = request.getRequestURI();
       if (requestPath.startsWith(V1_STATEMENT_PATH)
@@ -214,7 +217,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
         log.debug("Response output [{}]", output);
 
-        QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request);
+        QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request, proxyResponse);
         log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
 
         if (response.getStatus() == HttpStatus.OK_200) {
@@ -239,23 +242,32 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
         // Saving history at gateway.
         queryHistoryManager.submitQueryDetail(queryDetail);
-      } else {
-        log.debug("SKIPPING For {}", requestPath);
+      } else if (response.getStatus() == HttpStatus.OK_200) {
+          
+        
+
+          log.debug("SKIPPING For {}", requestPath);
       }
     } catch (Exception e) {
       log.error("Error in proxying falling back to super call", e);
     }
-    super.postConnectionHook(request, response, buffer, offset, length, callback);
+    super.postConnectionHook(request, response, proxyResponse, buffer, offset, length, callback);
   }
 
-  private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request)
+  private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request, Response proxyResponse)
       throws IOException {
     QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
     queryDetail.setBackendUrl(request.getHeader(PROXY_TARGET_HEADER));
     queryDetail.setCaptureTime(System.currentTimeMillis());
     queryDetail.setUser(request.getHeader(USER_HEADER));
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
-    //rewriteQuery(request);
+    queryDetail.setModifiedQuery(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.MODIFIED_QUERY_HEADER));
+    queryDetail.setPrestoUser(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.PRESTO_USER_HEADER));
+    queryDetail.setTenantId(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.TENANT_ID_HEADER));
+    if(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.INITIATED_HEADER) != null) {
+        queryDetail.setInitiatedTime(new Long(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.INITIATED_HEADER)));    
+    }
+    
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
         queryText.length() > QUERY_TEXT_LENGTH_FOR_HISTORY
