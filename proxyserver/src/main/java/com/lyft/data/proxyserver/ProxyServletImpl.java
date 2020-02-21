@@ -78,28 +78,26 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
    */
     @Override
     protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
-        TenantId tenantId = tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
-        
         if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1/statement")) {
+            TenantId tenantId = tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
             String requestBody = CharStreams.toString(request.getReader());
 
-            try {
-                String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, tenantId);
-                log.error("Rewriting " + requestBody + " TO " + newBody.replace("\n", " ").toLowerCase().replace("\r", " ").replaceAll(" +", " ").trim());
-                
-                Integer contentLength = newBody.getBytes("UTF-8").length;
-                // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
-                proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
-                proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
-                proxyRequest.header(MODIFIED_QUERY_HEADER, newBody);
-                proxyRequest.header(TENANT_ID_HEADER, tenantId.get());
-                proxyRequest.header(INITIATED_HEADER, new Long(System.currentTimeMillis()).toString());
-                return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
-                
-            } catch (ParsingException e) {
-                System.out.println(e);
-            }
+            String newBody = tenantAwareQueryAdapter.rewriteSql(requestBody, tenantId);
+            log.info("Rewriting " + requestBody + " TO " + newBody.replace("\n", " ").toLowerCase().replace("\r", " ").replaceAll(" +", " ").trim());
+
+            Integer contentLength = newBody.getBytes("UTF-8").length;
+            // You have to null it out or you get duplicate Content-Length headers and the new one gets ignored
+            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), null);
+            proxyRequest.header(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
+            proxyRequest.header(MODIFIED_QUERY_HEADER, newBody);
+            proxyRequest.header(TENANT_ID_HEADER, tenantId.get());
+            proxyRequest.header(INITIATED_HEADER, new Long(System.currentTimeMillis()).toString());
+            return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
+        } else if (!request.getPathInfo().startsWith("/entity") && !request.getPathInfo().startsWith("/gateway")) {
+            //Note: /entity and /gateway are internal apis, not to be made public. Maybe ripped out and moved to yaml?
+            tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
         }
+        
         return new InputStreamContentProvider(request.getInputStream());
     }
 
@@ -137,7 +135,6 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
       int length,
       Callback callback) {
     try {
-        //System.out.println(response.getOutputStream().toString());
       if (this._log.isDebugEnabled()) {
         this._log.debug(
             "[{}] proxying content to downstream: [{}] bytes", this.getRequestId(request), length);

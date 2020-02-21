@@ -13,6 +13,7 @@ public class ProxyServerConfiguration {
   private boolean ssl;
   private String keystorePath;
   private String keystorePass;
+  private String tenantLookupUrl;
 
   protected String getPrefix() {
     return prefix;
@@ -41,4 +42,9 @@ public class ProxyServerConfiguration {
   protected int getLocalPort() {
     return localPort;
   }
+  
+  protected String getTenantLookupUrl() {
+    return tenantLookupUrl;
+  }
+  
 }

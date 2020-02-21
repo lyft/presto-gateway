@@ -2,6 +2,63 @@
 
 A load balancer / proxy / gateway for presto compute engine.
 
+
+Totvs - Local Debug
+```
+gcloud beta dataproc clusters create presto-poc3 --single-node --enable-component-gateway --region us-central1 --subnet default --zone us-central1-b --master-machine-type n1-standard-4 --master-boot-disk-size 500 --image-version 1.3-deb9 --max-age 7600s --scopes 'https://www.googleapis.com/auth/cloud-platform' --project labs-poc --scopes sql-admin --initialization-actions=gs://goog-dataproc-initialization-actions-us-central1/presto/presto.sh,gs://goog-dataproc-initialization-actions-us-central1/cloud-sql-proxy/cloud-sql-proxy.sh --properties hive:hive.metastore.warehouse.dir=gs://drew-totvs-tools/hivetest  --metadata "hive-metastore-instance=labs-poc:us-central1:mdm-rdms-poc"
+
+gcloud compute ssh presto-poc3-m   --project=labs-poc   --zone=us-central1-b -- -L 8080:localhost:8080 -N &
+
+mvn process-classes
+```
+If you want you can run mysql locally. In my case I'm hitting a cloudsql instance which must be proxied:
+```
+cd ~/Downloads
+curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
+chmod +x cloud_sql_proxy
+~/Downloads/cloud_sql_proxy -instances=labs-poc:us-central1:mdm-rdms-poc=tcp:3306
+```
+
+If rolling your own the MySQL instance create table statements are found 
+```
+/gateway-ha/src/main/resources/gateway-ha-persistence.sql
+```
+
+Run it
+```
+com.lyft.data.gateway.ha.HaGatewayLauncher server ../gateway_local.yaml
+```
+
+Now you need to register and activate a backend
+
+```
+POST http://localhost:2233/entity?entityType=GATEWAY_BACKEND
+{  "name": "presto1",  
+        "proxyTo": "http://localhost:8080",
+        "active": true, 
+        "routingGroup": "adhoc" 
+    }
+POST http://localhost:2233/gateway/backend/activate/presto1
+{}
+
+```
+
+wget https://repo1.maven.org/maven2/com/facebook/presto/presto-cli/0.230/presto-cli-0.230-executable.jar
+mv presto-cli-0.230-executable.jar presto-cli
+chmod +x presto-cli
+./presto-cli --server http://localhost:2233 --user 623cdc6dd7d343168805a47435d063e2_628c6f49379640b4bd1b0f1c33c9c346   --catalog hive --schema default
+
+presto:default> show tables;
+                  Table                   
+------------------------------------------
+ 8cd6e43115e9416eb23609486fa053e3_recipts 
+
+select * from receipts limit 1
+```
+Proxy server should on the fly swap out receipts for 8cd6e43115e9416eb23609486fa053e3_recipts based on the tenant Id lookup
+
+
+
 How to setup a dev environment
 ------------------------------
 Step 1: setup mysql. Install docker and run the below command when setting up first time:

@@ -1,0 +1,28 @@
+requestRouter:
+  port: 2233
+  name: testPrestoRouter
+  #ssl: true
+  #keystorePath:
+  #keystorePass:
+  historySize: 1000
+  tenantLookupUrl: https://karol.ai/
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 3344
+  adminConnectors:
+    - type: http
+      port: 4455
+
+dataStore:
+  jdbcUrl: jdbc:mysql://localhost/prestogateway
+  user: root
+  password: 
+  driver: com.mysql.cj.jdbc.Driver
+
+modules:
+  - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+
+managedApps:
+  - com.lyft.data.gateway.ha.GatewayManagedApp

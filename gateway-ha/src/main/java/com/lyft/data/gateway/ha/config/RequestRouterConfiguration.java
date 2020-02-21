@@ -14,6 +14,7 @@ public class RequestRouterConfiguration {
   private boolean ssl;
   private String keystorePath;
   private String keystorePass;
+  private String tenantLookupUrl;
 
   private int historySize = 2000;
 }

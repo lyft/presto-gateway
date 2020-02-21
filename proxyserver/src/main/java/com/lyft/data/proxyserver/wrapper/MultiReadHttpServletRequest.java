@@ -7,19 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import org.eclipse.jetty.http.HttpHeader;
 
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 
@@ -77,7 +73,7 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     for (String name : headerMap.keySet()) {
       names.add(name);
     }
-    return Collections.enumeration(new HashSet<>(names));
+    return Collections.enumeration(names);
   }
 
   @Override
@@ -85,10 +81,6 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     List<String> values = Collections.list(super.getHeaders(name));
     if (headerMap.containsKey(name)) {
       values.add(headerMap.get(name));
-    }
-    if(name.equalsIgnoreCase(HttpHeader.CONTENT_LENGTH.asString()) && values.size() > 1) {
-        String last = values.get(values.size() - 1);
-        return Collections.enumeration(Arrays.asList(last));
     }
     return Collections.enumeration(values);
   }

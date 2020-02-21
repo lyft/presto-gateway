@@ -147,7 +147,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   protected String extractQueryIdIfPresent(HttpServletRequest request) {
-      //rewriteQuery(request);
     String path = request.getRequestURI();
     String queryParams = request.getQueryString();
     try {
@@ -243,9 +242,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         // Saving history at gateway.
         queryHistoryManager.submitQueryDetail(queryDetail);
       } else if (response.getStatus() == HttpStatus.OK_200) {
-          
-        
-
           log.debug("SKIPPING For {}", requestPath);
       }
     } catch (Exception e) {
