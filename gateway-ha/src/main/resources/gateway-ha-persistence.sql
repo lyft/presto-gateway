@@ -11,6 +11,9 @@ query_text VARCHAR (256),
 created bigint,
 backend_url VARCHAR (256),
 user_name VARCHAR(256),
-source VARCHAR(256)
+source VARCHAR(256),
+modified_query VARCHAR (256),
+tenant_id  VARCHAR (32),
+initiated_ts bigint
 );
 CREATE INDEX query_history_created_idx ON query_history(created);

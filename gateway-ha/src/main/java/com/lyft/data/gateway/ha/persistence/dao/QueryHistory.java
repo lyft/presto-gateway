@@ -20,7 +20,10 @@ public class QueryHistory extends Model {
   private static final String userName = "user_name";
   private static final String source = "source";
   private static final String created = "created";
-
+  private static final String modifiedQuery = "modified_query";
+  private static final String tenantId = "tenant_id";
+  private static final String initiatedTime = "initiated_ts";
+  
   public static List<QueryDetail> upcast(List<QueryHistory> queryHistoryList) {
     List<QueryDetail> queryDetails = new ArrayList<>();
     for (QueryHistory dao : queryHistoryList) {
@@ -31,6 +34,9 @@ public class QueryHistory extends Model {
       queryDetail.setBackendUrl(dao.getString(backendUrl));
       queryDetail.setUser(dao.getString(userName));
       queryDetail.setSource(dao.getString(source));
+      queryDetail.setModifiedQuery(dao.getString(modifiedQuery));
+      queryDetail.setTenantId(dao.getString(tenantId));
+      queryDetail.setInitiatedTime(dao.getLong(initiatedTime));
       queryDetails.add(queryDetail);
     }
     return queryDetails;
@@ -43,6 +49,9 @@ public class QueryHistory extends Model {
     model.set(userName, queryDetail.getUser());
     model.set(source, queryDetail.getSource());
     model.set(created, queryDetail.getCaptureTime());
+    model.set(modifiedQuery, queryDetail.getModifiedQuery());
+    model.set(tenantId, queryDetail.getTenantId());
+    model.set(initiatedTime, queryDetail.getInitiatedTime());
     model.insert();
   }
 }

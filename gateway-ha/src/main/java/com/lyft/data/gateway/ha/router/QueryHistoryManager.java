@@ -21,7 +21,6 @@ public interface QueryHistoryManager {
     private String backendUrl;
     private long captureTime;
     private String modifiedQuery;
-    private String prestoUser;
     private String tenantId;
     private long initiatedTime;
 

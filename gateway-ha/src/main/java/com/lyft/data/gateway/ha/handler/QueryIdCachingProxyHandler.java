@@ -258,7 +258,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     queryDetail.setUser(request.getHeader(USER_HEADER));
     queryDetail.setSource(request.getHeader(SOURCE_HEADER));
     queryDetail.setModifiedQuery(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.MODIFIED_QUERY_HEADER));
-    queryDetail.setPrestoUser(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.PRESTO_USER_HEADER));
     queryDetail.setTenantId(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.TENANT_ID_HEADER));
     if(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.INITIATED_HEADER) != null) {
         queryDetail.setInitiatedTime(new Long(proxyResponse.getRequest().getHeaders().get(ProxyServletImpl.INITIATED_HEADER)));    

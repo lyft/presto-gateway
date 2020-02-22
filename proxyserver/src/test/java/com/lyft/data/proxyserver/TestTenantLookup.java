@@ -23,7 +23,8 @@ import com.lyft.data.proxyserver.wrapper.TenantLookupServiceImpl;
 import static org.testng.Assert.assertEquals;
 
 public class TestTenantLookup {
-
+    //TODO: Mockito these up 
+/*
     TenantLookupServiceImpl lookup = new TenantLookupServiceImpl("https://karol.ai/");
     
     @Test
@@ -36,4 +37,5 @@ public class TestTenantLookup {
     public void testBadInput() {
         lookup.getTenantId("623cdc6dd7d343168805a47435d063e2_628c6f49379640b4bd1b0f1c33c9c348");
     }
+    */
 }
