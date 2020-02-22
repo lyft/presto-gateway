@@ -89,9 +89,11 @@ public class ProxyServer implements Closeable {
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
       
-      TenantAwareQueryAdapter adapter = new TenantAwareQueryAdapter();
-      adapter.setTenantLookupService(new TenantLookupServiceImpl(config.getTenantLookupUrl()));
-      proxy.setTenantAwareQueryAdapter(adapter);
+    }
+    if(config.getTenantLookupUrl() != null) {
+        TenantAwareQueryAdapter adapter = new TenantAwareQueryAdapter();
+        adapter.setTenantLookupService(new TenantLookupServiceImpl(config.getTenantLookupUrl()));
+        proxy.setTenantAwareQueryAdapter(adapter);
     }
 
     ServletHolder proxyServlet = new ServletHolder(config.getName(), proxy);

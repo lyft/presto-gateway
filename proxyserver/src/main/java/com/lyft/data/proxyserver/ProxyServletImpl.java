@@ -85,7 +85,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
    */
     @Override
     protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
-        if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1")) {
+        if (tenantAwareQueryAdapter != null && request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1")) {
             TenantId tenantId = tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
             String requestBody = CharStreams.toString(request.getReader());
 
@@ -100,10 +100,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
             proxyRequest.header(TENANT_ID_HEADER, tenantId.get());
             proxyRequest.header(INITIATED_HEADER, new Long(System.currentTimeMillis()).toString());
             return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
-        } else if (!request.getPathInfo().startsWith("/entity") && !request.getPathInfo().startsWith("/gateway")) {
-            // probably not necessary, but a catch-all in case I missed something
-            tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
-        }
+        } 
         
         return new InputStreamContentProvider(request.getInputStream());
     }
