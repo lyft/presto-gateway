@@ -24,8 +24,6 @@ import com.facebook.presto.sql.parser.ParsingOptions;
 import com.facebook.presto.sql.parser.SqlParser;
 
 public class TenantAwareQueryAdapter {
-    public static final String V1_STATEMENT_PATH = "/v1/statement";
-
     // Inspired from
     // https://github.com/prestodb/presto/tree/master/presto-parser/src/test/java/com/facebook/presto/sql/parser
 
