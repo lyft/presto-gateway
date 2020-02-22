@@ -57,9 +57,13 @@ public class TenantLookupServiceImpl implements TenantLookupService {
 
     private String baseUrl;
     private HttpClient client;
-
+    
+    public TenantLookupServiceImpl(HttpClient httpClient, String baseUrl) {
+        this.baseUrl = baseUrl;
+        this.client = httpClient;
+    }
+    
     public TenantLookupServiceImpl(String baseUrl) {
-        super();
         this.baseUrl = baseUrl;
         
         PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
@@ -72,7 +76,7 @@ public class TenantLookupServiceImpl implements TenantLookupService {
     
     /* 
      * TODO: first need to make that endpoint include the tenant ID in the response payload for this to work
-    public TenantId getByOauth(String oauth) {
+    privateu TenantId getByOauth(String oauth) {
         if(oauth.length() != 32) {
             throw new SecurityException("Invalid oauth token");
         }
@@ -100,7 +104,7 @@ public class TenantLookupServiceImpl implements TenantLookupService {
         }        
     }*/
     
-    public TenantId getByConnectorToken(String token) {
+    private TenantId getByConnectorToken(String token) {
         String url = baseUrl + "api/v1/tenants/current" ;
         String[] pieces = token.split("_");
         if (pieces.length != 2) {
