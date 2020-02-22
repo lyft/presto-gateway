@@ -23,7 +23,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
@@ -38,7 +37,7 @@ import com.google.gson.JsonParser;
  * 
  * When using presto, specify the user composed of [connector id]:[generated token]. Now you can log into presto like so
  * 
- *  presto-cli --server http://localhost:2233 --user 623cdc6dd7d343168805a47435d063e2:628c6f49379640b4bd1b0f1c33c9c346   --catalog hive --schema default
+ *  presto-cli --server http://localhost:2233 --user 623cdc6dd7d343168805a47435d063e2_628c6f49379640b4bd1b0f1c33c9c346   --catalog hive --schema default
  * 
  * We validate your token against carol and if its good we'll return the tenantId so the query rewriter can modify the tables used for
  * this tenant's namespace. 
@@ -71,7 +70,8 @@ public class TenantLookupServiceImpl implements TenantLookupService {
         client = HttpClients.custom().setConnectionManager(connManager).build();
     }
     
-    /*
+    /* 
+     * TODO: first need to make that endpoint include the tenant ID in the response payload for this to work
     public TenantId getByOauth(String oauth) {
         if(oauth.length() != 32) {
             throw new SecurityException("Invalid oauth token");

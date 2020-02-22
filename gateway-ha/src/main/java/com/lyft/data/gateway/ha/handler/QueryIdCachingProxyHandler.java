@@ -241,7 +241,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
         // Saving history at gateway.
         queryHistoryManager.submitQueryDetail(queryDetail);
-      } else if (response.getStatus() == HttpStatus.OK_200) {
+      } else {
           log.debug("SKIPPING For {}", requestPath);
       }
     } catch (Exception e) {

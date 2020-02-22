@@ -72,13 +72,20 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
     }
   }
   
- 
   /**
    * Rewrite our queries based on authentication header
+   * 
+   *  For urls:
+   *  /v1 - presto proxy
+   *  /entity - gateway config (adding/removing clusters)
+   *  /gateway - gateway config (activating/deactivating clusters, nice if you want to a/b test some presto cluster config changes)
+   *  
+   *  We should only be exposing /v1 to the outside world and that's where auth should kick in. The other endpoints should
+   *  be internal only. 
    */
     @Override
     protected ContentProvider proxyRequestContent(HttpServletRequest request, HttpServletResponse response, Request proxyRequest) throws IOException {
-        if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1/statement")) {
+        if (request.getMethod().equals("POST") && request.getRequestURI().startsWith("/v1")) {
             TenantId tenantId = tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
             String requestBody = CharStreams.toString(request.getReader());
 
@@ -94,7 +101,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
             proxyRequest.header(INITIATED_HEADER, new Long(System.currentTimeMillis()).toString());
             return new InputStreamContentProvider(new ByteArrayInputStream(newBody.getBytes()));
         } else if (!request.getPathInfo().startsWith("/entity") && !request.getPathInfo().startsWith("/gateway")) {
-            //Note: /entity and /gateway are internal apis, not to be made public. Maybe ripped out and moved to yaml?
+            // probably not necessary, but a catch-all in case I missed something
             tenantAwareQueryAdapter.authenticate(proxyRequest.getHeaders().get(PRESTO_USER_HEADER));
         }
         

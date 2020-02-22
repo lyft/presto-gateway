@@ -40,10 +40,6 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     copy(request.getInputStream(), bodyInOutputStream);
     content = bodyInOutputStream.toByteArray();
   }
-  
-  public void rewriteContent(byte[] newContent) {
-      content = newContent;
-  }
 
   /**
    * add a header with given name and value.
