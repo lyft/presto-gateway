@@ -105,6 +105,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
         return new InputStreamContentProvider(request.getInputStream());
     }
 
+
   @Override
   protected String rewriteTarget(HttpServletRequest request) {
     String target = null;
