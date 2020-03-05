@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
+import com.lyft.data.gateway.ha.router.GatewayBackendStateManager;
 import io.dropwizard.views.View;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EntityEditorResource {
 
   @Inject private GatewayBackendManager gatewayBackendManager;
+	@Inject private GatewayBackendStateManager gatewayBackendStateManager;
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @GET
@@ -46,7 +48,8 @@ public class EntityEditorResource {
   }
 
   private enum EntityType {
-    GATEWAY_BACKEND
+    GATEWAY_BACKEND,
+		GATEWAY_BACKEND_STATE
   }
 
   @GET
@@ -87,6 +90,8 @@ public class EntityEditorResource {
     switch (entityType) {
       case GATEWAY_BACKEND:
         return Response.ok(gatewayBackendManager.getAllBackends()).build();
+			case GATEWAY_BACKEND_STATE:
+				return Response.ok(gatewayBackendStateManager.getAllBackendStates()).build();
       default:
     }
     return Response.ok(ImmutableList.of()).build();
