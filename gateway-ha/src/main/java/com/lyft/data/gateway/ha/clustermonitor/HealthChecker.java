@@ -19,13 +19,37 @@ public class HealthChecker implements PrestoClusterStatsObserver {
 
   @Override
   public void observe(List<ClusterStats> clustersStats) {
-    for (ClusterStats clusterStat : clustersStats) {
-      // TODO: Store the stats in a persistent layer
+    for (ClusterStats clusterStats : clustersStats) {
+      if (!clusterStats.isHealthy()) {
+        notifyUnhealthyCluster(clusterStats);
+      } else {
+        if (clusterStats.getQueuedQueryCount() > MAX_THRESHOLD_QUEUED_QUERY_COUNT) {
+          notifyForTooManyQueuedQueries(clusterStats);
+        }
+        if (clusterStats.getNumWorkerNodes() < 1) {
+          notifyForNoWorkers(clusterStats);
+        }
+      }
       GatewayBackendState backend = new GatewayBackendState();
-      backend.setName(clusterStat.getClusterId());
-      backend.setHealth(clusterStat.getHealthy());
-      backend.setWorkerCount(clusterStat.getNumWorkerNodes());
+      backend.setName(clusterStats.getClusterId());
+      backend.setHealth(clusterStats.isHealthy());
+      backend.setWorkerCount(clusterStats.getNumWorkerNodes());
       GatewayBackendState updated = haGatewayBackendStateManager.addBackend(backend);
     }
+  }
+  private void notifyUnhealthyCluster(ClusterStats clusterStats) {
+    notifier.sendNotification(String.format("%s - Cluster unhealthy",
+      clusterStats.getClusterId()),
+      clusterStats.toString());
+  }
+
+  private void notifyForTooManyQueuedQueries(ClusterStats clusterStats) {
+    notifier.sendNotification(String.format("%s - Too many queued queries",
+      clusterStats.getClusterId()), clusterStats.toString());
+  }
+
+  private void notifyForNoWorkers(ClusterStats clusterStats) {
+    notifier.sendNotification(String.format("%s - Number of workers",
+      clusterStats.getClusterId()), clusterStats.toString());
   }
 }
