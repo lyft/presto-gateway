@@ -1,6 +1,6 @@
-# presto-gateway
+# api-gateway
 
-A load balancer / proxy / gateway for presto compute engine.
+A load balancer / proxy / gateway for web APIs and Services.
 
 How to setup a dev environment
 ------------------------------

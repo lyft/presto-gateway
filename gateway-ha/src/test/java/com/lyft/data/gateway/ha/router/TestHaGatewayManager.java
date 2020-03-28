@@ -8,15 +8,15 @@ import java.io.File;
 import java.util.List;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 @Test
 public class TestHaGatewayManager {
   private HaGatewayManager haGatewayManager;
 
-  @BeforeClass(alwaysRun = true)
+  @BeforeTest
   public void setUp() {
     File baseDir = new File(System.getProperty("java.io.tmpdir"));
     File tempH2DbDir = new File(baseDir, "h2db-" + System.currentTimeMillis());
@@ -87,6 +87,6 @@ public class TestHaGatewayManager {
     Assert.assertEquals(backends.size(), 1);
   }
 
-  @AfterClass(alwaysRun = true)
+  @AfterTest
   public void cleanUp() {}
 }

@@ -18,11 +18,11 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.util.Callback;
 
-/* Order of control => rewriteTarget, preConnectionHook, postConnectionHook. */
+/* Order of control => rewriteContent, preConnectionHook, postConnectionHook. */
 @Slf4j
 public class ProxyHandler {
 
-  protected String rewriteTarget(HttpServletRequest request) {
+  protected String rewriteContent(HttpServletRequest request) {
     // Dont override this unless absolutely needed.
     return null;
   }
@@ -33,7 +33,7 @@ public class ProxyHandler {
    * @param request
    * @param proxyRequest
    */
-  public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
+  public void preConnection(HttpServletRequest request, Request proxyRequest) {
     // you may override it.
   }
 
@@ -47,7 +47,7 @@ public class ProxyHandler {
    * @param length
    * @param callback
    */
-  protected void postConnectionHook(
+  protected void postConnection(
       HttpServletRequest request,
       HttpServletResponse response,
       byte[] buffer,

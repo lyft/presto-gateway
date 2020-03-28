@@ -27,7 +27,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   // Overriding this method to support ssl
   @Override
   protected HttpClient newHttpClient() {
-    SslContextFactory sslFactory = new SslContextFactory();
+    SslContextFactory sslFactory = new SslContextFactory.Client();
     sslFactory.setTrustAll(true);
     sslFactory.setStopTimeout(TimeUnit.SECONDS.toMillis(15));
     sslFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
@@ -43,7 +43,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   protected void addProxyHeaders(HttpServletRequest request, Request proxyRequest) {
     super.addProxyHeaders(request, proxyRequest);
     if (proxyHandler != null) {
-      proxyHandler.preConnectionHook(request, proxyRequest);
+      proxyHandler.preConnection(request, proxyRequest);
     }
   }
 
@@ -51,7 +51,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   protected String rewriteTarget(HttpServletRequest request) {
     String target = null;
     if (proxyHandler != null) {
-      target = proxyHandler.rewriteTarget(request);
+      target = proxyHandler.rewriteContent(request);
     }
     if (target == null) {
       target = super.rewriteTarget(request);
@@ -85,7 +85,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
             "[{}] proxying content to downstream: [{}] bytes", this.getRequestId(request), length);
       }
       if (this.proxyHandler != null) {
-        proxyHandler.postConnectionHook(request, response, buffer, offset, length, callback);
+        proxyHandler.postConnection(request, response, buffer, offset, length, callback);
       } else {
         super.onResponseContent(request, response, proxyResponse, buffer, offset, length, callback);
       }

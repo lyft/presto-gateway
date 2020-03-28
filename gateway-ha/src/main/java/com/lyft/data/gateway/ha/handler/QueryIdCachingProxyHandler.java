@@ -58,7 +58,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   @Override
-  public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
+  public void preConnection(HttpServletRequest request, Request proxyRequest) {
     if (request.getMethod().equals(HttpMethod.POST)
         && request.getRequestURI().startsWith(V1_STATEMENT_PATH)) {
       requestMeter.mark();
@@ -92,7 +92,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   @Override
-  public String rewriteTarget(HttpServletRequest request) {
+  public String rewriteContent(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
     String backendAddress = "http://localhost:" + serverApplicationPort;
 
@@ -189,7 +189,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return queryId;
   }
 
-  protected void postConnectionHook(
+  protected void postConnection(
       HttpServletRequest request,
       HttpServletResponse response,
       byte[] buffer,
@@ -240,7 +240,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } catch (Exception e) {
       log.error("Error in proxying falling back to super call", e);
     }
-    super.postConnectionHook(request, response, buffer, offset, length, callback);
+    super.postConnection(request, response, buffer, offset, length, callback);
   }
 
   private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request)
