@@ -31,14 +31,23 @@ public class ProxyServer implements Closeable {
   private ServletContextHandler context;
 
   public ProxyServer(ProxyServerConfiguration config, ProxyHandler proxyHandler) {
+    validateArgs(config);
     this.server = new Server();
     this.server.setStopAtShutdown(true);
     this.proxyHandler = proxyHandler;
     this.setupContext(config);
   }
 
+  private void validateArgs(ProxyServerConfiguration configuration) {
+    if (!configuration.getProxyTo().startsWith("http")) {
+      log.warn("No http scheme in proxyTo fields {}, adding default scheme http.",
+              configuration.getProxyTo());
+      configuration.setProxyTo("http://" + configuration.getProxyTo());
+    }
+  }
+
   private void setupContext(ProxyServerConfiguration config) {
-    ServerConnector connector = null;
+    ServerConnector connector;
 
     if (config.isSsl()) {
       String keystorePath = config.getKeystorePath();

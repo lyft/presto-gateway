@@ -22,7 +22,7 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class ProxyHandler {
 
-  protected String rewriteContent(HttpServletRequest request) {
+  protected String rewriteTarget(HttpServletRequest request) {
     // Dont override this unless absolutely needed.
     return null;
   }
@@ -33,7 +33,7 @@ public class ProxyHandler {
    * @param request
    * @param proxyRequest
    */
-  public void preConnection(HttpServletRequest request, Request proxyRequest) {
+  protected void preConnection(HttpServletRequest request, Request proxyRequest) {
     // you may override it.
   }
 

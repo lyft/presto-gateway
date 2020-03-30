@@ -82,6 +82,12 @@
                 <version>${dropwizard.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>23.0</version>
+            </dependency>
+
             <!-- Test deps -->
             <dependency>
                 <groupId>org.testng</groupId>

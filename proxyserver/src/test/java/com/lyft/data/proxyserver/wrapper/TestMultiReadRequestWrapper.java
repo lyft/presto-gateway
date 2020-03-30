@@ -20,12 +20,12 @@ import okhttp3.RequestBody;
 import org.testng.annotations.Test;
 
 @Slf4j
-public class TestRequestContentOverwrite {
+public class TestMultiReadRequestWrapper {
   private final OkHttpClient httpClient = new OkHttpClient();
   private static final String REQUEST_ORIGINAL_TEXT = "SELECT 1";
 
   @Test
-  public void testRequestContentOverwrite() throws Exception {
+  public void testMultiReadRequestWrapper() throws Exception {
     int backendPort = 30000 + new Random().nextInt(1000);
 
     // setting up mocked backend
@@ -42,23 +42,16 @@ public class TestRequestContentOverwrite {
         new ProxyServer(
             config,
             new ProxyHandler() {
-              // TODO: lets rename this method to "rewriteRequest"
-              protected String rewriteTarget(HttpServletRequest request) {
+              public void preConnection(HttpServletRequest request,
+                                        org.eclipse.jetty.client.api.Request proxyRequest) {
                 if (request instanceof MultiReadHttpServletRequest) {
                   MultiReadHttpServletRequest req = (MultiReadHttpServletRequest) request;
                   try {
-                    // Expecting client to send SELECT 1 as input
                     assertEquals(CharStreams.toString(req.getReader()), REQUEST_ORIGINAL_TEXT);
-
-                    /*TODO: Overwrite to SELECT XYZ, fails since content length is unchanged in
-                    request.
-                    */
-                    // req.rewriteBody("SELECT XYZ");
                   } catch (Exception e) {
                     log.error(e.getMessage(), e);
                   }
                 }
-                return null;
               }
             })) {
       // starting proxy-server
@@ -70,9 +63,7 @@ public class TestRequestContentOverwrite {
       Request request =
           new Request.Builder().url("http://localhost:" + serverPort).post(requestBody).build();
       httpClient.newCall(request).execute();
-
       RecordedRequest recordedRequest = backend.takeRequest();
-      // TODO: expect "SELECT XYZ" after fixing rewriteRequest
       assertEquals(recordedRequest.getUtf8Body(), REQUEST_ORIGINAL_TEXT);
     } finally {
       backend.shutdown();

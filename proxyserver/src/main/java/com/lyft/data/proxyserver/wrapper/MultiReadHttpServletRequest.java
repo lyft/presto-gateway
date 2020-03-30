@@ -24,7 +24,6 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
   private final Map<String, String> headerMap = new HashMap<>();
 
   public static void copy(InputStream in, OutputStream out) throws IOException {
-
     byte[] buffer = new byte[1024];
     while (true) {
       int bytesRead = in.read(buffer);
@@ -40,18 +39,6 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     ByteArrayOutputStream bodyInOutputStream = new ByteArrayOutputStream();
     copy(request.getInputStream(), bodyInOutputStream);
     content = bodyInOutputStream.toByteArray();
-  }
-
-  /**
-   * rewrite the body of this request with the given string.
-   *
-   * @param newBody
-   */
-  public void rewriteBody(String newBody) throws IOException {
-    ByteArrayInputStream newBodyReader = new ByteArrayInputStream(newBody.getBytes());
-    ByteArrayOutputStream bodyWriteStream = new ByteArrayOutputStream();
-    copy(newBodyReader, bodyWriteStream);
-    content = bodyWriteStream.toByteArray();
   }
 
   /**

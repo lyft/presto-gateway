@@ -92,7 +92,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   }
 
   @Override
-  public String rewriteContent(HttpServletRequest request) {
+  public String rewriteTarget(HttpServletRequest request) {
     /* Here comes the load balancer / gateway */
     String backendAddress = "http://localhost:" + serverApplicationPort;
 

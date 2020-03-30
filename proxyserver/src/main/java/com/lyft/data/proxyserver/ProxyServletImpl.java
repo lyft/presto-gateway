@@ -51,7 +51,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   protected String rewriteTarget(HttpServletRequest request) {
     String target = null;
     if (proxyHandler != null) {
-      target = proxyHandler.rewriteContent(request);
+      target = proxyHandler.rewriteTarget(request);
     }
     if (target == null) {
       target = super.rewriteTarget(request);
