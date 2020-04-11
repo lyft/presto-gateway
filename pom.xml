@@ -120,5 +120,16 @@
             </plugin>
         </plugins>
     </build>
-
+  <distributionManagement>
+    <repository>
+      <id>lyft-releases</id>
+      <name>release</name>
+      <url>https://jarjarflinks.jfrog.io/jarjarflinks/libs-release</url>
+    </repository>
+    <snapshotRepository>
+      <id>lyft-snapshots</id>
+      <name>libs-snapshot</name>
+      <url>https://jarjarflinks.jfrog.io/jarjarflinks/libs-snapshot</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
