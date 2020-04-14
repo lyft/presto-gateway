@@ -9,7 +9,7 @@
     <artifactId>prestogateway-parent</artifactId>
     <name>prestogateway-parent</name>
     <packaging>pom</packaging>
-    <version>1.6.10</version>
+    <version>1.7.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -120,16 +120,4 @@
             </plugin>
         </plugins>
     </build>
-  <distributionManagement>
-    <repository>
-      <id>lyft-releases</id>
-      <name>release</name>
-      <url>https://jarjarflinks.jfrog.io/jarjarflinks/libs-release</url>
-    </repository>
-    <snapshotRepository>
-      <id>lyft-snapshots</id>
-      <name>libs-snapshot</name>
-      <url>https://jarjarflinks.jfrog.io/jarjarflinks/libs-snapshot</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>
