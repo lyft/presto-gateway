@@ -7,12 +7,20 @@ public class ProxyServerConfiguration {
   private String name;
   private int localPort;
   private String proxyTo;
+  private String externalUrl;
   private String prefix = "/";
   private String trustAll = "true";
   private String preserveHost = "true";
   private boolean ssl;
   private String keystorePath;
   private String keystorePass;
+
+  public String getExternalUrl() {
+    if (externalUrl == null) {
+      return proxyTo;
+    }
+    return externalUrl;
+  }
 
   protected String getPrefix() {
     return prefix;

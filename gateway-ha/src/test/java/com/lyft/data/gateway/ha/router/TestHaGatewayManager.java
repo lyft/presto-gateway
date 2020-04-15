@@ -35,6 +35,7 @@ public class TestHaGatewayManager {
     backend.setRoutingGroup("adhoc");
     backend.setName("adhoc1");
     backend.setProxyTo("adhoc1.presto.lyft.com");
+    backend.setExternalUrl("adhoc1.presto.lyft.com");
     ProxyBackendConfiguration updated = haGatewayManager.addBackend(backend);
     Assert.assertEquals(updated, backend);
   }
@@ -61,6 +62,7 @@ public class TestHaGatewayManager {
     backend.setRoutingGroup("adhoc");
     backend.setName("adhoc-lyft-1");
     backend.setProxyTo("adhoc1.presto.lyft.com");
+    backend.setExternalUrl("adhoc1.presto.lyft.com");
     haGatewayManager.updateBackend(backend);
     List<ProxyBackendConfiguration> backends = haGatewayManager.getActiveBackends("adhoc");
     Assert.assertEquals(backends.size(), 1);
@@ -69,6 +71,7 @@ public class TestHaGatewayManager {
     backend.setRoutingGroup("etl");
     backend.setName("adhoc1");
     backend.setProxyTo("adhoc1.presto.lyft.com");
+    backend.setExternalUrl("adhoc1.presto.lyft.com");
     haGatewayManager.updateBackend(backend);
     backends = haGatewayManager.getActiveBackends("adhoc");
     Assert.assertEquals(backends.size(), 0);
