@@ -33,6 +33,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
   public static final String ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
+  public static final String CLIENT_TAGS_HEADER = "X-Presto-Client-Tags";
   public static final String ADHOC_ROUTING_GROUP = "adhoc";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
 
@@ -104,7 +105,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       if (!Strings.isNullOrEmpty(queryId)) {
         backendAddress = routingManager.findBackendForQueryId(queryId);
       } else {
-        String routingGroup = request.getHeader(ROUTING_GROUP_HEADER);
+        String routingGroup = request.getHeader(CLIENT_TAGS_HEADER);
         if (!Strings.isNullOrEmpty(routingGroup)) {
           // This falls back on adhoc backend if there are no cluster found for the routing group.
           backendAddress = routingManager.provideBackendForRoutingGroup(routingGroup);
