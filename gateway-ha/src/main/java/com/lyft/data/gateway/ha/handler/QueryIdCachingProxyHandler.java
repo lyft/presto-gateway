@@ -33,8 +33,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
   public static final String ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
-  public static final String ADHOC_ROUTING_GROUP = "adhoc";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
+  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=](\\d+_\\d+_\\d+_\\w+).*");
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
@@ -164,12 +164,17 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } catch (Exception e) {
       log.error("Error extracting query payload from request", e);
     }
+
+    return extractQueryIdIfPresent(path, queryParams);
+  }
+
+  protected static String extractQueryIdIfPresent(String path, String queryParams) {
     if (path == null) {
       return null;
     }
     String queryId = null;
 
-    log.debug("trying to extract query id from path [{}] or queryString [{}]", path, queryParams);
+    log.debug("trying to extract query id from  path [{}] or queryString [{}]", path, queryParams);
     if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
       String[] tokens = path.split("/");
       if (tokens.length >= 4) {
@@ -183,7 +188,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         }
       }
     } else if (path.startsWith(PRESTO_UI_PATH)) {
-      queryId = queryParams;
+      Matcher matcher = QUERY_ID_PATTERN.matcher(path);
+      if (matcher.matches()) {
+        queryId = matcher.group(1);
+      }
     }
     log.debug("query id in url [{}]", queryId);
     return queryId;
