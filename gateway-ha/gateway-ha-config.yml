@@ -26,9 +26,11 @@ notifier:
 
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+  - com.lyft.data.gateway.ha.module.ClusterStateListenerModule
 
 managedApps:
   - com.lyft.data.gateway.ha.GatewayManagedApp
+  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
 
 # Logging settings.
 logging:
