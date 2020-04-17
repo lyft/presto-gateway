@@ -128,13 +128,19 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
   }
 
   private void registerWithInjector(T configuration, Environment environment, Injector injector) {
-    logger.info("op=register_start configuration={}", configuration.toString());
+    // logger will display mysql password
+    if (logger.isDebugEnabled()) {
+      logger.info("op=register_start configuration={}", configuration.toString());
+    }
     registerHealthChecks(environment, injector);
     registerProviders(environment, injector);
     registerTasks(environment, injector);
     addManagedApps(configuration, environment, injector);
     registerResources(environment, injector);
-    logger.info("op=register_end configuration={}", configuration.toString());
+    // logger will display smtp password
+    if (logger.isDebugEnabled()) {
+      logger.info("op=register_end configuration={}", configuration.toString());
+    }
   }
 
   /**
