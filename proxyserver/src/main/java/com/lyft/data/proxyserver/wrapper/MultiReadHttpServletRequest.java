@@ -1,5 +1,11 @@
 package com.lyft.data.proxyserver.wrapper;
 
+import org.eclipse.jetty.http.HttpHeader;
+
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,16 +16,11 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import java.util.Set;
 
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
-
   private byte[] content;
   private final Map<String, String> headerMap = new HashMap<>();
 
@@ -37,9 +38,13 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 
   public MultiReadHttpServletRequest(HttpServletRequest request) throws IOException {
     super(request);
+    this.storeBody(request.getInputStream());
+  }
+
+  private void storeBody(InputStream inputStream) throws IOException {
     ByteArrayOutputStream bodyInOutputStream = new ByteArrayOutputStream();
-    copy(request.getInputStream(), bodyInOutputStream);
-    content = bodyInOutputStream.toByteArray();
+    copy(inputStream, bodyInOutputStream);
+    this.content = bodyInOutputStream.toByteArray();
   }
 
   /**
@@ -50,6 +55,14 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
    */
   public void addHeader(String name, String value) {
     headerMap.put(name, value);
+  }
+
+  public void replaceBody(String newBody) throws IOException {
+    this.storeBody(new ByteArrayInputStream(newBody.getBytes()));
+
+    // Also update the content-length
+    Integer contentLength = newBody.getBytes(getCharacterEncoding()).length;
+    addHeader(HttpHeader.CONTENT_LENGTH.asString(), contentLength.toString());
   }
 
   @Override
@@ -66,7 +79,7 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
    */
   @Override
   public Enumeration<String> getHeaderNames() {
-    List<String> names = Collections.list(super.getHeaderNames());
+    Set<String> names = new HashSet<>(Collections.list(super.getHeaderNames()));
     for (String name : headerMap.keySet()) {
       names.add(name);
     }
@@ -75,7 +88,7 @@ public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 
   @Override
   public Enumeration<String> getHeaders(String name) {
-    List<String> values = Collections.list(super.getHeaders(name));
+    Set<String> values = new HashSet<>(Collections.list(super.getHeaders(name)));
     if (headerMap.containsKey(name)) {
       values.add(headerMap.get(name));
     }
