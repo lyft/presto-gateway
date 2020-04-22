@@ -54,7 +54,7 @@ public class MultiReadHttpServletRequestTest {
                         assertEquals(CharStreams.toString(req.getReader()), requestBodyOriginal);
 
                         // Now, replace the body
-                        req.replaceBody(requestBodyNew);
+                        //req.replaceBody(requestBodyNew);
                     } catch (Exception e) {}
                 }
                 return super.rewriteTarget(request);
