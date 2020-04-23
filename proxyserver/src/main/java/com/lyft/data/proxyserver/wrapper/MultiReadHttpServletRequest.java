@@ -1,13 +1,12 @@
 package com.lyft.data.proxyserver.wrapper;
 
-import org.eclipse.jetty.http.HttpHeader;
-
+import java.io.*;
+import java.util.*;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.*;
-import java.util.*;
+import org.eclipse.jetty.http.HttpHeader;
 
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
   private byte[] content;

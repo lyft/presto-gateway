@@ -1,5 +1,8 @@
 package com.lyft.data.proxyserver.wrapper;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
 import com.google.common.io.CharStreams;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
@@ -8,6 +11,8 @@ import com.lyft.data.proxyserver.TestProxyServer;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import java.util.Random;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -15,10 +20,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.Test;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Random;
-
-import static org.testng.Assert.assertEquals;
 
 /**
  * Author: Tejinder Aulakh (taulakh@lyft.com)
@@ -54,7 +55,9 @@ public class MultiReadHttpServletRequestTest {
 
             // Now, replace the body
             //req.replaceBody(requestBodyNew);
-          } catch (Exception e) { }
+          } catch (Exception e) {
+            fail();
+          }
         }
         return super.rewriteTarget(request);
       }
