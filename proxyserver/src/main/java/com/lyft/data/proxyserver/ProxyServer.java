@@ -39,7 +39,7 @@ public class ProxyServer implements Closeable {
                      ProxyServletImpl proxy) {
     this.server = new Server();
     this.server.setStopAtShutdown(true);
-    this.proxy = proxy;
+    this.proxy = proxy; 
     this.proxyHandler = proxyHandler;
     this.setupContext(config);
   }
