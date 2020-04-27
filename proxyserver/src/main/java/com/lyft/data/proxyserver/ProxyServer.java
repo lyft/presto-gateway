@@ -27,12 +27,19 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 @Slf4j
 public class ProxyServer implements Closeable {
   private final Server server;
+  private final ProxyServletImpl proxy;
   private final ProxyHandler proxyHandler;
   private ServletContextHandler context;
 
   public ProxyServer(ProxyServerConfiguration config, ProxyHandler proxyHandler) {
+    this(config, proxyHandler, new ProxyServletImpl());
+  }
+
+  public ProxyServer(ProxyServerConfiguration config, ProxyHandler proxyHandler,
+                     ProxyServletImpl proxy) {
     this.server = new Server();
     this.server.setStopAtShutdown(true);
+    this.proxy = proxy; 
     this.proxyHandler = proxyHandler;
     this.setupContext(config);
   }
@@ -83,7 +90,6 @@ public class ProxyServer implements Closeable {
     ConnectHandler proxyConnectHandler = new ConnectHandler();
     this.server.setHandler(proxyConnectHandler);
 
-    ProxyServletImpl proxy = new ProxyServletImpl();
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
     }
