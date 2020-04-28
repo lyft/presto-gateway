@@ -13,6 +13,7 @@ Next time onwards, run the following commands to start mysqldb
 ```$xslt
 docker start mysqldb
 ```
+
 Now open mysql console and install the presto-gateway tables:
 ```$xslt
 mysql -uroot -proot123 -h127.0.0.1 -Dprestogateway
