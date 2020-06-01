@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
+import com.lyft.data.gateway.ha.router.RoutingGroupSelector;
 import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
@@ -41,6 +42,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final RoutingManager routingManager;
+  private final RoutingGroupSelector routingGroupSelector;
   private final QueryHistoryManager queryHistoryManager;
 
   private final Meter requestMeter;
@@ -49,10 +51,12 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public QueryIdCachingProxyHandler(
       QueryHistoryManager queryHistoryManager,
       RoutingManager routingManager,
+      RoutingGroupSelector routingGroupSelector,
       int serverApplicationPort,
       Meter requestMeter) {
     this.requestMeter = requestMeter;
     this.routingManager = routingManager;
+    this.routingGroupSelector = routingGroupSelector;
     this.queryHistoryManager = queryHistoryManager;
     this.serverApplicationPort = serverApplicationPort;
   }
@@ -104,7 +108,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       if (!Strings.isNullOrEmpty(queryId)) {
         backendAddress = routingManager.findBackendForQueryId(queryId);
       } else {
-        String routingGroup = request.getHeader(ROUTING_GROUP_HEADER);
+        String routingGroup = routingGroupSelector.findRoutingGroup(request);
         if (!Strings.isNullOrEmpty(routingGroup)) {
           // This falls back on adhoc backend if there are no cluster found for the routing group.
           backendAddress = routingManager.provideBackendForRoutingGroup(routingGroup);
