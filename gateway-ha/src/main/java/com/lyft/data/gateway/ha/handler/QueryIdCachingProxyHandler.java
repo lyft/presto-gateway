@@ -33,7 +33,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PRESTO_UI_PATH = "/ui";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
-  public static final String ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
   private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=](\\d+_\\d+_\\d+_\\w+).*");
 
