@@ -215,6 +215,10 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
       clusterQueueLengthMap.clear();
 
       for (String grp : updatedQueueLengthMap.keySet()) {
+        if (grp == null) {
+          continue;
+        }
+        
         ConcurrentHashMap<String, Integer> queueMap = new ConcurrentHashMap<>();
         queueMap.putAll(updatedQueueLengthMap.get(grp));
         clusterQueueLengthMap.put(grp, queueMap);
