@@ -31,6 +31,7 @@
         <mysqlconnector.version>8.0.17</mysqlconnector.version>
         <environments>development</environments>
         <app.main.class>com.lyft.data.gateway.ha.HaGatewayLauncher</app.main.class>
+        <aws-java-sdk.version>2.13.31</aws-java-sdk.version>
     </properties>
 
     <dependencies>
@@ -83,6 +84,16 @@
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-sdk-java</artifactId>
+            <version>${aws-java-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.9</version>
         </dependency>
         <!--db -->
         <dependency>
