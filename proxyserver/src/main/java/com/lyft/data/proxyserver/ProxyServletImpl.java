@@ -42,6 +42,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   @Override
   protected void addProxyHeaders(HttpServletRequest request, Request proxyRequest) {
     super.addProxyHeaders(request, proxyRequest);
+    super.addXForwardedHeaders(request, proxyRequest);
     if (proxyHandler != null) {
       proxyHandler.preConnectionHook(request, proxyRequest);
     }
