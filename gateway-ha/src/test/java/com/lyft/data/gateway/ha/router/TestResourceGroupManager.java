@@ -3,12 +3,10 @@ package com.lyft.data.gateway.ha.router;
 import static com.lyft.data.gateway.ha.router.PrestoResourceManager.ResourceGroupDetail;
 
 import com.lyft.data.gateway.ha.HaGatewayTestUtils;
-import com.lyft.data.gateway.ha.ResourceGroupTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -18,7 +16,6 @@ import org.testng.annotations.Test;
 @Test
 public class TestResourceGroupManager {
   private ResourceGroupManager resourceGroupManager;
-  private static final Logger logger = Logger.getLogger(TestResourceGroupManager.class.getName());
 
   @BeforeClass(alwaysRun = true)
   public void setUp() {
@@ -61,10 +58,7 @@ public class TestResourceGroupManager {
     resourceGroup.setJmxExport(false);
     resourceGroup.setHardConcurrencyLimit(50);
 
-    logger.info(resourceGroup.toString());
     ResourceGroupDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-    logger.info(updated.toString());
-
     List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroups.size(), 1);
     Assert.assertEquals(updated, resourceGroup);
@@ -75,13 +69,10 @@ public class TestResourceGroupManager {
     resourceGroup.setMaxQueued(70);
     resourceGroup.setJmxExport(true);
     resourceGroup.setHardConcurrencyLimit(50);
-    resourceGroup.setResourceGroupId(1); // how to auto increment?
+    resourceGroup.setResourceGroupId(1);
     resourceGroup.setSoftConcurrencyLimit(20);
 
-    logger.info(resourceGroup.toString());
-    updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-    logger.info(updated.toString());
-
+    resourceGroupManager.updateResourceGroup(resourceGroup);
     resourceGroups = resourceGroupManager.readResourceGroup();
 
     Assert.assertEquals(resourceGroups.size(), 2);
@@ -97,8 +88,6 @@ public class TestResourceGroupManager {
     resourceGroupManager.deleteResourceGroup(resourceGroupList.get(1).getResourceGroupId());
     resourceGroupList = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroupList.size(), 1);
-
-    // TODO: test case with deleting 0th element doesn't work, maybe bc of resource group ids
   }
 
   @AfterClass(alwaysRun = true)

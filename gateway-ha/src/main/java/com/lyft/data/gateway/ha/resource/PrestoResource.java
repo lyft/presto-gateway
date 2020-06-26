@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("/presto")
-// @Produces(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class PrestoResource {
-  @Inject private PrestoResourceManager prestoResourceManager; // TODO: not bound.
+  @Inject private PrestoResourceManager prestoResourceManager;
 
   @POST
   @Path("/resourcegroup/create")
@@ -43,8 +43,7 @@ public class PrestoResource {
 
   @Path("/resourcegroup/delete")
   @POST
-  public Response deleteResourceGroup(
-      long resourceGroupId) { // TODO: change name to resourceGroupID
+  public Response deleteResourceGroup(long resourceGroupId) {
     prestoResourceManager.deleteResourceGroup(resourceGroupId);
     return Response.ok().build();
   }
