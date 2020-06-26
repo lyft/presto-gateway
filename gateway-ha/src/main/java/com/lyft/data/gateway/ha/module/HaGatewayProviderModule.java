@@ -15,6 +15,7 @@ import com.lyft.data.gateway.ha.router.HaRoutingManager;
 import com.lyft.data.gateway.ha.router.PrestoResourceManager;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
 import com.lyft.data.gateway.ha.router.ResourceGroupManager;
+import com.lyft.data.gateway.ha.router.RoutingGroupSelector;
 import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
@@ -45,7 +46,11 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
     return new QueryIdCachingProxyHandler(
-        getQueryHistoryManager(), getRoutingManager(), getApplicationPort(), requestMeter);
+        getQueryHistoryManager(),
+        getRoutingManager(),
+        RoutingGroupSelector.byRoutingGroupHeader(),
+        getApplicationPort(),
+        requestMeter);
   }
 
   @Provides
@@ -99,5 +104,4 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   public JdbcConnectionManager getConnectionManager() {
     return this.connectionManager;
   }
-
 }

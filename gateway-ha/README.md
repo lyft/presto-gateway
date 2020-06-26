@@ -1,7 +1,7 @@
 Gateway-HA
 ==========
 
-## Getting Started 
+## Getting Started
 
 ### Build and run
 run `mvn clean install` to build `presto-gateway`
@@ -13,14 +13,14 @@ cd gateway-ha/target/
 java -jar gateway=ha-{{VERSION}}-jar-with-dependencies.jar server ../config.yml.template
 ```
 Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
- 
+
 ### Query History UI - check query plans etc.
-PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.  
-![prestogateway.lyft.com](../docs/assets/prestogateway_query_history.png) 
+PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.
+![prestogateway.lyft.com](../docs/assets/prestogateway_query_history.png)
 
 ### Gateway Admin UI - add and modify backend information
 The Gateway admin page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
-![prestogateway.lyft.com/admin](../docs/assets/prestogateway_ha_admin.png) 
+![prestogateway.lyft.com/admin](../docs/assets/prestogateway_ha_admin.png)
 
 How to setup a dev environment
 ----------------------------
@@ -44,10 +44,10 @@ Once logged in to mysql console, please run [gateway-ha-persistence.sql](/src/ma
 
 Step 2: Edit the configuration `gateway-ha.yml`
 
-Step 3: Add below program argument to class `HaGatewayLauncher` and debug in IDE 
+Step 3: Add below program argument to class `HaGatewayLauncher` and debug in IDE
 ```$xslt
 server /path/to/gateway-ha/src/test/resources/config-template.yml
-``` 
+```
 
 ## Gateway HA API
 
@@ -79,7 +79,7 @@ server /path/to/gateway-ha/src/test/resources/config-template.yml
 ### Delete a backend from the gateway
 
 ```
-curl -v -H "Content-Type: application/json" -d '{"name": "presto3"}' http://prestogateway.lyft.com/gateway/backend/modify/delete
+curl -X POST -d "presto3" http://prestogateway.lyft.com/gateway/backend/modify/delete
 ```
 
 Verify this by calling get active backends
@@ -133,7 +133,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
     }
 ]
 ```
-### Update backend information 
+### Update backend information
 
 ```
 curl -v -H "Content-Type: application/json" -d '{"name": "presto3","localPort": 8084,"proxyTo": "http://presto3.lyft.com","includeInRouter": true,"active": false,"routingGroup": "adhoc"}' http://prestogateway.lyft.com/gateway/backend/modify/add
@@ -189,7 +189,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
     }
 ]
 ```
-### Deactivate a backend 
+### Deactivate a backend
 
 `curl -X POST prestogateway.lyft.com/gateway/backend/deactivate/presto2`
 
@@ -211,7 +211,7 @@ curl -X GET prestogateway.lyft.com/gateway/backend/active | python -m json.tool
     }
 ]
 ```
-### Activate a backend 
+### Activate a backend
 
 `curl -X POST prestogateway.lyft.com/gateway/backend/activate/presto2`
 
