@@ -65,21 +65,21 @@ public class ResourceGroupManager implements PrestoResourceManager {
     }
   }
 
-  @Override
-  public SelectorDetail createSelector(SelectorDetail selector) {
-    return null;
-  }
-
-  @Override
-  public List<SelectorDetail> readSelector() {
-    return null;
-  }
-
-  @Override
-  public SelectorDetail updateSelector(SelectorDetail selector) {
-    return null;
-  }
-
-  @Override
-  public void deleteSelector(long resourceGroupId) {}
+  //  @Override
+  //  public SelectorDetail createSelector(SelectorDetail selector) {
+  //    return null;
+  //  }
+  //
+  //  @Override
+  //  public List<SelectorDetail> readSelector() {
+  //    return null;
+  //  }
+  //
+  //  @Override
+  //  public SelectorDetail updateSelector(SelectorDetail selector) {
+  //    return null;
+  //  }
+  //
+  //  @Override
+  //  public void deleteSelector(long resourceGroupId) {}
 }
