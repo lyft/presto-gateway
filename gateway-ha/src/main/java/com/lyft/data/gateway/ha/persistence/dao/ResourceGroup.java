@@ -6,42 +6,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.javalite.activejdbc.Model;
+import org.javalite.activejdbc.annotations.BelongsTo;
 import org.javalite.activejdbc.annotations.Cached;
 import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
+@BelongsTo(parent = ResourceGroup.class, foreignKeyName = "parent")
 @IdName("resource_group_id")
 @Table("resource_groups")
 @Cached
 public class ResourceGroup extends Model {
-  private static final String resourceGroupId =
-      "resource_group_id"; // resource_group_id BIGINT NOT NULL AUTO_INCREMENT
-  private static final String name = "name"; // name VARCHAR(250) NOT NULL UNIQUE
+  private static final String resourceGroupId = "resource_group_id";
+  private static final String name = "name";
 
   /* OPTIONAL POLICY CONTROLS */
-  private static final String parent = "parent"; // parent BIGINT NULL,
-  private static final String jmxExport = "jmx_export"; // jmx_export BOOLEAN NULL,
-  private static final String schedulingPolicy =
-      "scheduling_policy"; // scheduling_policy VARCHAR(128) NULL,
-  private static final String schedulingWeight = "scheduling_weight"; // scheduling_weight INT NULL,
+  private static final String parent = "parent";
+  private static final String jmxExport = "jmx_export";
+  private static final String schedulingPolicy = "scheduling_policy";
+  private static final String schedulingWeight = "scheduling_weight";
 
   /* REQUIRED QUOTAS */
-  private static final String softMemoryLimit =
-      "soft_memory_limit"; // soft_memory_limit VARCHAR(128) NOT NULL,
-  private static final String maxQueued = "max_queued"; // max_queued INT NOT NULL,
-  private static final String hardConcurrencyLimit =
-      "hard_concurrency_limit"; // hard_concurrency_limit INT NOT NULL,
+  private static final String softMemoryLimit = "soft_memory_limit";
+  private static final String maxQueued = "max_queued";
+  private static final String hardConcurrencyLimit = "hard_concurrency_limit";
 
   /* OPTIONAL QUOTAS */
-  private static final String softConcurrencyLimit =
-      "soft_concurrency_limit"; // soft_concurrency_limit INT NULL,
-  private static final String softCpuLimit = "soft_cpu_limit"; // soft_cpu_limit VARCHAR(128) NULL,
-  private static final String hardCpuLimit = "hard_cpu_limit"; // hard_cpu_limit VARCHAR(128) NULL,
-  private static final String environment = "environment"; // environment VARCHAR(128) NULL,
-
-  // PRIMARY KEY(resource_group_id),
-  // KEY(name),
-  // FOREIGN KEY (parent) REFERENCES resource_groups (resource_group_id)
+  private static final String softConcurrencyLimit = "soft_concurrency_limit";
+  private static final String softCpuLimit = "soft_cpu_limit";
+  private static final String hardCpuLimit = "hard_cpu_limit";
+  private static final String environment = "environment";
 
   public static List<ResourceGroupDetail> upcast(List<ResourceGroup> resourceGroupList) {
     List<ResourceGroupDetail> resourceGroupDetails = new ArrayList<>();
@@ -74,7 +67,7 @@ public class ResourceGroup extends Model {
     model.set(name, resourceGroupDetail.getName());
 
     model.set(parent, resourceGroupDetail.getParent());
-    //        model.set(jmxExport, resourceGroupDetail.getJmxExport()); //TODO: why boolean not get
+    model.set(jmxExport, resourceGroupDetail.isJmxExport());
     model.set(schedulingPolicy, resourceGroupDetail.getSchedulingPolicy());
     model.set(schedulingWeight, resourceGroupDetail.getSchedulingWeight());
 
@@ -95,7 +88,7 @@ public class ResourceGroup extends Model {
         .set(resourceGroupId, resourceGroupDetail.getResourceGroupId())
         .set(name, resourceGroupDetail.getName())
         .set(parent, resourceGroupDetail.getParent())
-        //        .set(jmxExport, resourceGroupDetail.getJmxExport()) //TODO: why boolean no get
+        .set(jmxExport, resourceGroupDetail.isJmxExport())
         .set(schedulingPolicy, resourceGroupDetail.getSchedulingPolicy())
         .set(schedulingWeight, resourceGroupDetail.getSchedulingWeight())
         .set(softMemoryLimit, resourceGroupDetail.getSoftMemoryLimit())

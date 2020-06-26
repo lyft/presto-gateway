@@ -2,6 +2,7 @@ package com.lyft.data.gateway.ha.router;
 
 import static com.lyft.data.gateway.ha.router.PrestoResourceManager.ResourceGroupDetail;
 
+import com.lyft.data.gateway.ha.HaGatewayTestUtils;
 import com.lyft.data.gateway.ha.ResourceGroupTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
@@ -25,8 +26,8 @@ public class TestResourceGroupManager {
     File tempH2DbDir = new File(baseDir, "h2db-" + System.currentTimeMillis());
     tempH2DbDir.deleteOnExit();
     String jdbcUrl = "jdbc:h2:" + tempH2DbDir.getAbsolutePath();
-    ResourceGroupTestUtils.seedRequiredData(
-        new ResourceGroupTestUtils.TestConfig("", tempH2DbDir.getAbsolutePath()));
+    HaGatewayTestUtils.seedRequiredData(
+        new HaGatewayTestUtils.TestConfig("", tempH2DbDir.getAbsolutePath()));
     DataStoreConfiguration db = new DataStoreConfiguration(jdbcUrl, "sa", "sa", "org.h2.Driver");
     JdbcConnectionManager connectionManager = new JdbcConnectionManager(db);
     resourceGroupManager = new ResourceGroupManager(connectionManager);
@@ -51,55 +52,54 @@ public class TestResourceGroupManager {
     Assert.assertEquals(resourceGroupList.size(), 1);
   }
 
-    @Test(dependsOnMethods = {"testReadResourceGroup"})
-    public void testUpdateResourceGroup() {
-      ResourceGroupDetail resourceGroup = new ResourceGroupDetail();
-      resourceGroup.setName("admin");
-      resourceGroup.setSoftMemoryLimit("20%");
-      resourceGroup.setMaxQueued(50);
-      resourceGroup.setJmxExport(false);
-      resourceGroup.setHardConcurrencyLimit(50);
+  @Test(dependsOnMethods = {"testReadResourceGroup"})
+  public void testUpdateResourceGroup() {
+    ResourceGroupDetail resourceGroup = new ResourceGroupDetail();
+    resourceGroup.setName("admin");
+    resourceGroup.setSoftMemoryLimit("20%");
+    resourceGroup.setMaxQueued(50);
+    resourceGroup.setJmxExport(false);
+    resourceGroup.setHardConcurrencyLimit(50);
 
-      logger.info(resourceGroup.toString());
-      ResourceGroupDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-      logger.info(updated.toString());
+    logger.info(resourceGroup.toString());
+    ResourceGroupDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
+    logger.info(updated.toString());
 
-      List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
-      Assert.assertEquals(resourceGroups.size(), 1);
-      Assert.assertEquals(updated, resourceGroup);
+    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroups.size(), 1);
+    Assert.assertEquals(updated, resourceGroup);
 
-      /* Update resourceGroup that doesn't exist yet */
-      resourceGroup.setName("localization-eng");
-      resourceGroup.setSoftMemoryLimit("20%");
-      resourceGroup.setMaxQueued(70);
-      resourceGroup.setJmxExport(true);
-      resourceGroup.setHardConcurrencyLimit(50);
-      resourceGroup.setResourceGroupId(1); // how to auto increment?
-      resourceGroup.setSoftConcurrencyLimit(20);
+    /* Update resourceGroup that doesn't exist yet */
+    resourceGroup.setName("localization-eng");
+    resourceGroup.setSoftMemoryLimit("20%");
+    resourceGroup.setMaxQueued(70);
+    resourceGroup.setJmxExport(true);
+    resourceGroup.setHardConcurrencyLimit(50);
+    resourceGroup.setResourceGroupId(1); // how to auto increment?
+    resourceGroup.setSoftConcurrencyLimit(20);
 
-      logger.info(resourceGroup.toString());
-      updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-      logger.info(updated.toString());
+    logger.info(resourceGroup.toString());
+    updated = resourceGroupManager.updateResourceGroup(resourceGroup);
+    logger.info(updated.toString());
 
-      resourceGroups = resourceGroupManager.readResourceGroup();
+    resourceGroups = resourceGroupManager.readResourceGroup();
 
-      Assert.assertEquals(resourceGroups.size(), 2);
-      Assert.assertEquals(resourceGroups.get(0).getMaxQueued(), 50);
-      Assert.assertEquals(resourceGroups.get(1).getMaxQueued(), 70);
-    }
+    Assert.assertEquals(resourceGroups.size(), 2);
+    Assert.assertEquals(resourceGroups.get(0).getMaxQueued(), 50);
+    Assert.assertEquals(resourceGroups.get(1).getMaxQueued(), 70);
+  }
 
-    @Test(dependsOnMethods = {"testUpdateResourceGroup"})
-    public void testDeleteResourceGroup() {
-      List<ResourceGroupDetail> resourceGroupList = resourceGroupManager.readResourceGroup();
-      Assert.assertEquals(resourceGroupList.size(), 2);
-      Assert.assertEquals(resourceGroupList.get(0).getName(), "admin");
-      resourceGroupManager.deleteResourceGroup(
-          resourceGroupList.get(1).getResourceGroupId());
-      resourceGroupList = resourceGroupManager.readResourceGroup();
-      Assert.assertEquals(resourceGroupList.size(), 1);
+  @Test(dependsOnMethods = {"testUpdateResourceGroup"})
+  public void testDeleteResourceGroup() {
+    List<ResourceGroupDetail> resourceGroupList = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroupList.size(), 2);
+    Assert.assertEquals(resourceGroupList.get(0).getName(), "admin");
+    resourceGroupManager.deleteResourceGroup(resourceGroupList.get(1).getResourceGroupId());
+    resourceGroupList = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroupList.size(), 1);
 
-      // TODO: test case with deleting 0th element doesn't work, maybe bc of resource group ids
-    }
+    // TODO: test case with deleting 0th element doesn't work, maybe bc of resource group ids
+  }
 
   @AfterClass(alwaysRun = true)
   public void cleanUp() {}
