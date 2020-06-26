@@ -23,10 +23,10 @@ Once logged in to mysql console, please run [gateway-ha-persistence.sql](/gatewa
 
 Step 2: Edit the configuration `gateway-ha-config.yml`
 
-Step 3: Add below program argument to class `HaGatewayLauncher` and debug in IDE 
+Step 3: Add below program argument to class `HaGatewayLauncher` and debug in IDE
 ```$xslt
 server /path/to/gateway-ha/src/test/resources/config-template.yml
-``` 
+```
 ### Build and run
 run `mvn clean install` to build `presto-gateway`
 
@@ -37,20 +37,20 @@ cd gateway-ha/target/
 java -jar gateway-ha-{{VERSION}}-jar-with-dependencies.jar server ../gateway-ha-config.yml
 ```
 Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
- 
+
 ## Gateway API
 
 ### Add or update a backend
 ```$xslt
 curl -X POST http://localhost:8080/entity?entityType=GATEWAY_BACKEND \
- -d '{  "name": "presto1", \ 
+ -d '{  "name": "presto1", \
         "proxyTo": "http://presto1.lyft.com",\
         "active": true, \
         "routingGroup": "adhoc" \
     }'
 
 curl -X POST http://localhost:8080/entity?entityType=GATEWAY_BACKEND \
- -d '{  "name": "presto2", \ 
+ -d '{  "name": "presto2", \
         "proxyTo": "http://presto2.lyft.com",\
         "active": true, \
         "routingGroup": "adhoc" \
@@ -77,6 +77,12 @@ curl -X GET http://localhost:8080/entity/GATEWAY_BACKEND
 ]
 ```
 
+### Delete a backend from the gateway
+
+```$xslt
+curl -X POST -d "presto3" http://localhost:8080/gateway/backend/modify/delete
+```
+
 ### Deactivate a backend
 ```$xslt
 curl -X POST http://localhost:8080/gateway/backend/deactivate/presto2
@@ -99,12 +105,12 @@ curl -X POST http://localhost:8080/gateway/backend/deactivate/presto2
 
 
 ### Query History UI - check query plans etc.
-PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.  
-![prestogateway.lyft.com](/docs/assets/prestogateway_query_history.png) 
+PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.
+![prestogateway.lyft.com](/docs/assets/prestogateway_query_history.png)
 
 ### Gateway Admin UI - add and modify backend information
 The Gateway admin page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
-![prestogateway.lyft.com/entity](/docs/assets/prestogateway_ha_admin.png) 
+![prestogateway.lyft.com/entity](/docs/assets/prestogateway_ha_admin.png)
 
 ## Contributing
 
