@@ -13,10 +13,13 @@ public interface PrestoResourceManager {
 
   void deleteResourceGroup(long resourceGroupId);
 
-  //  SelectorDetail createSelector(SelectorDetail selector);
-  //  List<SelectorDetail> readSelector();
-  //  SelectorDetail updateSelector(SelectorDetail selector);
-  //  void deleteSelector(long resourceGroupId);
+  SelectorDetail createSelector(SelectorDetail selector);
+
+  List<SelectorDetail> readSelector();
+
+  SelectorDetail updateSelector(SelectorDetail selector);
+
+  void deleteSelector(long resourceGroupId);
 
   //  void readGlobalProperty();
   //  void updateGlobalProperty();
@@ -46,6 +49,29 @@ public interface PrestoResourceManager {
 
     @Override
     public int compareTo(ResourceGroupDetail o) {
+      if (this.resourceGroupId < o.resourceGroupId) {
+        return 1;
+      } else {
+        return this.resourceGroupId == o.resourceGroupId ? 0 : -1;
+      }
+    }
+  }
+
+  @Data
+  @ToString
+  class SelectorDetail implements Comparable<SelectorDetail> {
+    private long resourceGroupId;
+    private long priority;
+
+    private String userRegex;
+    private String sourceRegex;
+
+    private String queryType;
+    private String clientTags;
+    private String selectorResourceEstimate;
+
+    @Override
+    public int compareTo(SelectorDetail o) {
       if (this.resourceGroupId < o.resourceGroupId) {
         return 1;
       } else {

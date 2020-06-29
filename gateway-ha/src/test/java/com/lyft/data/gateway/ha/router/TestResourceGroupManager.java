@@ -1,6 +1,7 @@
 package com.lyft.data.gateway.ha.router;
 
 import static com.lyft.data.gateway.ha.router.PrestoResourceManager.ResourceGroupDetail;
+import static com.lyft.data.gateway.ha.router.PrestoResourceManager.SelectorDetail;
 
 import com.lyft.data.gateway.ha.HaGatewayTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
@@ -45,8 +46,8 @@ public class TestResourceGroupManager {
 
   @Test(dependsOnMethods = {"testCreateResourceGroup"})
   public void testReadResourceGroup() {
-    List<ResourceGroupDetail> resourceGroupList = resourceGroupManager.readResourceGroup();
-    Assert.assertEquals(resourceGroupList.size(), 1);
+    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroups.size(), 1);
   }
 
   @Test(dependsOnMethods = {"testReadResourceGroup"})
@@ -89,6 +90,46 @@ public class TestResourceGroupManager {
     resourceGroupList = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroupList.size(), 1);
   }
+
+  @Test(dependsOnMethods = {"testCreateResourceGroup"})
+  public void testCreateSelector() {
+    PrestoResourceManager.SelectorDetail selector = new PrestoResourceManager.SelectorDetail();
+    selector.setPriority(0);
+    selector.setUserRegex("data-platform-admin");
+    selector.setSourceRegex("admin");
+    selector.setQueryType("query_type");
+    selector.setClientTags("client_tag");
+    selector.setSelectorResourceEstimate("estimate");
+
+    PrestoResourceManager.SelectorDetail updated = resourceGroupManager.createSelector(selector);
+
+    Assert.assertEquals(updated, selector);
+  }
+
+  @Test(dependsOnMethods = {"testCreateSelector"})
+  public void testReadSelector() {
+    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    Assert.assertEquals(selectors.size(), 1);
+  }
+
+  @Test(dependsOnMethods = {"testReadSelector"})
+  public void testUpdateSelector() {
+    SelectorDetail selector = new SelectorDetail();
+    selector.setPriority(0);
+    selector.setUserRegex("data-platform-admin_updated");
+    selector.setSourceRegex("admin_updated");
+    selector.setQueryType("query_type_updated");
+    selector.setClientTags("client_tag_updated");
+    selector.setSelectorResourceEstimate("estimate_updated");
+
+    SelectorDetail updated = resourceGroupManager.updateSelector(selector);
+    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    Assert.assertEquals(selectors.size(), 1);
+    Assert.assertEquals(updated, selector);
+  }
+
+  @Test(dependsOnMethods = {"testUpdateSelector"})
+  public void testDeleteSelector() {}
 
   @AfterClass(alwaysRun = true)
   public void cleanUp() {}

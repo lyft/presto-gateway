@@ -62,6 +62,12 @@ public class ResourceGroup extends Model {
     return resourceGroupDetails;
   }
 
+  /**
+   * Creates a new ResourceGroup model.
+   *
+   * @param model
+   * @param resourceGroupDetail
+   */
   public static void create(ResourceGroup model, ResourceGroupDetail resourceGroupDetail) {
     model.set(resourceGroupId, resourceGroupDetail.getResourceGroupId());
     model.set(name, resourceGroupDetail.getName());
@@ -83,6 +89,12 @@ public class ResourceGroup extends Model {
     model.insert();
   }
 
+  /**
+   * Updates and saves an existing ResourceGroup model.
+   *
+   * @param model
+   * @param resourceGroupDetail
+   */
   public static void update(ResourceGroup model, ResourceGroupDetail resourceGroupDetail) {
     model
         .set(resourceGroupId, resourceGroupDetail.getResourceGroupId())
