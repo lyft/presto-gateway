@@ -37,6 +37,22 @@ CREATE TABLE IF NOT EXISTS resource_groups (
     environment VARCHAR(128) NULL,
 
     PRIMARY KEY(resource_group_id),
---    KEY(name),
     FOREIGN KEY (parent) REFERENCES resource_groups (resource_group_id)
+);
+
+CREATE TABLE IF NOT EXISTS selectors (
+    resource_group_id BIGINT NOT NULL,
+    priority BIGINT NOT NULL,
+
+    -- Regex fields -- these will be used as a regular expression pattern to
+    --                 match against the field of the same name on queries
+    user_regex VARCHAR(512),
+    source_regex VARCHAR(512),
+
+    -- Selector fields -- these must match exactly.
+    query_type VARCHAR(512),
+    client_tags VARCHAR(512),
+    selector_resource_estimate VARCHAR(1024),
+
+    FOREIGN KEY (resource_group_id) REFERENCES resource_groups(resource_group_id)
 );
