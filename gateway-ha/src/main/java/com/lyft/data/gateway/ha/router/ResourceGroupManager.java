@@ -4,7 +4,7 @@ import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroup;
 import java.util.List;
 
-import com.lyft.data.gateway.ha.persistence.dao.Selector;
+// import com.lyft.data.gateway.ha.persistence.dao.Selector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
