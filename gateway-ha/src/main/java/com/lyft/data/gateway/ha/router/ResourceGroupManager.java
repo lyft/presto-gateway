@@ -4,6 +4,7 @@ import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroup;
 import java.util.List;
 
+import com.lyft.data.gateway.ha.persistence.dao.Selector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,6 +15,10 @@ public class ResourceGroupManager implements PrestoResourceManager {
     this.connectionManager = connectionManager;
   }
 
+  /**
+   * @param resourceGroup
+   * @return the created ResourceGroupDetail object
+   */
   @Override
   public ResourceGroupDetail createResourceGroup(ResourceGroupDetail resourceGroup) {
     try {
@@ -25,6 +30,7 @@ public class ResourceGroupManager implements PrestoResourceManager {
     return resourceGroup;
   }
 
+  /** @return all existing resource groups as a list of ResourceGroupDetail objects */
   @Override
   public List<ResourceGroupDetail> readResourceGroup() {
     // TODO: reads all resource groups currently..change?
@@ -37,6 +43,10 @@ public class ResourceGroupManager implements PrestoResourceManager {
     }
   }
 
+  /**
+   * @param resourceGroup
+   * @return the updated ResourceGroupDetail object
+   */
   @Override
   public ResourceGroupDetail updateResourceGroup(ResourceGroupDetail resourceGroup) {
     try {
@@ -55,6 +65,7 @@ public class ResourceGroupManager implements PrestoResourceManager {
     return resourceGroup;
   }
 
+  /** @param resourceGroupId */
   @Override
   public void deleteResourceGroup(long resourceGroupId) {
     try {
@@ -67,19 +78,52 @@ public class ResourceGroupManager implements PrestoResourceManager {
 
   //  @Override
   //  public SelectorDetail createSelector(SelectorDetail selector) {
-  //    return null;
+  //    try {
+  //      connectionManager.open();
+  //      Selector.create(new Selector(), selector);
+  //    } finally {
+  //      connectionManager.close();
+  //    }
+  //    return selector;
   //  }
   //
   //  @Override
   //  public List<SelectorDetail> readSelector() {
-  //    return null;
+  //    // TODO: reads all resource groups currently..change?
+  //    try {
+  //      connectionManager.open();
+  //      List<Selector> selectorList = Selector.findAll();
+  //      return Selector.upcast(selectorList);
+  //    } finally {
+  //      connectionManager.close();
+  //    }
   //  }
   //
   //  @Override
   //  public SelectorDetail updateSelector(SelectorDetail selector) {
-  //    return null;
+  //    try {
+  //      connectionManager.open();
+  //      Selector model = Selector.findFirst("resource_group_id = ?",
+  // selector.getResourceGroupId());
+  //
+  //      if (model == null) {
+  //        Selector.create(new Selector(), selector);
+  //      } else {
+  //        Selector.update(model, selector);
+  //      }
+  //    } finally {
+  //      connectionManager.close();
+  //    }
+  //    return selector;
   //  }
   //
   //  @Override
-  //  public void deleteSelector(long resourceGroupId) {}
+  //  public void deleteSelector(long resourceGroupId) {
+  //    try {
+  //      connectionManager.open();
+  //      Selector.delete("resource_group_id = ?", resourceGroupId);
+  //    } finally {
+  //      connectionManager.close();
+  //    }
+  //  }
 }
