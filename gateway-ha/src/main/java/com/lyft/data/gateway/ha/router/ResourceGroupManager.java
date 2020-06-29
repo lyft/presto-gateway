@@ -2,9 +2,9 @@ package com.lyft.data.gateway.ha.router;
 
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroup;
+// import com.lyft.data.gateway.ha.persistence.dao.Selector;
 import java.util.List;
 
-// import com.lyft.data.gateway.ha.persistence.dao.Selector;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -16,6 +16,8 @@ public class ResourceGroupManager implements PrestoResourceManager {
   }
 
   /**
+   * Creates and returns a resource group with the given parameters.
+   *
    * @param resourceGroup
    * @return the created ResourceGroupDetail object
    */
@@ -30,10 +32,13 @@ public class ResourceGroupManager implements PrestoResourceManager {
     return resourceGroup;
   }
 
-  /** @return all existing resource groups as a list of ResourceGroupDetail objects */
+  /**
+   * Retrieves a list of all existing resource groups.
+   *
+   * @return all existing resource groups as a list of ResourceGroupDetail objects
+   */
   @Override
   public List<ResourceGroupDetail> readResourceGroup() {
-    // TODO: reads all resource groups currently..change?
     try {
       connectionManager.open();
       List<ResourceGroup> resourceGroupList = ResourceGroup.findAll();
@@ -44,6 +49,8 @@ public class ResourceGroupManager implements PrestoResourceManager {
   }
 
   /**
+   * Updates an existing resource group with new values.
+   *
    * @param resourceGroup
    * @return the updated ResourceGroupDetail object
    */
@@ -65,7 +72,11 @@ public class ResourceGroupManager implements PrestoResourceManager {
     return resourceGroup;
   }
 
-  /** @param resourceGroupId */
+  /**
+   * Search for resource group by its resourceGroupId and delete it.
+   *
+   * @param resourceGroupId
+   */
   @Override
   public void deleteResourceGroup(long resourceGroupId) {
     try {
