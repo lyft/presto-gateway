@@ -83,12 +83,12 @@ public class TestResourceGroupManager {
 
   @Test(dependsOnMethods = {"testUpdateResourceGroup"})
   public void testDeleteResourceGroup() {
-    List<ResourceGroupDetail> resourceGroupList = resourceGroupManager.readResourceGroup();
-    Assert.assertEquals(resourceGroupList.size(), 2);
-    Assert.assertEquals(resourceGroupList.get(0).getName(), "admin");
-    resourceGroupManager.deleteResourceGroup(resourceGroupList.get(1).getResourceGroupId());
-    resourceGroupList = resourceGroupManager.readResourceGroup();
-    Assert.assertEquals(resourceGroupList.size(), 1);
+    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroups.size(), 2);
+    Assert.assertEquals(resourceGroups.get(0).getName(), "admin");
+    resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId());
+    resourceGroups = resourceGroupManager.readResourceGroup();
+    Assert.assertEquals(resourceGroups.size(), 1);
   }
 
   @Test(dependsOnMethods = {"testCreateResourceGroup"})
@@ -129,7 +129,14 @@ public class TestResourceGroupManager {
   }
 
   @Test(dependsOnMethods = {"testUpdateSelector"})
-  public void testDeleteSelector() {}
+  public void testDeleteSelector() {
+    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    Assert.assertEquals(selectors.size(), 1);
+    Assert.assertEquals(selectors.get(0).getSourceRegex(), "admin_updated");
+    resourceGroupManager.deleteSelector(selectors.get(0).getResourceGroupId());
+    selectors = resourceGroupManager.readSelector();
+    Assert.assertEquals(selectors.size(), 0);
+  }
 
   @AfterClass(alwaysRun = true)
   public void cleanUp() {}

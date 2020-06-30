@@ -26,6 +26,12 @@ public class Selector extends Model {
   private static final String clientTags = "client_tags";
   private static final String selectorResourceEstimate = "selector_resource_estimate";
 
+  /**
+   * Retrieves all existing selectors and returns them in a List.
+   *
+   * @param selectorList
+   * @return a list of all existing selectors
+   */
   public static List<SelectorDetail> upcast(List<Selector> selectorList) {
     List<SelectorDetail> selectorDetails = new ArrayList<>();
     for (Selector dao : selectorList) {
@@ -42,6 +48,12 @@ public class Selector extends Model {
     return selectorDetails;
   }
 
+  /**
+   * Create a new Selector model with the given selector details.
+   *
+   * @param model
+   * @param selectorDetail
+   */
   public static void create(Selector model, SelectorDetail selectorDetail) {
     model.set(resourceGroupId, selectorDetail.getResourceGroupId());
     model.set(priority, selectorDetail.getPriority());
@@ -54,6 +66,12 @@ public class Selector extends Model {
     model.insert();
   }
 
+  /**
+   * Update an existing Selector model with the given selector details.
+   *
+   * @param model
+   * @param selectorDetail
+   */
   public static void update(Selector model, SelectorDetail selectorDetail) {
     model.set(resourceGroupId, selectorDetail.getResourceGroupId());
     model.set(priority, selectorDetail.getPriority());
