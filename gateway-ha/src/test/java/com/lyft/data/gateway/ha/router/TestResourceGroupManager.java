@@ -1,7 +1,7 @@
 package com.lyft.data.gateway.ha.router;
 
-import static com.lyft.data.gateway.ha.router.PrestoResourceManager.ResourceGroupDetail;
-import static com.lyft.data.gateway.ha.router.PrestoResourceManager.SelectorDetail;
+import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
+import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
 
 import com.lyft.data.gateway.ha.HaGatewayTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 
 @Test
 public class TestResourceGroupManager {
-  private ResourceGroupManager resourceGroupManager;
+  private HaResourceGroupsManager resourceGroupManager;
 
   @BeforeClass(alwaysRun = true)
   public void setUp() {
@@ -28,39 +28,39 @@ public class TestResourceGroupManager {
         new HaGatewayTestUtils.TestConfig("", tempH2DbDir.getAbsolutePath()));
     DataStoreConfiguration db = new DataStoreConfiguration(jdbcUrl, "sa", "sa", "org.h2.Driver");
     JdbcConnectionManager connectionManager = new JdbcConnectionManager(db);
-    resourceGroupManager = new ResourceGroupManager(connectionManager);
+    resourceGroupManager = new HaResourceGroupsManager(connectionManager);
   }
 
   public void testCreateResourceGroup() {
-    ResourceGroupDetail resourceGroup = new ResourceGroupDetail();
+    ResourceGroupsDetail resourceGroup = new ResourceGroupsDetail();
     resourceGroup.setName("admin");
     resourceGroup.setHardConcurrencyLimit(20);
     resourceGroup.setMaxQueued(200);
     resourceGroup.setJmxExport(true);
     resourceGroup.setSoftMemoryLimit("80%");
 
-    ResourceGroupDetail updated = resourceGroupManager.createResourceGroup(resourceGroup);
+    ResourceGroupsDetail updated = resourceGroupManager.createResourceGroup(resourceGroup);
 
     Assert.assertEquals(updated, resourceGroup);
   }
 
   @Test(dependsOnMethods = {"testCreateResourceGroup"})
   public void testReadResourceGroup() {
-    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroups.size(), 1);
   }
 
   @Test(dependsOnMethods = {"testReadResourceGroup"})
   public void testUpdateResourceGroup() {
-    ResourceGroupDetail resourceGroup = new ResourceGroupDetail();
+    ResourceGroupsDetail resourceGroup = new ResourceGroupsDetail();
     resourceGroup.setName("admin");
     resourceGroup.setSoftMemoryLimit("20%");
     resourceGroup.setMaxQueued(50);
     resourceGroup.setJmxExport(false);
     resourceGroup.setHardConcurrencyLimit(50);
 
-    ResourceGroupDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    ResourceGroupsDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroups.size(), 1);
     Assert.assertEquals(updated, resourceGroup);
 
@@ -83,7 +83,7 @@ public class TestResourceGroupManager {
 
   @Test(dependsOnMethods = {"testUpdateResourceGroup"})
   public void testDeleteResourceGroup() {
-    List<ResourceGroupDetail> resourceGroups = resourceGroupManager.readResourceGroup();
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroups.size(), 2);
     Assert.assertEquals(resourceGroups.get(0).getName(), "admin");
     resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId());
@@ -93,7 +93,7 @@ public class TestResourceGroupManager {
 
   @Test(dependsOnMethods = {"testCreateResourceGroup"})
   public void testCreateSelector() {
-    PrestoResourceManager.SelectorDetail selector = new PrestoResourceManager.SelectorDetail();
+    SelectorsDetail selector = new SelectorsDetail();
     selector.setPriority(0);
     selector.setUserRegex("data-platform-admin");
     selector.setSourceRegex("admin");
@@ -101,20 +101,20 @@ public class TestResourceGroupManager {
     selector.setClientTags("client_tag");
     selector.setSelectorResourceEstimate("estimate");
 
-    PrestoResourceManager.SelectorDetail updated = resourceGroupManager.createSelector(selector);
+    SelectorsDetail updated = resourceGroupManager.createSelector(selector);
 
     Assert.assertEquals(updated, selector);
   }
 
   @Test(dependsOnMethods = {"testCreateSelector"})
   public void testReadSelector() {
-    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    List<SelectorsDetail> selectors = resourceGroupManager.readSelector();
     Assert.assertEquals(selectors.size(), 1);
   }
 
   @Test(dependsOnMethods = {"testReadSelector"})
   public void testUpdateSelector() {
-    SelectorDetail selector = new SelectorDetail();
+    SelectorsDetail selector = new SelectorsDetail();
     selector.setPriority(0);
     selector.setUserRegex("data-platform-admin_updated");
     selector.setSourceRegex("admin_updated");
@@ -122,21 +122,31 @@ public class TestResourceGroupManager {
     selector.setClientTags("client_tag_updated");
     selector.setSelectorResourceEstimate("estimate_updated");
 
-    SelectorDetail updated = resourceGroupManager.updateSelector(selector);
-    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    SelectorsDetail updated = resourceGroupManager.updateSelector(selector);
+    List<SelectorsDetail> selectors = resourceGroupManager.readSelector();
     Assert.assertEquals(selectors.size(), 1);
     Assert.assertEquals(updated, selector);
   }
 
   @Test(dependsOnMethods = {"testUpdateSelector"})
   public void testDeleteSelector() {
-    List<SelectorDetail> selectors = resourceGroupManager.readSelector();
+    List<SelectorsDetail> selectors = resourceGroupManager.readSelector();
     Assert.assertEquals(selectors.size(), 1);
     Assert.assertEquals(selectors.get(0).getSourceRegex(), "admin_updated");
     resourceGroupManager.deleteSelector(selectors.get(0).getResourceGroupId());
     selectors = resourceGroupManager.readSelector();
     Assert.assertEquals(selectors.size(), 0);
   }
+
+  //  public void testReadGlobalProperties(){
+  //    List<GlobalPropertyDetail> globalProperties =
+  // resourceGroupManager.readGlobalProperty();
+  //    Assert.assertEquals(globalProperties.size(), 1);
+  //  }
+  //
+  //  public void testUpdateGlobalProperty(){
+  //
+  //  }
 
   @AfterClass(alwaysRun = true)
   public void cleanUp() {}

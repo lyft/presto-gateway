@@ -1,6 +1,6 @@
 package com.lyft.data.gateway.ha.persistence.dao;
 
-import static com.lyft.data.gateway.ha.router.PrestoResourceManager.SelectorDetail;
+import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.javalite.activejdbc.annotations.Cached;
 import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
-@BelongsTo(parent = ResourceGroup.class, foreignKeyName = "resource_group_id")
+@BelongsTo(parent = ResourceGroups.class, foreignKeyName = "resource_group_id")
 @IdName("resource_group_id")
 @Table("selectors")
 @Cached
-public class Selector extends Model {
+public class Selectors extends Model {
   private static final String resourceGroupId = "resource_group_id";
   private static final String priority = "priority";
 
@@ -32,10 +32,10 @@ public class Selector extends Model {
    * @param selectorList
    * @return a list of all existing selectors
    */
-  public static List<SelectorDetail> upcast(List<Selector> selectorList) {
-    List<SelectorDetail> selectorDetails = new ArrayList<>();
-    for (Selector dao : selectorList) {
-      SelectorDetail selectorDetail = new SelectorDetail();
+  public static List<SelectorsDetail> upcast(List<Selectors> selectorList) {
+    List<SelectorsDetail> selectorDetails = new ArrayList<>();
+    for (Selectors dao : selectorList) {
+      SelectorsDetail selectorDetail = new SelectorsDetail();
       selectorDetail.setResourceGroupId(dao.getLong(resourceGroupId));
       selectorDetail.setPriority(dao.getLong(priority));
       selectorDetail.setUserRegex(dao.getString(userRegex));
@@ -54,7 +54,7 @@ public class Selector extends Model {
    * @param model
    * @param selectorDetail
    */
-  public static void create(Selector model, SelectorDetail selectorDetail) {
+  public static void create(Selectors model, SelectorsDetail selectorDetail) {
     model.set(resourceGroupId, selectorDetail.getResourceGroupId());
     model.set(priority, selectorDetail.getPriority());
     model.set(userRegex, selectorDetail.getUserRegex());
@@ -72,7 +72,7 @@ public class Selector extends Model {
    * @param model
    * @param selectorDetail
    */
-  public static void update(Selector model, SelectorDetail selectorDetail) {
+  public static void update(Selectors model, SelectorsDetail selectorDetail) {
     model.set(resourceGroupId, selectorDetail.getResourceGroupId());
     model.set(priority, selectorDetail.getPriority());
     model.set(userRegex, selectorDetail.getUserRegex());

@@ -1,6 +1,6 @@
 package com.lyft.data.gateway.ha.persistence.dao;
 
-import static com.lyft.data.gateway.ha.router.PrestoResourceManager.ResourceGroupDetail;
+import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import org.javalite.activejdbc.annotations.Cached;
 import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
-@BelongsTo(parent = ResourceGroup.class, foreignKeyName = "parent")
+@BelongsTo(parent = ResourceGroups.class, foreignKeyName = "parent")
 @IdName("resource_group_id")
 @Table("resource_groups")
 @Cached
-public class ResourceGroup extends Model {
+public class ResourceGroups extends Model {
   private static final String resourceGroupId = "resource_group_id";
   private static final String name = "name";
 
@@ -36,10 +36,10 @@ public class ResourceGroup extends Model {
   private static final String hardCpuLimit = "hard_cpu_limit";
   private static final String environment = "environment";
 
-  public static List<ResourceGroupDetail> upcast(List<ResourceGroup> resourceGroupList) {
-    List<ResourceGroupDetail> resourceGroupDetails = new ArrayList<>();
-    for (ResourceGroup dao : resourceGroupList) {
-      ResourceGroupDetail resourceGroupDetail = new ResourceGroupDetail();
+  public static List<ResourceGroupsDetail> upcast(List<ResourceGroups> resourceGroupList) {
+    List<ResourceGroupsDetail> resourceGroupDetails = new ArrayList<>();
+    for (ResourceGroups dao : resourceGroupList) {
+      ResourceGroupsDetail resourceGroupDetail = new ResourceGroupsDetail();
       resourceGroupDetail.setResourceGroupId(dao.getLong(resourceGroupId));
       resourceGroupDetail.setName(dao.getString(name));
 
@@ -68,7 +68,7 @@ public class ResourceGroup extends Model {
    * @param model
    * @param resourceGroupDetail
    */
-  public static void create(ResourceGroup model, ResourceGroupDetail resourceGroupDetail) {
+  public static void create(ResourceGroups model, ResourceGroupsDetail resourceGroupDetail) {
     model.set(resourceGroupId, resourceGroupDetail.getResourceGroupId());
     model.set(name, resourceGroupDetail.getName());
 
@@ -95,7 +95,7 @@ public class ResourceGroup extends Model {
    * @param model
    * @param resourceGroupDetail
    */
-  public static void update(ResourceGroup model, ResourceGroupDetail resourceGroupDetail) {
+  public static void update(ResourceGroups model, ResourceGroupsDetail resourceGroupDetail) {
     model
         .set(resourceGroupId, resourceGroupDetail.getResourceGroupId())
         .set(name, resourceGroupDetail.getName())

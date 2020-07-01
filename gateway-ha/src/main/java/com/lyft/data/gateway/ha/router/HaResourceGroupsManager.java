@@ -1,0 +1,269 @@
+package com.lyft.data.gateway.ha.router;
+
+import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
+import com.lyft.data.gateway.ha.persistence.dao.ExactMatchSourceSelectors;
+import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
+import com.lyft.data.gateway.ha.persistence.dao.ResourceGroupsGlobalProperties;
+import com.lyft.data.gateway.ha.persistence.dao.Selectors;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class HaResourceGroupsManager implements ResourceGroupsManager {
+  private JdbcConnectionManager connectionManager;
+
+  public HaResourceGroupsManager(JdbcConnectionManager connectionManager) {
+    this.connectionManager = connectionManager;
+  }
+
+  /**
+   * Creates and returns a resource group with the given parameters.
+   *
+   * @param resourceGroup
+   * @return the created ResourceGroupDetail object
+   */
+  @Override
+  public ResourceGroupsDetail createResourceGroup(ResourceGroupsDetail resourceGroup) {
+    try {
+      connectionManager.open();
+      ResourceGroups.create(new ResourceGroups(), resourceGroup);
+    } finally {
+      connectionManager.close();
+    }
+    return resourceGroup;
+  }
+
+  /**
+   * Retrieves a list of all existing resource groups.
+   *
+   * @return all existing resource groups as a list of ResourceGroupDetail objects
+   */
+  @Override
+  public List<ResourceGroupsDetail> readResourceGroup() {
+    try {
+      connectionManager.open();
+      List<ResourceGroups> resourceGroupList = ResourceGroups.findAll();
+      return ResourceGroups.upcast(resourceGroupList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  /**
+   * Updates an existing resource group with new values.
+   *
+   * @param resourceGroup
+   * @return the updated ResourceGroupDetail object
+   */
+  @Override
+  public ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup) {
+    try {
+      connectionManager.open();
+      ResourceGroups model =
+          ResourceGroups.findFirst("resource_group_id = ?", resourceGroup.getResourceGroupId());
+
+      if (model == null) {
+        ResourceGroups.create(new ResourceGroups(), resourceGroup);
+      } else {
+        ResourceGroups.update(model, resourceGroup);
+      }
+    } finally {
+      connectionManager.close();
+    }
+    return resourceGroup;
+  }
+
+  /**
+   * Search for resource group by its resourceGroupId and delete it.
+   *
+   * @param resourceGroupId
+   */
+  @Override
+  public void deleteResourceGroup(long resourceGroupId) {
+    try {
+      connectionManager.open();
+      ResourceGroups.delete("resource_group_id = ?", resourceGroupId);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  /**
+   * Creates and returns a selector with the given parameters.
+   *
+   * @param selector
+   * @return
+   */
+  @Override
+  public SelectorsDetail createSelector(SelectorsDetail selector) {
+    try {
+      connectionManager.open();
+      Selectors.create(new Selectors(), selector);
+    } finally {
+      connectionManager.close();
+    }
+    return selector;
+  }
+
+  /**
+   * Retrieves a list of all existing resource groups.
+   *
+   * @return all existing selectors as a list of SelectorDetail objects
+   */
+  @Override
+  public List<SelectorsDetail> readSelector() {
+    try {
+      connectionManager.open();
+      List<Selectors> selectorList = Selectors.findAll();
+      return Selectors.upcast(selectorList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  /**
+   * Updates an existing resource group with new values.
+   *
+   * @param selector
+   * @return
+   */
+  @Override
+  public SelectorsDetail updateSelector(SelectorsDetail selector) {
+    try {
+      connectionManager.open();
+      Selectors model = Selectors.findFirst("resource_group_id = ?", selector.getResourceGroupId());
+
+      if (model == null) {
+        Selectors.create(new Selectors(), selector);
+      } else {
+        Selectors.update(model, selector);
+      }
+    } finally {
+      connectionManager.close();
+    }
+    return selector;
+  }
+
+  /**
+   * Search for selector by its resourceGroupId and delete it.
+   *
+   * @param resourceGroupId
+   */
+  @Override
+  public void deleteSelector(long resourceGroupId) {
+    try {
+      connectionManager.open();
+      Selectors.delete("resource_group_id = ?", resourceGroupId);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail) {
+    try {
+      connectionManager.open();
+      ResourceGroupsGlobalProperties.create(
+          new ResourceGroupsGlobalProperties(), globalPropertyDetail);
+    } finally {
+      connectionManager.close();
+    }
+    return globalPropertyDetail;
+  }
+
+  @Override
+  public List<GlobalPropertiesDetail> readGlobalProperty() {
+    try {
+      connectionManager.open();
+      List<ResourceGroupsGlobalProperties> globalPropertyList =
+          ResourceGroupsGlobalProperties.findAll();
+      return ResourceGroupsGlobalProperties.upcast(globalPropertyList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty) {
+    try {
+      connectionManager.open();
+      ResourceGroupsGlobalProperties model =
+          ResourceGroupsGlobalProperties.findFirst("name = ?", globalProperty.getName());
+
+      if (model == null) {
+        ResourceGroupsGlobalProperties.create(new ResourceGroupsGlobalProperties(), globalProperty);
+      } else {
+        ResourceGroupsGlobalProperties.update(model, globalProperty);
+      }
+    } finally {
+      connectionManager.close();
+    }
+    return globalProperty;
+  }
+
+  @Override
+  public void deleteGlobalProperty(String name) {
+    try {
+      connectionManager.open();
+      Selectors.delete("name = ?", name);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public ExactSelectorsDetail createExactMatchSourceSelector(
+      ExactSelectorsDetail exactSelectorDetail) {
+    try {
+      connectionManager.open();
+      ExactMatchSourceSelectors.create(new ExactMatchSourceSelectors(), exactSelectorDetail);
+    } finally {
+      connectionManager.close();
+    }
+    return exactSelectorDetail;
+  }
+
+  @Override
+  public List<ExactSelectorsDetail> readExactMatchSourceSelector() {
+    try {
+      connectionManager.open();
+      List<ExactMatchSourceSelectors> exactMatchSourceSelectorList =
+          ExactMatchSourceSelectors.findAll();
+      return ExactMatchSourceSelectors.upcast(exactMatchSourceSelectorList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public ExactSelectorsDetail updateExactMatchSourceSelector(
+      ExactSelectorsDetail exactSelectorDetail) {
+    try {
+      connectionManager.open();
+      ExactMatchSourceSelectors model =
+          ExactMatchSourceSelectors.findFirst(
+              "environment = ?",
+              exactSelectorDetail.getEnvironment()); // TODO: change to multiple primary keys
+
+      if (model == null) {
+        ExactMatchSourceSelectors.create(new ExactMatchSourceSelectors(), exactSelectorDetail);
+      } else {
+        ExactMatchSourceSelectors.update(model, exactSelectorDetail);
+      }
+    } finally {
+      connectionManager.close();
+    }
+    return exactSelectorDetail;
+  }
+
+  @Override
+  public void deleteExactMatchSourceSelector(String environment) {
+    try {
+      connectionManager.open();
+      Selectors.delete("environment = ?", environment);
+    } finally {
+      connectionManager.close();
+    }
+  }
+}
