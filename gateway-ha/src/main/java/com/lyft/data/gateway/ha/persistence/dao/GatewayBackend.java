@@ -17,6 +17,7 @@ public class GatewayBackend extends Model {
   private static final String name = "name";
   private static final String routingGroup = "routing_group";
   private static final String backendUrl = "backend_url";
+  private static final String externalUrl = "external_url";
   private static final String active = "active";
 
   public static List<ProxyBackendConfiguration> upcast(List<GatewayBackend> gatewayBackendList) {
@@ -26,6 +27,7 @@ public class GatewayBackend extends Model {
       backendConfig.setActive(model.getBoolean(active));
       backendConfig.setRoutingGroup(model.getString(routingGroup));
       backendConfig.setProxyTo(model.getString(backendUrl));
+      backendConfig.setExternalUrl(model.getString(externalUrl));
       backendConfig.setName(model.getString(name));
       proxyBackendConfigurations.add(backendConfig);
     }
@@ -37,6 +39,7 @@ public class GatewayBackend extends Model {
         .set(name, backend.getName())
         .set(routingGroup, backend.getRoutingGroup())
         .set(backendUrl, backend.getProxyTo())
+        .set(externalUrl, backend.getExternalUrl())
         .set(active, backend.isActive())
         .saveIt();
   }

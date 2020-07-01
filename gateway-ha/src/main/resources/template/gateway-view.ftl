@@ -58,7 +58,7 @@
         <#list backendConfigurations as bc>
             <tr>
                 <td>  ${bc.name}</td>
-                <td><a href="${bc.proxyTo}/ui" target="_blank">${bc.proxyTo}</a></td>
+                <td><a href="${bc.externalUrl}/ui" target="_blank">${bc.externalUrl}</a></td>
                 <td> ${bc.routingGroup}</td>
             </tr>
         </#list>

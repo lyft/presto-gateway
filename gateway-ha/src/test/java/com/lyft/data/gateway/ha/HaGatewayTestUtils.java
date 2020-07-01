@@ -95,7 +95,12 @@ public class HaGatewayTestUtils {
   }
 
   public static void setUpBackend(
-      String name, String proxyTo, boolean active, String routingGroup, int routerPort)
+      String name,
+      String proxyTo,
+      String externalUrl,
+      boolean active,
+      String routingGroup,
+      int routerPort)
       throws Exception {
     RequestBody requestBody =
         RequestBody.create(
@@ -104,6 +109,8 @@ public class HaGatewayTestUtils {
                 + name
                 + "\",\"proxyTo\": \""
                 + proxyTo
+                + "\",\"externalUrl\": \""
+                + externalUrl
                 + "\",\"active\": "
                 + active
                 + ",\"routingGroup\": \""
