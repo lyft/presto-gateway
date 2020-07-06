@@ -11,8 +11,10 @@ import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
 import com.lyft.data.gateway.ha.router.HaGatewayManager;
 import com.lyft.data.gateway.ha.router.HaQueryHistoryManager;
+import com.lyft.data.gateway.ha.router.HaResourceGroupsManager;
 import com.lyft.data.gateway.ha.router.HaRoutingManager;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
+import com.lyft.data.gateway.ha.router.ResourceGroupsManager;
 import com.lyft.data.gateway.ha.router.RoutingGroupSelector;
 import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
@@ -22,6 +24,7 @@ import io.dropwizard.setup.Environment;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
+  private final ResourceGroupsManager resourceGroupsManager;
   private final GatewayBackendManager gatewayBackendManager;
   private final QueryHistoryManager queryHistoryManager;
   private final RoutingManager routingManager;
@@ -30,6 +33,7 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   public HaGatewayProviderModule(HaGatewayConfiguration configuration, Environment environment) {
     super(configuration, environment);
     connectionManager = new JdbcConnectionManager(configuration.getDataStore());
+    resourceGroupsManager = new HaResourceGroupsManager(connectionManager);
     gatewayBackendManager = new HaGatewayManager(connectionManager);
     queryHistoryManager = new HaQueryHistoryManager(connectionManager);
     routingManager =
@@ -69,6 +73,12 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
       gateway = new ProxyServer(routerProxyConfig, proxyHandler);
     }
     return gateway;
+  }
+
+  @Provides
+  @Singleton
+  public ResourceGroupsManager getPrestoResourceManager() {
+    return this.resourceGroupsManager;
   }
 
   @Provides
