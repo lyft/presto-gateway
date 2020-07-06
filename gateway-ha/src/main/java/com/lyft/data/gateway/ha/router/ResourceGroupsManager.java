@@ -3,6 +3,8 @@ package com.lyft.data.gateway.ha.router;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 public interface ResourceGroupsManager {
@@ -38,11 +40,12 @@ public interface ResourceGroupsManager {
 
   void deleteExactMatchSourceSelector(String environment); // TODO: change this to multiple params
 
+  @RequiredArgsConstructor
   @Data
   @ToString
   class ResourceGroupsDetail implements Comparable<ResourceGroupsDetail> {
-    private long resourceGroupId;
-    private String name;
+    @NonNull private long resourceGroupId;
+    @NonNull private String name;
 
     /* OPTIONAL POLICY CONTROLS */
     private long parent;
@@ -51,15 +54,17 @@ public interface ResourceGroupsManager {
     private int schedulingWeight;
 
     /* REQUIRED QUOTAS */
-    private String softMemoryLimit;
-    private int maxQueued;
-    private int hardConcurrencyLimit;
+    @NonNull private String softMemoryLimit;
+    @NonNull private int maxQueued;
+    @NonNull private int hardConcurrencyLimit;
 
     /* OPTIONAL QUOTAS */
     private int softConcurrencyLimit;
     private String softCpuLimit;
     private String hardCpuLimit;
     private String environment;
+
+    public ResourceGroupsDetail() {}
 
     @Override
     public int compareTo(ResourceGroupsDetail o) {
@@ -71,11 +76,12 @@ public interface ResourceGroupsManager {
     }
   }
 
+  @RequiredArgsConstructor
   @Data
   @ToString
   class SelectorsDetail implements Comparable<SelectorsDetail> {
-    private long resourceGroupId;
-    private long priority;
+    @NonNull private long resourceGroupId;
+    @NonNull private long priority;
 
     private String userRegex;
     private String sourceRegex;
@@ -83,6 +89,8 @@ public interface ResourceGroupsManager {
     private String queryType;
     private String clientTags;
     private String selectorResourceEstimate;
+
+    public SelectorsDetail() {}
 
     @Override
     public int compareTo(SelectorsDetail o) {
@@ -94,11 +102,14 @@ public interface ResourceGroupsManager {
     }
   }
 
+  @RequiredArgsConstructor
   @Data
   @ToString
   class GlobalPropertiesDetail implements Comparable<GlobalPropertiesDetail> {
-    private String name;
+    @NonNull private String name;
     private String value;
+
+    public GlobalPropertiesDetail() {}
 
     @Override
     public int compareTo(GlobalPropertiesDetail o) {
@@ -106,15 +117,18 @@ public interface ResourceGroupsManager {
     }
   }
 
+  @RequiredArgsConstructor
   @Data
   @ToString
   class ExactSelectorsDetail implements Comparable<ExactSelectorsDetail> {
-    private String resourceGroupId;
-    private String updateTime;
+    @NonNull private String resourceGroupId;
+    @NonNull private String updateTime;
 
-    private String source;
+    @NonNull private String source;
     private String environment;
     private String queryType;
+
+    public ExactSelectorsDetail() {}
 
     @Override
     public int compareTo(ExactSelectorsDetail o) {

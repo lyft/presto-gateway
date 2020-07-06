@@ -11,7 +11,7 @@ import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
 @IdName("name")
-@Table("resource_groups_global_properties")
+@Table("resource_groups_global_properties") // located in gateway-ha-persistence.sql
 @Cached
 public class ResourceGroupsGlobalProperties extends Model {
   private static final String name = "name";
@@ -19,31 +19,49 @@ public class ResourceGroupsGlobalProperties extends Model {
 
   // CHECK (name in ('cpu_quota_period'))
 
+  /**
+   * Reads all existing global properties and returns them in a List.
+   *
+   * @param globalPropertiesList
+   * @return List of ResourceGroupGlobalProperties
+   */
   public static List<GlobalPropertiesDetail> upcast(
-      List<ResourceGroupsGlobalProperties> globalPropertyList) {
+      List<ResourceGroupsGlobalProperties> globalPropertiesList) {
     List<GlobalPropertiesDetail> globalProperties = new ArrayList<>();
-    for (ResourceGroupsGlobalProperties dao : globalPropertyList) {
-      GlobalPropertiesDetail globalPropertyDetail = new GlobalPropertiesDetail();
-      globalPropertyDetail.setName(dao.getString(name));
-      globalPropertyDetail.setValue(dao.getString(value));
+    for (ResourceGroupsGlobalProperties dao : globalPropertiesList) {
+      GlobalPropertiesDetail globalPropertiesDetail = new GlobalPropertiesDetail();
+      globalPropertiesDetail.setName(dao.getString(name));
+      globalPropertiesDetail.setValue(dao.getString(value));
 
-      globalProperties.add(globalPropertyDetail);
+      globalProperties.add(globalPropertiesDetail);
     }
     return globalProperties;
   }
 
+  /**
+   * Creates a new global property.
+   *
+   * @param model
+   * @param globalPropertiesDetail
+   */
   public static void create(
-          ResourceGroupsGlobalProperties model, GlobalPropertiesDetail globalPropertyDetail) {
-    model.set(name, globalPropertyDetail.getName());
-    model.set(value, globalPropertyDetail.getValue());
+      ResourceGroupsGlobalProperties model, GlobalPropertiesDetail globalPropertiesDetail) {
+    model.set(name, globalPropertiesDetail.getName());
+    model.set(value, globalPropertiesDetail.getValue());
 
     model.insert();
   }
 
+  /**
+   * Updates existing global property.
+   *
+   * @param model
+   * @param globalPropertiesDetail
+   */
   public static void update(
-          ResourceGroupsGlobalProperties model, GlobalPropertiesDetail globalPropertyDetail) {
-    model.set(name, globalPropertyDetail.getName());
-    model.set(value, globalPropertyDetail.getValue());
+      ResourceGroupsGlobalProperties model, GlobalPropertiesDetail globalPropertiesDetail) {
+    model.set(name, globalPropertiesDetail.getName());
+    model.set(value, globalPropertiesDetail.getValue());
 
     model.saveIt();
   }

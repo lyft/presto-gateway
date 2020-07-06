@@ -11,7 +11,7 @@ import org.javalite.activejdbc.annotations.CompositePK;
 import org.javalite.activejdbc.annotations.Table;
 
 @CompositePK({"environment", "source", "query_type"})
-@Table("exact_match_source_selectors")
+@Table("exact_match_source_selectors") // located in gateway-ha-persistence.sql
 @Cached
 public class ExactMatchSourceSelectors extends Model {
   private static final String resourceGroupId = "resource_group_id";
@@ -21,13 +21,16 @@ public class ExactMatchSourceSelectors extends Model {
   private static final String environment = "environment";
   private static final String queryType = "query_type";
 
-  // PRIMARY KEY (environment, source, query_type),
-  // UNIQUE (source, environment, query_type, resource_group_id)
-
+  /**
+   * Read all existing exactMatchSource selectors and return them in a list.
+   *
+   * @param exactMatchSourceSelectorsList
+   * @return List of ExactMatchSourceSelectors
+   */
   public static List<ExactSelectorsDetail> upcast(
-      List<ExactMatchSourceSelectors> exactMatchSourceSelectorList) {
+      List<ExactMatchSourceSelectors> exactMatchSourceSelectorsList) {
     List<ExactSelectorsDetail> exactSelectors = new ArrayList<>();
-    for (ExactMatchSourceSelectors dao : exactMatchSourceSelectorList) {
+    for (ExactMatchSourceSelectors dao : exactMatchSourceSelectorsList) {
       ExactSelectorsDetail exactSelectorDetail = new ExactSelectorsDetail();
       exactSelectorDetail.setResourceGroupId(dao.getString(resourceGroupId));
       exactSelectorDetail.setUpdateTime(dao.getString(updateTime)); // TODO: change to datetime
@@ -41,26 +44,38 @@ public class ExactMatchSourceSelectors extends Model {
     return exactSelectors;
   }
 
+  /**
+   * Create a new exactMatchSourceSelector.
+   *
+   * @param model
+   * @param exactSelectorsDetail
+   */
   public static void create(
-          ExactMatchSourceSelectors model, ExactSelectorsDetail exactSelectorDetail) {
-    model.set(resourceGroupId, exactSelectorDetail.getResourceGroupId());
-    model.set(updateTime, exactSelectorDetail.getUpdateTime());
+      ExactMatchSourceSelectors model, ExactSelectorsDetail exactSelectorsDetail) {
+    model.set(resourceGroupId, exactSelectorsDetail.getResourceGroupId());
+    model.set(updateTime, exactSelectorsDetail.getUpdateTime());
 
-    model.set(source, exactSelectorDetail.getSource());
-    model.set(environment, exactSelectorDetail.getEnvironment());
-    model.set(queryType, exactSelectorDetail.getQueryType());
+    model.set(source, exactSelectorsDetail.getSource());
+    model.set(environment, exactSelectorsDetail.getEnvironment());
+    model.set(queryType, exactSelectorsDetail.getQueryType());
 
     model.insert();
   }
 
+  /**
+   * Update existing exactMatchSourceSelector.
+   *
+   * @param model
+   * @param exactSelectorsDetail
+   */
   public static void update(
-          ExactMatchSourceSelectors model, ExactSelectorsDetail exactSelectorDetail) {
-    model.set(resourceGroupId, exactSelectorDetail.getResourceGroupId());
-    model.set(updateTime, exactSelectorDetail.getUpdateTime());
+      ExactMatchSourceSelectors model, ExactSelectorsDetail exactSelectorsDetail) {
+    model.set(resourceGroupId, exactSelectorsDetail.getResourceGroupId());
+    model.set(updateTime, exactSelectorsDetail.getUpdateTime());
 
-    model.set(source, exactSelectorDetail.getSource());
-    model.set(environment, exactSelectorDetail.getEnvironment());
-    model.set(queryType, exactSelectorDetail.getQueryType());
+    model.set(source, exactSelectorsDetail.getSource());
+    model.set(environment, exactSelectorsDetail.getEnvironment());
+    model.set(queryType, exactSelectorsDetail.getQueryType());
 
     model.saveIt();
   }
