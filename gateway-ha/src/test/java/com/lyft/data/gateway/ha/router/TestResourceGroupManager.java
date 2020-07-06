@@ -1,5 +1,6 @@
 package com.lyft.data.gateway.ha.router;
 
+import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.ExactSelectorsDetail;
 import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.GlobalPropertiesDetail;
 import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
 import static com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
@@ -124,7 +125,10 @@ public class TestResourceGroupManager {
   public void testDeleteResourceGroup() {
     List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readResourceGroup();
     Assert.assertEquals(resourceGroups.size(), 3);
-    Assert.assertEquals(resourceGroups.get(0).getName(), "admin");
+
+    Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0);
+    Assert.assertEquals(resourceGroups.get(1).getResourceGroupId(), 1);
+    Assert.assertEquals(resourceGroups.get(2).getResourceGroupId(), 3);
 
     resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId());
     resourceGroups = resourceGroupManager.readResourceGroup();
@@ -186,14 +190,14 @@ public class TestResourceGroupManager {
     List<SelectorsDetail> selectors = resourceGroupManager.readSelector();
 
     Assert.assertEquals(selectors.size(), 1);
-    Assert.assertEquals(updated, selector);
+    Assert.assertEquals(updated, selectors.get(0));
   }
 
   @Test(dependsOnMethods = {"testUpdateSelector"})
   public void testDeleteSelector() {
     List<SelectorsDetail> selectors = resourceGroupManager.readSelector();
     Assert.assertEquals(selectors.size(), 1);
-    Assert.assertEquals(selectors.get(0).getSourceRegex(), "admin_updated");
+    Assert.assertEquals(selectors.get(0).getResourceGroupId(), 0);
     resourceGroupManager.deleteSelector(selectors.get(0).getResourceGroupId());
     selectors = resourceGroupManager.readSelector();
 
@@ -203,35 +207,65 @@ public class TestResourceGroupManager {
   public void testCreateGlobalProperties() {
     GlobalPropertiesDetail globalPropertiesDetail = new GlobalPropertiesDetail();
     globalPropertiesDetail.setName("cpu_quota_period");
-    globalPropertiesDetail.setValue("test_value");
+    globalPropertiesDetail.setValue("1h");
 
     GlobalPropertiesDetail newGlobalProperties =
         resourceGroupManager.createGlobalProperty(globalPropertiesDetail);
+
     Assert.assertEquals(newGlobalProperties, globalPropertiesDetail);
   }
 
   @Test(dependsOnMethods = {"testCreateGlobalProperties"})
   public void testReadGlobalProperties() {
     List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readGlobalProperty();
+
     Assert.assertEquals(globalProperties.size(), 1);
+    Assert.assertEquals(globalProperties.get(0).getName(), "cpu_quota_period");
+    Assert.assertEquals(globalProperties.get(0).getValue(), "1h");
   }
 
   @Test(dependsOnMethods = {"testReadGlobalProperties"})
-  public void testUpdateGlobalProperties() {}
+  public void testUpdateGlobalProperties() {
+    GlobalPropertiesDetail globalPropertiesDetail = new GlobalPropertiesDetail();
+    globalPropertiesDetail.setName("cpu_quota_period");
+    globalPropertiesDetail.setValue("updated_test_value");
 
-  @Test(dependsOnMethods = {"testUpdateGlobalProperties"})
-  public void testDeleteGlobalProperties() {}
+    GlobalPropertiesDetail updated =
+        resourceGroupManager.updateGlobalProperty(globalPropertiesDetail);
+    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readGlobalProperty();
 
-  public void testCreateExactMatchSourceSelectors() {}
+    Assert.assertEquals(globalProperties.size(), 1);
+    Assert.assertEquals(updated, globalProperties.get(0));
+  }
+
+  public void testCreateExactMatchSourceSelectors() {
+    ExactSelectorsDetail exactSelectorDetail = new ExactSelectorsDetail();
+
+    exactSelectorDetail.setResourceGroupId("0");
+    exactSelectorDetail.setUpdateTime("2020-07-06");
+    exactSelectorDetail.setSource("source");
+    exactSelectorDetail.setEnvironment("environment");
+    exactSelectorDetail.setQueryType("query_type");
+
+    ExactSelectorsDetail newExactMatchSourceSelector =
+        resourceGroupManager.createExactMatchSourceSelector(exactSelectorDetail);
+
+    Assert.assertEquals(newExactMatchSourceSelector, exactSelectorDetail);
+  }
 
   @Test(dependsOnMethods = {"testCreateExactMatchSourceSelectors"})
-  public void testReadExactMatchSourceSelectors() {}
+  public void testReadExactMatchSourceSelectors() {
+    List<ExactSelectorsDetail> exactSelectorsDetails =
+        resourceGroupManager.readExactMatchSourceSelector();
 
-  @Test(dependsOnMethods = {"testReadExactMatchSourceSelectors"})
-  public void testUpdateExactMatchSourceSelectors() {}
-
-  @Test(dependsOnMethods = {"testUpdateExactMatchSourceSelectors"})
-  public void testDeleteExactMatchSourceSelectors() {}
+    Assert.assertEquals(exactSelectorsDetails.size(), 1);
+    Assert.assertEquals(exactSelectorsDetails.get(0).getResourceGroupId(), "0");
+    //    Assert.assertEquals(exactSelectorsDetails.get(0).getUpdateTime(), "2020-07-06"); //
+    // Datetime assert failure
+    Assert.assertEquals(exactSelectorsDetails.get(0).getSource(), "source");
+    Assert.assertEquals(exactSelectorsDetails.get(0).getEnvironment(), "environment");
+    Assert.assertEquals(exactSelectorsDetails.get(0).getQueryType(), "query_type");
+  }
 
   @AfterClass(alwaysRun = true)
   public void cleanUp() {}

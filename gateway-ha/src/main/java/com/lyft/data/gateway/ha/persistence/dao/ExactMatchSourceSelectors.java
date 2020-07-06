@@ -33,7 +33,7 @@ public class ExactMatchSourceSelectors extends Model {
     for (ExactMatchSourceSelectors dao : exactMatchSourceSelectorsList) {
       ExactSelectorsDetail exactSelectorDetail = new ExactSelectorsDetail();
       exactSelectorDetail.setResourceGroupId(dao.getString(resourceGroupId));
-      exactSelectorDetail.setUpdateTime(dao.getString(updateTime)); // TODO: change to datetime
+      exactSelectorDetail.setUpdateTime(dao.getString(updateTime));
 
       exactSelectorDetail.setSource(dao.getString(source));
       exactSelectorDetail.setEnvironment(dao.getString(environment));

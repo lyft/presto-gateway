@@ -206,7 +206,7 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   public void deleteGlobalProperty(String name) {
     try {
       connectionManager.open();
-      Selectors.delete("name = ?", name);
+      ResourceGroupsGlobalProperties.delete("name = ?", name);
     } finally {
       connectionManager.close();
     }
@@ -261,7 +261,7 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   public void deleteExactMatchSourceSelector(String environment) {
     try {
       connectionManager.open();
-      Selectors.delete("environment = ?", environment);
+      ExactMatchSourceSelectors.delete("environment = ?", environment);
     } finally {
       connectionManager.close();
     }
