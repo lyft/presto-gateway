@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS gateway_backend (
 name VARCHAR(256) PRIMARY KEY,
 routing_group VARCHAR (256),
 backend_url VARCHAR (256),
+external_url VARCHAR (256),
 active BOOLEAN
 );
 

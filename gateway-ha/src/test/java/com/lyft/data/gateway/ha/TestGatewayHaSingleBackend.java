@@ -33,7 +33,7 @@ public class TestGatewayHaSingleBackend {
     HaGatewayLauncher.main(args);
     // Now populate the backend
     HaGatewayTestUtils.setUpBackend(
-        "presto1", "http://localhost:" + backendPort, true, "adhoc", routerPort);
+        "presto1", "http://localhost:" + backendPort, "externalUrl", true, "adhoc", routerPort);
   }
 
   @Test

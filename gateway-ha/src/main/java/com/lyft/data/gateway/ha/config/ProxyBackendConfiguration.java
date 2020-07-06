@@ -11,4 +11,13 @@ import lombok.RequiredArgsConstructor;
 public class ProxyBackendConfiguration extends ProxyServerConfiguration {
   private boolean active = true;
   private String routingGroup = "adhoc";
+  private String externalUrl;
+
+  public String getExternalUrl() {
+    if (externalUrl == null) {
+      return getProxyTo();
+    }
+    return externalUrl;
+  }
+
 }

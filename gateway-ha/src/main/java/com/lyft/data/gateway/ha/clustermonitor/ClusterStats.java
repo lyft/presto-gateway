@@ -13,5 +13,6 @@ public class ClusterStats {
   private boolean healthy;
   private String clusterId;
   private String proxyTo;
+  private String externalUrl;
   private String routingGroup;
 }

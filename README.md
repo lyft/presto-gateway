@@ -57,6 +57,26 @@ curl -X POST http://localhost:8080/entity?entityType=GATEWAY_BACKEND \
     }'
 
 ```
+If the backend URL is different from the `proxyTo` URL (for example if they are internal vs. external hostnames). You can use the optional `externalUrl` field to override the link in the Active Backends page.
+```$xslt
+curl -X POST http://localhost:8080/entity?entityType=GATEWAY_BACKEND \
+ -d '{  "name": "presto1", \ 
+        "proxyTo": "http://presto1.lyft.com",\
+        "active": true, \
+        "routingGroup": "adhoc" \
+        "externalUrl": "http://presto1-external.lyft.com",\
+    }'
+
+curl -X POST http://localhost:8080/entity?entityType=GATEWAY_BACKEND \
+ -d '{  "name": "presto2", \ 
+        "proxyTo": "http://presto2.lyft.com",\
+        "active": true, \
+        "routingGroup": "adhoc" \
+        "externalUrl": "http://presto2-external.lyft.com",\
+    }'
+
+```
+
 
 ### Get all backends behind the gateway
 ```$xslt

@@ -39,9 +39,9 @@ public class TestGatewayHaMulipleBackend {
     HaGatewayLauncher.main(args);
     // Now populate the backend
     HaGatewayTestUtils.setUpBackend(
-        "presto1", "http://localhost:" + backend1Port, true, "adhoc", routerPort);
+        "presto1", "http://localhost:" + backend1Port, "externalUrl", true, "adhoc", routerPort);
     HaGatewayTestUtils.setUpBackend(
-        "presto2", "http://localhost:" + backend2Port, true, "scheduled", routerPort);
+        "presto2", "http://localhost:" + backend2Port, "externalUrl", true, "scheduled", routerPort);
   }
 
   @Test
