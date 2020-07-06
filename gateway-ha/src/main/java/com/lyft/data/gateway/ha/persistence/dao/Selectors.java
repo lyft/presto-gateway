@@ -13,7 +13,7 @@ import org.javalite.activejdbc.annotations.Table;
 
 @BelongsTo(parent = ResourceGroups.class, foreignKeyName = "resource_group_id")
 @IdName("resource_group_id")
-@Table("selectors")
+@Table("selectors") // located in gateway-ha-persistence.sql
 @Cached
 public class Selectors extends Model {
   private static final String resourceGroupId = "resource_group_id";

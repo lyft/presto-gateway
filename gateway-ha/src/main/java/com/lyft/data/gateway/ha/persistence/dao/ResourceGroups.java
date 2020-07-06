@@ -13,7 +13,7 @@ import org.javalite.activejdbc.annotations.Table;
 
 @BelongsTo(parent = ResourceGroups.class, foreignKeyName = "parent")
 @IdName("resource_group_id")
-@Table("resource_groups")
+@Table("resource_groups") // located in gateway-ha-persistence.sql
 @Cached
 public class ResourceGroups extends Model {
   private static final String resourceGroupId = "resource_group_id";
@@ -36,6 +36,12 @@ public class ResourceGroups extends Model {
   private static final String hardCpuLimit = "hard_cpu_limit";
   private static final String environment = "environment";
 
+  /**
+   * Reads all existing resource groups and returns them in a list.
+   *
+   * @param resourceGroupList
+   * @return List of ResourceGroupDetail objects
+   */
   public static List<ResourceGroupsDetail> upcast(List<ResourceGroups> resourceGroupList) {
     List<ResourceGroupsDetail> resourceGroupDetails = new ArrayList<>();
     for (ResourceGroups dao : resourceGroupList) {
