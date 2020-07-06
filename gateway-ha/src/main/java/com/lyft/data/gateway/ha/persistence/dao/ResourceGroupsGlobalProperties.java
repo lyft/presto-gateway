@@ -17,8 +17,6 @@ public class ResourceGroupsGlobalProperties extends Model {
   private static final String name = "name";
   private static final String value = "value";
 
-  // CHECK (name in ('cpu_quota_period'))
-
   /**
    * Reads all existing global properties and returns them in a List.
    *

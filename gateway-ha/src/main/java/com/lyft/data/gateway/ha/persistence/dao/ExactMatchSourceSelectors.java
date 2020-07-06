@@ -22,7 +22,8 @@ public class ExactMatchSourceSelectors extends Model {
   private static final String queryType = "query_type";
 
   /**
-   * Read all existing exactMatchSource selectors and return them in a list.
+   * Returns the most specific exact-match selector for a given environment, source and query type.
+   * NULL values in the environment and query type fields signify wildcards.
    *
    * @param exactMatchSourceSelectorsList
    * @return List of ExactMatchSourceSelectors
