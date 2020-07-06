@@ -62,37 +62,37 @@ public class PrestoResource {
     resourceGroupsManager.deleteResourceGroup(resourceGroupId);
     return Response.ok().build();
   }
+  //
+  //  @POST
+  //  @Path("/selector/create")
+  //  public Response createSelector(String jsonPayload) {
+  //    try {
+  //      SelectorsDetail selector = OBJECT_MAPPER.readValue(jsonPayload, SelectorsDetail.class);
+  //      SelectorsDetail updatedSelector = this.resourceGroupsManager.createSelector(selector);
+  //      return Response.ok(updatedSelector).build();
+  //    } catch (IOException e) {
+  //      log.error(e.getMessage(), e);
+  //      throw new WebApplicationException(e);
+  //    }
+  //  }
+  //
+  //  @GET
+  //  @Path("/selector/read")
+  //  public Response readSelector() {
+  //    return Response.ok(this.resourceGroupsManager.readSelector()).build();
+  //  }
 
-  @POST
-  @Path("/selector/create")
-  public Response createSelector(String jsonPayload) {
-    try {
-      SelectorsDetail selector = OBJECT_MAPPER.readValue(jsonPayload, SelectorsDetail.class);
-      SelectorsDetail updatedSelector = this.resourceGroupsManager.createSelector(selector);
-      return Response.ok(updatedSelector).build();
-    } catch (IOException e) {
-      log.error(e.getMessage(), e);
-      throw new WebApplicationException(e);
-    }
-  }
-
-  @GET
-  @Path("/selector/read")
-  public Response readSelector() {
-    return Response.ok(this.resourceGroupsManager.readSelector()).build();
-  }
-
-  @Path("/selector/update")
-  @POST
-  public Response updateSelector(SelectorsDetail selector) {
-    SelectorsDetail updatedSelector = this.resourceGroupsManager.updateSelector(selector);
-    return Response.ok(updatedSelector).build();
-  }
-
-  @Path("/selector/delete")
-  @POST
-  public Response deleteSelector(long resourceGroupId) {
-    resourceGroupsManager.deleteSelector(resourceGroupId);
-    return Response.ok().build();
-  }
+  //  @Path("/selector/update")
+  //  @POST
+  //  public Response updateSelector(SelectorsDetail selector) {
+  //    SelectorsDetail updatedSelector = this.resourceGroupsManager.updateSelector(selector);
+  //    return Response.ok(updatedSelector).build();
+  //  }
+  //
+  //  @Path("/selector/delete")
+  //  @POST
+  //  public Response deleteSelector(long resourceGroupId) {
+  //    resourceGroupsManager.deleteSelector(resourceGroupId);
+  //    return Response.ok().build();
+  //  }
 }
