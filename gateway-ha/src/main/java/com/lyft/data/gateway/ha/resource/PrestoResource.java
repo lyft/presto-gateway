@@ -74,7 +74,11 @@ public class PrestoResource {
 
   @Path("/resourcegroup/delete")
   @POST
-  public Response deleteResourceGroup(long resourceGroupId) {
+  public Response deleteResourceGroup(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+    if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
+      throw new WebApplicationException("EntryType can not be null");
+    }
+    long resourceGroupId = Long.parseLong(resourceGroupIdStr);
     resourceGroupsManager.deleteResourceGroup(resourceGroupId);
     return Response.ok().build();
   }
@@ -118,7 +122,11 @@ public class PrestoResource {
 
   @Path("/selector/delete")
   @POST
-  public Response deleteSelector(long resourceGroupId) {
+  public Response deleteSelector(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+    if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
+      throw new WebApplicationException("EntryType can not be null");
+    }
+    long resourceGroupId = Long.parseLong(resourceGroupIdStr);
     resourceGroupsManager.deleteSelector(resourceGroupId);
     return Response.ok().build();
   }
@@ -166,7 +174,7 @@ public class PrestoResource {
 
   @Path("/globalproperty/delete")
   @POST
-  public Response deleteGlobalProperty(String name) {
+  public Response deleteGlobalProperty(@QueryParam("name") String name) {
     resourceGroupsManager.deleteGlobalProperty(name);
     return Response.ok().build();
   }
