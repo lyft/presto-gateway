@@ -2,9 +2,12 @@ package com.lyft.data.gateway.ha.router;
 
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.ExactMatchSourceSelectors;
+import com.lyft.data.gateway.ha.persistence.dao.GatewayBackend;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroupsGlobalProperties;
 import com.lyft.data.gateway.ha.persistence.dao.Selectors;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +43,29 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
    * @return all existing resource groups as a list of ResourceGroupDetail objects
    */
   @Override
-  public List<ResourceGroupsDetail> readResourceGroup() {
+  public List<ResourceGroupsDetail> readAllResourceGroups() {
     try {
       connectionManager.open();
       List<ResourceGroups> resourceGroupList = ResourceGroups.findAll();
       return ResourceGroups.upcast(resourceGroupList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  /**
+   * Retrieves a specific resource group based on its resourceGroupId.
+   *
+   * @param resourceGroupId
+   * @return a specific resource group as a ResourceGroupDetail object
+   */
+  @Override
+  public List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId) {
+    try {
+      connectionManager.open();
+      List<ResourceGroups> resourceGroup =
+          ResourceGroups.where("resource_group_id = ?", resourceGroupId);
+      return ResourceGroups.upcast(resourceGroup);
     } finally {
       connectionManager.close();
     }
@@ -112,10 +133,21 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
    * @return all existing selectors as a list of SelectorDetail objects
    */
   @Override
-  public List<SelectorsDetail> readSelector() {
+  public List<SelectorsDetail> readAllSelectors() {
     try {
       connectionManager.open();
       List<Selectors> selectorList = Selectors.findAll();
+      return Selectors.upcast(selectorList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public List<SelectorsDetail> readSelector(long resourceGroupId) {
+    try {
+      connectionManager.open();
+      List<Selectors> selectorList = Selectors.where("resource_group_id = ?", resourceGroupId);
       return Selectors.upcast(selectorList);
     } finally {
       connectionManager.close();
@@ -173,11 +205,23 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   }
 
   @Override
-  public List<GlobalPropertiesDetail> readGlobalProperty() {
+  public List<GlobalPropertiesDetail> readAllGlobalProperties() {
     try {
       connectionManager.open();
       List<ResourceGroupsGlobalProperties> globalPropertyList =
           ResourceGroupsGlobalProperties.findAll();
+      return ResourceGroupsGlobalProperties.upcast(globalPropertyList);
+    } finally {
+      connectionManager.close();
+    }
+  }
+
+  @Override
+  public List<GlobalPropertiesDetail> readGlobalProperty(String name) {
+    try {
+      connectionManager.open();
+      List<ResourceGroupsGlobalProperties> globalPropertyList =
+          ResourceGroupsGlobalProperties.where("name = ?", name);
       return ResourceGroupsGlobalProperties.upcast(globalPropertyList);
     } finally {
       connectionManager.close();
@@ -237,33 +281,32 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   }
 
   @Override
-  public ExactSelectorsDetail updateExactMatchSourceSelector(
+  public ExactSelectorsDetail getExactMatchSourceSelector(
       ExactSelectorsDetail exactSelectorDetail) {
     try {
       connectionManager.open();
       ExactMatchSourceSelectors model =
           ExactMatchSourceSelectors.findFirst(
-              "environment = ?",
-              exactSelectorDetail.getEnvironment()); // TODO: change to multiple primary keys
+              "resource_group_id = ? and update_time = ? "
+                  + "and source = ? and environment = ? and query_type = ?",
+              exactSelectorDetail.getResourceGroupId(),
+              exactSelectorDetail.getUpdateTime(),
+              exactSelectorDetail.getSource(),
+              exactSelectorDetail.getEnvironment(),
+              exactSelectorDetail.getQueryType());
+
+      List<ExactMatchSourceSelectors> exactMatchSourceSelectorList = new ArrayList();
+      exactMatchSourceSelectorList.add(model);
 
       if (model == null) {
-        ExactMatchSourceSelectors.create(new ExactMatchSourceSelectors(), exactSelectorDetail);
+        return null;
       } else {
-        ExactMatchSourceSelectors.update(model, exactSelectorDetail);
+        ExactMatchSourceSelectors.upcast(
+            exactMatchSourceSelectorList);
       }
     } finally {
       connectionManager.close();
     }
     return exactSelectorDetail;
-  }
-
-  @Override
-  public void deleteExactMatchSourceSelector(String environment) {
-    try {
-      connectionManager.open();
-      ExactMatchSourceSelectors.delete("environment = ?", environment);
-    } finally {
-      connectionManager.close();
-    }
   }
 }

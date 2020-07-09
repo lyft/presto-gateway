@@ -1,20 +1,22 @@
 package com.lyft.data.gateway.ha.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
-import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager;
+import com.lyft.data.gateway.ha.router.ResourceGroupsManager.ExactSelectorsDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.GlobalPropertiesDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
 
 import java.io.IOException;
-import javax.ws.rs.Consumes;
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,9 +32,7 @@ public class PrestoResource {
 
   @POST
   @Path("/resourcegroup/create")
-  @Produces(MediaType.APPLICATION_JSON)
   public Response createResourceGroup(String jsonPayload) {
-    //    return Response.ok("hi").build();
     try {
       ResourceGroupsDetail resourceGroup =
           OBJECT_MAPPER.readValue(jsonPayload, ResourceGroupsDetail.class);
@@ -47,8 +47,14 @@ public class PrestoResource {
 
   @GET
   @Path("/resourcegroup/read")
-  public Response readResourceGroup() {
-    return Response.ok(this.resourceGroupsManager.readResourceGroup()).build();
+  public Response readResourceGroup(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+    if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
+      return Response.ok(this.resourceGroupsManager.readAllResourceGroups()).build();
+    }
+    long resourceGroupId = Long.parseLong(resourceGroupIdStr);
+    List<ResourceGroupsDetail> resourceGroup =
+        this.resourceGroupsManager.readResourceGroup(resourceGroupId);
+    return Response.ok(resourceGroup).build();
   }
 
   @Path("/resourcegroup/update")
@@ -88,8 +94,13 @@ public class PrestoResource {
 
   @GET
   @Path("/selector/read")
-  public Response readSelector() {
-    return Response.ok(this.resourceGroupsManager.readSelector()).build();
+  public Response readSelector(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+    if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
+      return Response.ok(this.resourceGroupsManager.readAllSelectors()).build();
+    }
+    long resourceGroupId = Long.parseLong(resourceGroupIdStr);
+    List<SelectorsDetail> selectors = this.resourceGroupsManager.readSelector(resourceGroupId);
+    return Response.ok(selectors).build();
   }
 
   @Path("/selector/update")
@@ -114,7 +125,6 @@ public class PrestoResource {
 
   @POST
   @Path("/globalproperty/create")
-  @Produces(MediaType.APPLICATION_JSON)
   public Response createGlobalProperty(String jsonPayload) {
     try {
       GlobalPropertiesDetail globalProperty =
@@ -130,14 +140,17 @@ public class PrestoResource {
 
   @GET
   @Path("/globalproperty/read")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response readGlobalProperty() {
-    return Response.ok(this.resourceGroupsManager.readGlobalProperty()).build();
+  public Response readGlobalProperty(@QueryParam("name") String name) {
+    if (Strings.isNullOrEmpty(name)) {
+      return Response.ok(this.resourceGroupsManager.readAllGlobalProperties()).build();
+    }
+    List<GlobalPropertiesDetail> globalProperty =
+        this.resourceGroupsManager.readGlobalProperty(name);
+    return Response.ok(globalProperty).build();
   }
 
   @Path("/globalproperty/update")
   @POST
-  @Produces(MediaType.APPLICATION_JSON)
   public Response updateGlobalProperty(String jsonPayload) {
     try {
       GlobalPropertiesDetail globalProperty =
@@ -150,4 +163,33 @@ public class PrestoResource {
       throw new WebApplicationException(e);
     }
   }
+
+  @Path("/globalproperty/delete")
+  @POST
+  public Response deleteGlobalProperty(String name) {
+    resourceGroupsManager.deleteGlobalProperty(name);
+    return Response.ok().build();
+  }
+
+  //  @POST
+  //  @Path("/exactmatchsourceselector/create")
+  //  public Response createExactMatchSourceSelector(String jsonPayload) {
+  //    try {
+  //      ExactSelectorsDetail exactMatchSourceSelector =
+  //          OBJECT_MAPPER.readValue(jsonPayload, ExactSelectorsDetail.class);
+  //      ExactSelectorsDetail newExactMatchSourceSelector =
+  //          this.resourceGroupsManager.createExactMatchSourceSelector(exactMatchSourceSelector);
+  //      return Response.ok(newExactMatchSourceSelector).build();
+  //    } catch (IOException e) {
+  //      log.error(e.getMessage(), e);
+  //      throw new WebApplicationException(e);
+  //    }
+  //  }
+  //
+  //  @POST
+  //  @Path("/exactmatchsourceselector/read")
+  //  public Response readExactMatchSourceSelector() {
+  //    return Response.ok(this.resourceGroupsManager.readExactMatchSourceSelector()).build();
+  //  }
+
 }

@@ -10,7 +10,9 @@ import lombok.ToString;
 public interface ResourceGroupsManager {
   ResourceGroupsDetail createResourceGroup(ResourceGroupsDetail resourceGroup);
 
-  List<ResourceGroupsDetail> readResourceGroup();
+  List<ResourceGroupsDetail> readAllResourceGroups();
+
+  List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId);
 
   ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup);
 
@@ -18,7 +20,9 @@ public interface ResourceGroupsManager {
 
   SelectorsDetail createSelector(SelectorsDetail selector);
 
-  List<SelectorsDetail> readSelector();
+  List<SelectorsDetail> readAllSelectors();
+
+  List<SelectorsDetail> readSelector(long resourceGroupId);
 
   SelectorsDetail updateSelector(SelectorsDetail selector);
 
@@ -26,7 +30,9 @@ public interface ResourceGroupsManager {
 
   GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail);
 
-  List<GlobalPropertiesDetail> readGlobalProperty();
+  List<GlobalPropertiesDetail> readAllGlobalProperties();
+
+  List<GlobalPropertiesDetail> readGlobalProperty(String name);
 
   GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty);
 
@@ -36,9 +42,8 @@ public interface ResourceGroupsManager {
 
   List<ExactSelectorsDetail> readExactMatchSourceSelector();
 
-  ExactSelectorsDetail updateExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
+  ExactSelectorsDetail getExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
 
-  void deleteExactMatchSourceSelector(String environment); // TODO: change this to multiple params
 
   @RequiredArgsConstructor
   @Data
