@@ -132,6 +132,139 @@ PrestoGateway records history of recent queries and displays links to check quer
 The Gateway admin page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
 ![prestogateway.lyft.com/entity](/docs/assets/prestogateway_ha_admin.png)
 
+## Resource Groups API
+
+### Add a resource group
+To add a single resource group, specify all relevant fields in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/resourcegroup/create \
+ -d '{  "resourceGroupId": 1, \
+        "name": "resourcegroup1", \
+        "softMemoryLimit": "100%", \
+        "maxQueued": 100, \
+        "softConcurrencyLimit": 100, \
+        "hardConcurrencyLimit": 100, \
+        "environment": "test", \
+        "schedulingPolicy": null, \
+        "schedulingWeight": null, \
+        "jmxExport": null, \
+        "softCpuLimit": null, \
+        "hardCpuLimit": null, \
+        "parent": null, \
+        "environment": "test" \
+    }'
+```
+
+### Get existing resource group(s)
+If no resourceGroupId (type long) is specified, then all existing resource groups are fetched. 
+```$xslt
+curl -X GET http://localhost:8080/presto/resourcegroup/read?resourceGroupId={INSERT_ID_HERE}
+```
+
+### Update a resource group
+Specify all fields in the body, which will overwrite the existing resource group's properties.
+```$xslt
+curl -X POST http://localhost:8080/presto/resourcegroup/update \
+ -d '{  "resourceGroupId": 1, \
+        "name": "resourcegroup_updated", \
+        "softMemoryLimit": "80%", \
+        "maxQueued": 50, \
+        "softConcurrencyLimit": 40, \
+        "hardConcurrencyLimit": 60, \
+        "environment": "test", \
+        "schedulingPolicy": null, \
+        "schedulingWeight": null, \
+        "jmxExport": null, \
+        "softCpuLimit": null, \
+        "hardCpuLimit": null, \
+        "parent": null, \
+        "environment": "test" \
+    }'
+```
+
+### Delete a resource group
+To delete a resource group, specify the corresponding resourceGroupId (type long) in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/resourcegroup/delete \
+ -d '{  
+       {INSERT_ID_HERE}
+     }'
+```
+
+### Add a selector
+To add a single selector, specify all relevant fields in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/selector/create \
+ -d '{  "resourceGroupId": 1, \
+        "priority": 1, \
+        "userRegex": "selector1", \
+        "sourceRegex": "resourcegroup1", \
+        "queryType": "insert" \
+     }'
+```
+
+### Get existing selectors(s)
+If no resourceGroupId (type long) is specified, then all existing selectors are fetched. 
+```$xslt
+curl -X GET http://localhost:8080/presto/selector/read?resourceGroupId={INSERT_ID_HERE}
+```
+
+### Update a selector
+Specify all fields in the body, which will overwrite the existing selector's properties.
+```$xslt
+curl -X POST http://localhost:8080/presto/selector/update \
+ -d '{  "resourceGroupId": 1, \
+        "priority": 2, \
+        "userRegex": "selector_updated", \
+        "sourceRegex": "resourcegroup1", \
+        "queryType": "insert" \
+     }'
+```
+
+### Delete a selector
+To delete a selector, specify the corresponding resourceGroupId (type long) in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/selector/delete \
+ -d '{  
+        {INSERT_ID_HERE}
+     }'
+```
+
+### Add a global property
+To add a single global property, specify all relevant fields in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/globalproperty/create \
+ -d '{
+        "name": "cpu_quota_period", \
+        "value": "1h" \
+     }'
+```
+
+### Get existing global properties
+If no name (type String) is specified, then all existing global properties are fetched. 
+```$xslt
+curl -X GET http://localhost:8080/presto/globalproperty/read?name={INSERT_NAME_HERE}
+```
+
+### Update a global property
+Specify all fields in the body, which will overwrite the existing global properties.
+```$xslt
+curl -X POST http://localhost:8080/presto/globalproperty/update \
+ -d '{
+        "name": "cpu_quota_period", \
+        "value": "2h" \
+     }'
+```
+
+### Delete a global property
+To delete a global property, specify the corresponding name (type String) in the body.
+```$xslt
+curl -X POST http://localhost:8080/presto/globalproperty/delete \
+ -d '{  
+        {INSERT_NAME_HERE}
+     }'
+```
+
 ## Contributing
 
 Want to help build Presto Gateway? Check out our [contributing documentation](CONTRIBUTING.md)
