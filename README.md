@@ -183,12 +183,9 @@ curl -X POST http://localhost:8080/presto/resourcegroup/update \
 ```
 
 ### Delete a resource group
-To delete a resource group, specify the corresponding resourceGroupId (type long) in the body.
+To delete a resource group, specify the corresponding resourceGroupId (type long).
 ```$xslt
-curl -X POST http://localhost:8080/presto/resourcegroup/delete \
- -d '{  
-       {INSERT_ID_HERE}
-     }'
+curl -X POST http://localhost:8080/presto/resourcegroup/delete?resourceGroupId={INSERT_ID_HERE}
 ```
 
 ### Add a selector
@@ -222,12 +219,9 @@ curl -X POST http://localhost:8080/presto/selector/update \
 ```
 
 ### Delete a selector
-To delete a selector, specify the corresponding resourceGroupId (type long) in the body.
+To delete a selector, specify the corresponding resourceGroupId (type long).
 ```$xslt
-curl -X POST http://localhost:8080/presto/selector/delete \
- -d '{  
-        {INSERT_ID_HERE}
-     }'
+curl -X POST http://localhost:8080/presto/selector/delete?resourceGroupId={INSERT_ID_HERE}
 ```
 
 ### Add a global property
@@ -257,12 +251,9 @@ curl -X POST http://localhost:8080/presto/globalproperty/update \
 ```
 
 ### Delete a global property
-To delete a global property, specify the corresponding name (type String) in the body.
+To delete a global property, specify the corresponding name (type String).
 ```$xslt
-curl -X POST http://localhost:8080/presto/globalproperty/delete \
- -d '{  
-        {INSERT_NAME_HERE}
-     }'
+curl -X POST http://localhost:8080/presto/globalproperty/delete?name={INSERT_NAME_HERE}
 ```
 
 ## Contributing
