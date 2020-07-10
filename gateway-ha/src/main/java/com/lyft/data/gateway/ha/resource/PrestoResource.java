@@ -15,6 +15,7 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -47,7 +48,13 @@ public class PrestoResource {
 
   @GET
   @Path("/resourcegroup/read")
-  public Response readResourceGroup(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+  public Response readAllResourceGroups() {
+    return Response.ok(this.resourceGroupsManager.readAllResourceGroups()).build();
+  }
+
+  @GET
+  @Path("/resourcegroup/read/{resourceGroupId}")
+  public Response readResourceGroup(@PathParam("resourceGroupId") String resourceGroupIdStr) {
     if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
       return Response.ok(this.resourceGroupsManager.readAllResourceGroups()).build();
     }
@@ -72,9 +79,9 @@ public class PrestoResource {
     }
   }
 
-  @Path("/resourcegroup/delete")
+  @Path("/resourcegroup/delete/{resourceGroupId}")
   @POST
-  public Response deleteResourceGroup(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+  public Response deleteResourceGroup(@PathParam("resourceGroupId") String resourceGroupIdStr) {
     if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
       throw new WebApplicationException("EntryType can not be null");
     }
@@ -98,6 +105,12 @@ public class PrestoResource {
 
   @GET
   @Path("/selector/read")
+  public Response readAllSelectors() {
+    return Response.ok(this.resourceGroupsManager.readAllSelectors()).build();
+  }
+
+  @GET
+  @Path("/selector/read/{resourceGroupId}")
   public Response readSelector(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
     if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
       return Response.ok(this.resourceGroupsManager.readAllSelectors()).build();
@@ -120,9 +133,9 @@ public class PrestoResource {
     }
   }
 
-  @Path("/selector/delete")
+  @Path("/selector/delete/{resourceGroupId}")
   @POST
-  public Response deleteSelector(@QueryParam("resourceGroupId") String resourceGroupIdStr) {
+  public Response deleteSelector(@PathParam("resourceGroupId") String resourceGroupIdStr) {
     if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
       throw new WebApplicationException("EntryType can not be null");
     }
@@ -148,7 +161,13 @@ public class PrestoResource {
 
   @GET
   @Path("/globalproperty/read")
-  public Response readGlobalProperty(@QueryParam("name") String name) {
+  public Response readAllGlobalProperties() {
+    return Response.ok(this.resourceGroupsManager.readAllGlobalProperties()).build();
+  }
+
+  @GET
+  @Path("/globalproperty/read/{name}")
+  public Response readGlobalProperty(@PathParam("name") String name) {
     if (Strings.isNullOrEmpty(name)) {
       return Response.ok(this.resourceGroupsManager.readAllGlobalProperties()).build();
     }
@@ -172,9 +191,9 @@ public class PrestoResource {
     }
   }
 
-  @Path("/globalproperty/delete")
+  @Path("/globalproperty/delete/{name}")
   @POST
-  public Response deleteGlobalProperty(@QueryParam("name") String name) {
+  public Response deleteGlobalProperty(@PathParam("name") String name) {
     resourceGroupsManager.deleteGlobalProperty(name);
     return Response.ok().build();
   }
