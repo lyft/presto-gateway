@@ -8,10 +8,12 @@ import java.util.List;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.BelongsTo;
 import org.javalite.activejdbc.annotations.Cached;
+import org.javalite.activejdbc.annotations.HasMany;
 import org.javalite.activejdbc.annotations.IdName;
 import org.javalite.activejdbc.annotations.Table;
 
 @BelongsTo(parent = ResourceGroups.class, foreignKeyName = "parent")
+@HasMany(child = ResourceGroups.class, foreignKeyName = "parent")
 @IdName("resource_group_id")
 @Table("resource_groups") // located in gateway-ha-persistence.sql
 @Cached
@@ -79,7 +81,7 @@ public class ResourceGroups extends Model {
     model.set(name, resourceGroupDetail.getName());
 
     model.set(parent, resourceGroupDetail.getParent());
-    model.set(jmxExport, resourceGroupDetail.isJmxExport());
+    model.set(jmxExport, resourceGroupDetail.getJmxExport());
     model.set(schedulingPolicy, resourceGroupDetail.getSchedulingPolicy());
     model.set(schedulingWeight, resourceGroupDetail.getSchedulingWeight());
 
@@ -106,7 +108,7 @@ public class ResourceGroups extends Model {
         .set(resourceGroupId, resourceGroupDetail.getResourceGroupId())
         .set(name, resourceGroupDetail.getName())
         .set(parent, resourceGroupDetail.getParent())
-        .set(jmxExport, resourceGroupDetail.isJmxExport())
+        .set(jmxExport, resourceGroupDetail.getJmxExport())
         .set(schedulingPolicy, resourceGroupDetail.getSchedulingPolicy())
         .set(schedulingWeight, resourceGroupDetail.getSchedulingWeight())
         .set(softMemoryLimit, resourceGroupDetail.getSoftMemoryLimit())

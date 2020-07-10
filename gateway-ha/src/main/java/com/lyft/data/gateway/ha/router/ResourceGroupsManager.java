@@ -10,7 +10,9 @@ import lombok.ToString;
 public interface ResourceGroupsManager {
   ResourceGroupsDetail createResourceGroup(ResourceGroupsDetail resourceGroup);
 
-  List<ResourceGroupsDetail> readResourceGroup();
+  List<ResourceGroupsDetail> readAllResourceGroups();
+
+  List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId);
 
   ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup);
 
@@ -18,7 +20,9 @@ public interface ResourceGroupsManager {
 
   SelectorsDetail createSelector(SelectorsDetail selector);
 
-  List<SelectorsDetail> readSelector();
+  List<SelectorsDetail> readAllSelectors();
+
+  List<SelectorsDetail> readSelector(long resourceGroupId);
 
   SelectorsDetail updateSelector(SelectorsDetail selector);
 
@@ -26,7 +30,9 @@ public interface ResourceGroupsManager {
 
   GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail);
 
-  List<GlobalPropertiesDetail> readGlobalProperty();
+  List<GlobalPropertiesDetail> readAllGlobalProperties();
+
+  List<GlobalPropertiesDetail> readGlobalProperty(String name);
 
   GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty);
 
@@ -36,9 +42,7 @@ public interface ResourceGroupsManager {
 
   List<ExactSelectorsDetail> readExactMatchSourceSelector();
 
-  ExactSelectorsDetail updateExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
-
-  void deleteExactMatchSourceSelector(String environment); // TODO: change this to multiple params
+  ExactSelectorsDetail getExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
 
   @RequiredArgsConstructor
   @Data
@@ -48,10 +52,10 @@ public interface ResourceGroupsManager {
     @NonNull private String name;
 
     /* OPTIONAL POLICY CONTROLS */
-    private long parent;
-    private boolean jmxExport;
+    private Long parent;
+    private Boolean jmxExport;
     private String schedulingPolicy;
-    private int schedulingWeight;
+    private Integer schedulingWeight;
 
     /* REQUIRED QUOTAS */
     @NonNull private String softMemoryLimit;
@@ -59,7 +63,7 @@ public interface ResourceGroupsManager {
     @NonNull private int hardConcurrencyLimit;
 
     /* OPTIONAL QUOTAS */
-    private int softConcurrencyLimit;
+    private Integer softConcurrencyLimit;
     private String softCpuLimit;
     private String hardCpuLimit;
     private String environment;
