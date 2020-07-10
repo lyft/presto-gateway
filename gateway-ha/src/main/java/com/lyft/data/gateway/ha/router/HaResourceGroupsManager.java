@@ -2,7 +2,6 @@ package com.lyft.data.gateway.ha.router;
 
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.persistence.dao.ExactMatchSourceSelectors;
-import com.lyft.data.gateway.ha.persistence.dao.GatewayBackend;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroupsGlobalProperties;
 import com.lyft.data.gateway.ha.persistence.dao.Selectors;
