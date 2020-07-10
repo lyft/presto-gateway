@@ -191,6 +191,12 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
     }
   }
 
+  /**
+   * Create new global property with given parameters.
+   *
+   * @param globalPropertyDetail
+   * @return created global property
+   */
   @Override
   public GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail) {
     try {
@@ -203,6 +209,11 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
     return globalPropertyDetail;
   }
 
+  /**
+   * Read all existing global properties.
+   *
+   * @return a list of global properties
+   */
   @Override
   public List<GlobalPropertiesDetail> readAllGlobalProperties() {
     try {
@@ -215,6 +226,12 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
     }
   }
 
+  /**
+   * Read specific global property based on the given name.
+   *
+   * @param name
+   * @return corresponding global property
+   */
   @Override
   public List<GlobalPropertiesDetail> readGlobalProperty(String name) {
     try {
@@ -227,6 +244,12 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
     }
   }
 
+  /**
+   * Updates a global property based on the given name.
+   *
+   * @param globalProperty
+   * @return the updated global property
+   */
   @Override
   public GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty) {
     try {
@@ -245,6 +268,11 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
     return globalProperty;
   }
 
+  /**
+   * Deletes a global property from the table based on its name.
+   *
+   * @param name
+   */
   @Override
   public void deleteGlobalProperty(String name) {
     try {
@@ -300,8 +328,7 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
       if (model == null) {
         return null;
       } else {
-        ExactMatchSourceSelectors.upcast(
-            exactMatchSourceSelectorList);
+        ExactMatchSourceSelectors.upcast(exactMatchSourceSelectorList);
       }
     } finally {
       connectionManager.close();
