@@ -158,7 +158,7 @@ curl -X POST http://localhost:8080/presto/resourcegroup/create \
 ### Get existing resource group(s)
 If no resourceGroupId (type long) is specified, then all existing resource groups are fetched. 
 ```$xslt
-curl -X GET http://localhost:8080/presto/resourcegroup/read?resourceGroupId={INSERT_ID_HERE}
+curl -X GET http://localhost:8080/presto/resourcegroup/read/{INSERT_ID_HERE}
 ```
 
 ### Update a resource group
@@ -185,7 +185,7 @@ curl -X POST http://localhost:8080/presto/resourcegroup/update \
 ### Delete a resource group
 To delete a resource group, specify the corresponding resourceGroupId (type long).
 ```$xslt
-curl -X POST http://localhost:8080/presto/resourcegroup/delete?resourceGroupId={INSERT_ID_HERE}
+curl -X POST http://localhost:8080/presto/resourcegroup/delete/{INSERT_ID_HERE}
 ```
 
 ### Add a selector
@@ -203,7 +203,7 @@ curl -X POST http://localhost:8080/presto/selector/create \
 ### Get existing selectors(s)
 If no resourceGroupId (type long) is specified, then all existing selectors are fetched. 
 ```$xslt
-curl -X GET http://localhost:8080/presto/selector/read?resourceGroupId={INSERT_ID_HERE}
+curl -X GET http://localhost:8080/presto/selector/read/{INSERT_ID_HERE}
 ```
 
 ### Update a selector
@@ -221,7 +221,7 @@ curl -X POST http://localhost:8080/presto/selector/update \
 ### Delete a selector
 To delete a selector, specify the corresponding resourceGroupId (type long).
 ```$xslt
-curl -X POST http://localhost:8080/presto/selector/delete?resourceGroupId={INSERT_ID_HERE}
+curl -X POST http://localhost:8080/presto/selector/delete/{INSERT_ID_HERE}
 ```
 
 ### Add a global property
@@ -237,7 +237,7 @@ curl -X POST http://localhost:8080/presto/globalproperty/create \
 ### Get existing global properties
 If no name (type String) is specified, then all existing global properties are fetched. 
 ```$xslt
-curl -X GET http://localhost:8080/presto/globalproperty/read?name={INSERT_NAME_HERE}
+curl -X GET http://localhost:8080/presto/globalproperty/read/{INSERT_NAME_HERE}
 ```
 
 ### Update a global property
@@ -253,7 +253,7 @@ curl -X POST http://localhost:8080/presto/globalproperty/update \
 ### Delete a global property
 To delete a global property, specify the corresponding name (type String).
 ```$xslt
-curl -X POST http://localhost:8080/presto/globalproperty/delete?name={INSERT_NAME_HERE}
+curl -X POST http://localhost:8080/presto/globalproperty/delete/{INSERT_NAME_HERE}
 ```
 
 ## Contributing
