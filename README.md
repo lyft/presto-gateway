@@ -162,7 +162,7 @@ curl -X GET http://localhost:8080/presto/resourcegroup/read/{INSERT_ID_HERE}
 ```
 
 ### Update a resource group
-Specify all fields in the body, which will overwrite the existing resource group's properties.
+Specify all columns in the body, which will overwrite properties for the resource group with that specific resourceGroupId.
 ```$xslt
 curl -X POST http://localhost:8080/presto/resourcegroup/update \
  -d '{  "resourceGroupId": 1, \
@@ -207,7 +207,7 @@ curl -X GET http://localhost:8080/presto/selector/read/{INSERT_ID_HERE}
 ```
 
 ### Update a selector
-Specify all fields in the body, which will overwrite the existing selector's properties.
+Specify all columns in the body, which will overwrite properties for the selector with that specific resourceGroupId.
 ```$xslt
 curl -X POST http://localhost:8080/presto/selector/update \
  -d '{  "resourceGroupId": 1, \
@@ -241,7 +241,7 @@ curl -X GET http://localhost:8080/presto/globalproperty/read/{INSERT_NAME_HERE}
 ```
 
 ### Update a global property
-Specify all fields in the body, which will overwrite the existing global properties.
+Specify all columns in the body, which will overwrite properties for the global property with that specific name.
 ```$xslt
 curl -X POST http://localhost:8080/presto/globalproperty/update \
  -d '{
