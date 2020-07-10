@@ -44,7 +44,6 @@ public interface ResourceGroupsManager {
 
   ExactSelectorsDetail getExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
 
-
   @RequiredArgsConstructor
   @Data
   @ToString
@@ -53,10 +52,10 @@ public interface ResourceGroupsManager {
     @NonNull private String name;
 
     /* OPTIONAL POLICY CONTROLS */
-    private long parent;
-    private boolean jmxExport;
+    private Long parent;
+    private Boolean jmxExport;
     private String schedulingPolicy;
-    private int schedulingWeight;
+    private Integer schedulingWeight;
 
     /* REQUIRED QUOTAS */
     @NonNull private String softMemoryLimit;
@@ -64,7 +63,7 @@ public interface ResourceGroupsManager {
     @NonNull private int hardConcurrencyLimit;
 
     /* OPTIONAL QUOTAS */
-    private int softConcurrencyLimit;
+    private Integer softConcurrencyLimit;
     private String softCpuLimit;
     private String hardCpuLimit;
     private String environment;

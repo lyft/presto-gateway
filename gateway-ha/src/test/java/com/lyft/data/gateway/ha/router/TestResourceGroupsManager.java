@@ -60,7 +60,7 @@ public class TestResourceGroupsManager {
     Assert.assertEquals(resourceGroups.get(0).getName(), "admin");
     Assert.assertEquals(resourceGroups.get(0).getHardConcurrencyLimit(), 20);
     Assert.assertEquals(resourceGroups.get(0).getMaxQueued(), 200);
-    Assert.assertEquals(resourceGroups.get(0).isJmxExport(), true);
+    Assert.assertEquals(resourceGroups.get(0).getJmxExport(), Boolean.TRUE);
     Assert.assertEquals(resourceGroups.get(0).getSoftMemoryLimit(), "80%");
   }
 
@@ -108,16 +108,16 @@ public class TestResourceGroupsManager {
     Assert.assertEquals(resourceGroups.get(0).getName(), "admin");
     Assert.assertEquals(resourceGroups.get(0).getHardConcurrencyLimit(), 50);
     Assert.assertEquals(resourceGroups.get(0).getMaxQueued(), 50);
-    Assert.assertEquals(resourceGroups.get(0).isJmxExport(), false);
+    Assert.assertEquals(resourceGroups.get(0).getJmxExport(), Boolean.FALSE);
     Assert.assertEquals(resourceGroups.get(0).getSoftMemoryLimit(), "20%");
 
     Assert.assertEquals(resourceGroups.get(1).getResourceGroupId(), 1L);
     Assert.assertEquals(resourceGroups.get(1).getName(), "localization-eng");
     Assert.assertEquals(resourceGroups.get(1).getHardConcurrencyLimit(), 50);
     Assert.assertEquals(resourceGroups.get(1).getMaxQueued(), 70);
-    Assert.assertEquals(resourceGroups.get(1).isJmxExport(), true);
+    Assert.assertEquals(resourceGroups.get(1).getJmxExport(), Boolean.TRUE);
     Assert.assertEquals(resourceGroups.get(1).getSoftMemoryLimit(), "20%");
-    Assert.assertEquals(resourceGroups.get(1).getSoftConcurrencyLimit(), 20);
+    Assert.assertEquals(resourceGroups.get(1).getSoftConcurrencyLimit(), Integer.valueOf(20));
   }
 
   @Test(dependsOnMethods = {"testUpdateResourceGroup"})
