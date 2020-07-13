@@ -77,7 +77,7 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
 
   @Provides
   @Singleton
-  public ResourceGroupsManager getPrestoResourceManager() {
+  public ResourceGroupsManager getResourceGroupsManager() {
     return this.resourceGroupsManager;
   }
 
