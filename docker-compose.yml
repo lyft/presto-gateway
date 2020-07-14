@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  presto-gateway:
+    image: wish/presto-gateway:182
+    ports:
+      - "9091:9091"
+      - "8090:8090"
+      - "8091:8091"
+    container_name: "presto-gateway"
+    command: presto-gateway
