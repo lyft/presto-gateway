@@ -2,7 +2,7 @@
 FROM openjdk:11
 
 # Set Maintainer Details
-MAINTAINER Fang Lu <fanglu@wish.com>
+LABEL maintainer="fanglu@wish.com"
 
 # Set Environment Variables
 ENV GATEWAY_HOME=/presto-gateway
