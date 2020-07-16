@@ -1,12 +1,12 @@
 requestRouter:
-  port: 8080
+  port: 9091
   name: prestoRouter
   historySize: 1000
 
 dataStore:
-  jdbcUrl: jdbc:mysql://127.0.0.1:3306/prestogateway
+  jdbcUrl: jdbc:mysql://xxx.xxx.xxx.xxx:3306/prestogateway
   user: root
-  password: root123
+  password: root123456abc
   driver: com.mysql.cj.jdbc.Driver
 
 server:
@@ -20,9 +20,9 @@ server:
 notifier:
   smtpHost: localhost
   smtpPort: 587
-  sender: presto-gw-monitor-noreply@lyft.com
+  sender: fanglu@wish.com
   recipients:
-    - prestodev@yourorg.com
+    - fanglu@wish.com
 
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
