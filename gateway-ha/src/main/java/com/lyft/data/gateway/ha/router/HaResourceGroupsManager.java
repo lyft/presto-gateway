@@ -160,32 +160,54 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
    * @return
    */
   @Override
-  public SelectorsDetail updateSelector(SelectorsDetail selector) {
+  public SelectorsDetail updateSelector(SelectorsDetail selector, SelectorsDetail updatedSelector) {
     try {
       connectionManager.open();
-      Selectors model = Selectors.findFirst("resource_group_id = ?", selector.getResourceGroupId());
-
+      Selectors model =
+          Selectors.findFirst(
+              "resource_group_id = ? and priority = ? "
+                  + "and user_regex = ? and source_regex = ? "
+                  + "and query_type = ? and client_tags = ? "
+                  + "and selector_resource_estimate = ?",
+              selector.getResourceGroupId(),
+              selector.getPriority(),
+              selector.getUserRegex(),
+              selector.getSourceRegex(),
+              selector.getQueryType(),
+              selector.getClientTags(),
+              selector.getSelectorResourceEstimate());
       if (model == null) {
-        Selectors.create(new Selectors(), selector);
+        Selectors.create(new Selectors(), updatedSelector);
       } else {
-        Selectors.update(model, selector);
+        Selectors.update(model, updatedSelector);
       }
     } finally {
       connectionManager.close();
     }
-    return selector;
+    return updatedSelector;
   }
 
   /**
    * Search for selector by its resourceGroupId and delete it.
    *
-   * @param resourceGroupId
+   * @param selector
    */
   @Override
-  public void deleteSelector(long resourceGroupId) {
+  public void deleteSelector(SelectorsDetail selector) {
     try {
       connectionManager.open();
-      Selectors.delete("resource_group_id = ?", resourceGroupId);
+      Selectors.delete(
+          "resource_group_id = ? and priority = ? "
+              + "and user_regex = ? and source_regex = ? "
+              + "and query_type = ? and client_tags = ? "
+              + "and selector_resource_estimate = ?",
+          selector.getResourceGroupId(),
+          selector.getPriority(),
+          selector.getUserRegex(),
+          selector.getSourceRegex(),
+          selector.getQueryType(),
+          selector.getClientTags(),
+          selector.getSelectorResourceEstimate());
     } finally {
       connectionManager.close();
     }
