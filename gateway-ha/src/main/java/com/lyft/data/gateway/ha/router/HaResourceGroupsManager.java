@@ -154,9 +154,10 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   }
 
   /**
-   * Updates an existing resource group with new values.
+   * Updates a selector given the specified selector and its updated version.
    *
    * @param selector
+   * @param updatedSelector
    * @return
    */
   @Override
@@ -188,7 +189,7 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   }
 
   /**
-   * Search for selector by its resourceGroupId and delete it.
+   * Search for selector by its exact properties and delete it.
    *
    * @param selector
    */
