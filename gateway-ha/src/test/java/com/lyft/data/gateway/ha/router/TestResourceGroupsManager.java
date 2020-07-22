@@ -10,7 +10,6 @@ import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Logger;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
@@ -135,15 +134,9 @@ public class TestResourceGroupsManager {
     Assert.assertEquals(resourceGroups.size(), 2);
     Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0L);
     Assert.assertEquals(resourceGroups.get(1).getResourceGroupId(), 3L);
-
-    resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId());
-    resourceGroups = resourceGroupManager.readAllResourceGroups();
-
-    Assert.assertEquals(resourceGroups.size(), 1);
-    Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0L);
   }
 
-  @Test(dependsOnMethods = {"testCreateResourceGroup"})
+  @Test(dependsOnMethods = {"testDeleteResourceGroup"})
   public void testCreateSelector() {
     SelectorsDetail selector = new SelectorsDetail();
     selector.setResourceGroupId(0L);
@@ -185,22 +178,55 @@ public class TestResourceGroupsManager {
     selector.setClientTags("client_tag_updated");
     selector.setSelectorResourceEstimate("estimate_updated");
 
-    SelectorsDetail updated = resourceGroupManager.updateSelector(selector);
     List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors();
+    SelectorsDetail updated = resourceGroupManager.updateSelector(selectors.get(0), selector);
+    selectors = resourceGroupManager.readAllSelectors();
 
     Assert.assertEquals(selectors.size(), 1);
     Assert.assertEquals(updated, selectors.get(0));
+
+    /* Update selectors that do not exist yet.
+     *  In this case, a new selector should be created. */
+    selector.setResourceGroupId(3L);
+    selector.setPriority(10L);
+    selector.setUserRegex("localization-eng.user_${USER}");
+    selector.setSourceRegex("mode-scheduled");
+    selector.setQueryType(null);
+    selector.setClientTags(null);
+    selector.setSelectorResourceEstimate(null);
+
+    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector);
+    selectors = resourceGroupManager.readAllSelectors();
+
+    Assert.assertEquals(selectors.size(), 2);
+    Assert.assertEquals(updated, selectors.get(1));
+
+    /* Create selector with an already existing resourceGroupId.
+     *  In this case, new selector should be created. */
+    selector.setResourceGroupId(3L);
+    selector.setPriority(0L);
+    selector.setUserRegex("new_user");
+    selector.setSourceRegex("mode-scheduled");
+    selector.setQueryType(null);
+    selector.setClientTags(null);
+    selector.setSelectorResourceEstimate(null);
+
+    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector);
+    selectors = resourceGroupManager.readAllSelectors();
+
+    Assert.assertEquals(selectors.size(), 3);
+    Assert.assertEquals(updated, selectors.get(2));
   }
 
   @Test(dependsOnMethods = {"testUpdateSelector"})
   public void testDeleteSelector() {
     List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors();
-    Assert.assertEquals(selectors.size(), 1);
+    Assert.assertEquals(selectors.size(), 3);
     Assert.assertEquals(selectors.get(0).getResourceGroupId(), 0L);
-    resourceGroupManager.deleteSelector(selectors.get(0).getResourceGroupId());
+    resourceGroupManager.deleteSelector(selectors.get(0));
     selectors = resourceGroupManager.readAllSelectors();
 
-    Assert.assertEquals(selectors.size(), 0);
+    Assert.assertEquals(selectors.size(), 2);
   }
 
   public void testCreateGlobalProperties() {

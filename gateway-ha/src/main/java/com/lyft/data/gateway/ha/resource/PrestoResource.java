@@ -1,5 +1,6 @@
 package com.lyft.data.gateway.ha.resource;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
@@ -124,8 +125,14 @@ public class PrestoResource {
   @POST
   public Response updateSelector(String jsonPayload) {
     try {
-      SelectorsDetail selector = OBJECT_MAPPER.readValue(jsonPayload, SelectorsDetail.class);
-      SelectorsDetail updatedSelector = this.resourceGroupsManager.updateSelector(selector);
+      JsonNode selectors = OBJECT_MAPPER.readValue(jsonPayload, JsonNode.class);
+      SelectorsDetail selector =
+          OBJECT_MAPPER.readValue(selectors.get("current").toString(), SelectorsDetail.class);
+      SelectorsDetail newSelector =
+          OBJECT_MAPPER.readValue(selectors.get("update").toString(), SelectorsDetail.class);
+
+      SelectorsDetail updatedSelector =
+          this.resourceGroupsManager.updateSelector(selector, newSelector);
       return Response.ok(updatedSelector).build();
     } catch (IOException e) {
       log.error(e.getMessage(), e);
@@ -133,14 +140,18 @@ public class PrestoResource {
     }
   }
 
-  @Path("/selector/delete/{resourceGroupId}")
+  @Path("/selector/delete/")
   @POST
-  public Response deleteSelector(@PathParam("resourceGroupId") String resourceGroupIdStr) {
-    if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
+  public Response deleteSelector(String jsonPayload) {
+    if (Strings.isNullOrEmpty(jsonPayload)) {
       throw new WebApplicationException("EntryType can not be null");
     }
-    long resourceGroupId = Long.parseLong(resourceGroupIdStr);
-    resourceGroupsManager.deleteSelector(resourceGroupId);
+    try {
+      SelectorsDetail selector = OBJECT_MAPPER.readValue(jsonPayload, SelectorsDetail.class);
+      resourceGroupsManager.deleteSelector(selector);
+    } catch (IOException e) {
+      log.error(e.getMessage(), e);
+    }
     return Response.ok().build();
   }
 

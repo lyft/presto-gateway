@@ -24,9 +24,9 @@ public interface ResourceGroupsManager {
 
   List<SelectorsDetail> readSelector(long resourceGroupId);
 
-  SelectorsDetail updateSelector(SelectorsDetail selector);
+  SelectorsDetail updateSelector(SelectorsDetail selector, SelectorsDetail updatedSelector);
 
-  void deleteSelector(long resourceGroupId);
+  void deleteSelector(SelectorsDetail selector);
 
   GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail);
 

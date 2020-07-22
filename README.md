@@ -207,21 +207,36 @@ curl -X GET http://localhost:8080/presto/selector/read/{INSERT_ID_HERE}
 ```
 
 ### Update a selector
-Specify all columns in the body, which will overwrite properties for the selector with that specific resourceGroupId.
+To update a selector, the existing selector must be specified with all relevant fields under "current". The updated version of that selector is specified under "update", with all relevant fields included. If the selector under "current" does not exist, a new selector will be created with the details under "update". Both "current" and "update" must be included to update a selector. 
 ```$xslt
 curl -X POST http://localhost:8080/presto/selector/update \
- -d '{  "resourceGroupId": 1, \
-        "priority": 2, \
-        "userRegex": "selector_updated", \
-        "sourceRegex": "resourcegroup1", \
-        "queryType": "insert" \
-     }'
+ -d '{  "current": {
+            "resourceGroupId": 1, \
+            "priority": 1, \
+            "userRegex": "selector1", \
+            "sourceRegex": "resourcegroup1", \
+            "queryType": "insert" \
+        },
+        "update":  {
+            "resourceGroupId": 1, \
+            "priority": 2, \
+            "userRegex": "selector1_updated", \
+            "sourceRegex": "resourcegroup1", \
+            "queryType": null \
+        }
+}'
 ```
 
 ### Delete a selector
-To delete a selector, specify the corresponding resourceGroupId (type long).
+To delete a selector, specify all relevant fields in the body.
 ```$xslt
-curl -X POST http://localhost:8080/presto/selector/delete/{INSERT_ID_HERE}
+curl -X POST http://localhost:8080/presto/selector/delete \
+ -d '{  "resourceGroupId": 1, \
+        "priority": 2, \
+        "userRegex": "selector1_updated", \
+        "sourceRegex": "resourcegroup1", \
+        "queryType": null \
+     }'
 ```
 
 ### Add a global property
