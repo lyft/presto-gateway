@@ -13,7 +13,6 @@ import com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
 
 import java.io.IOException;
 import java.util.List;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -29,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Path("/presto")
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public class PrestoResource {
   @Inject private ResourceGroupsManager resourceGroupsManager;
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -129,9 +127,9 @@ public class PrestoResource {
     try {
       JsonNode selectors = OBJECT_MAPPER.readValue(jsonPayload, JsonNode.class);
       SelectorsDetail selector =
-          OBJECT_MAPPER.readValue(selectors.get("current").asText(), SelectorsDetail.class);
+          OBJECT_MAPPER.readValue(selectors.get("current").toString(), SelectorsDetail.class);
       SelectorsDetail newSelector =
-          OBJECT_MAPPER.readValue(selectors.get("update").asText(), SelectorsDetail.class);
+          OBJECT_MAPPER.readValue(selectors.get("update").toString(), SelectorsDetail.class);
 
       SelectorsDetail updatedSelector =
           this.resourceGroupsManager.updateSelector(selector, newSelector);

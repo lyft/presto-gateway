@@ -164,19 +164,21 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   public SelectorsDetail updateSelector(SelectorsDetail selector, SelectorsDetail updatedSelector) {
     try {
       connectionManager.open();
-      Selectors model =
-          Selectors.findFirst(
-              "resource_group_id = ? and priority = ? "
-                  + "and user_regex = ? and source_regex = ? "
-                  + "and query_type = ? and client_tags = ? "
-                  + "and selector_resource_estimate = ?",
-              selector.getResourceGroupId(),
-              selector.getPriority(),
-              selector.getUserRegex(),
-              selector.getSourceRegex(),
-              selector.getQueryType(),
-              selector.getClientTags(),
-              selector.getSelectorResourceEstimate());
+      String query =
+          String.format(
+              "resource_group_id %s and priority %s "
+                  + "and user_regex %s and source_regex %s "
+                  + "and query_type %s and client_tags %s "
+                  + "and selector_resource_estimate %s",
+              getMatchingString(selector.getResourceGroupId()),
+              getMatchingString(selector.getPriority()),
+              getMatchingString(selector.getUserRegex()),
+              getMatchingString(selector.getSourceRegex()),
+              getMatchingString(selector.getQueryType()),
+              getMatchingString(selector.getClientTags()),
+              getMatchingString(selector.getSelectorResourceEstimate()));
+      Selectors model = Selectors.findFirst(query);
+
       if (model == null) {
         Selectors.create(new Selectors(), updatedSelector);
       } else {
@@ -197,18 +199,21 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
   public void deleteSelector(SelectorsDetail selector) {
     try {
       connectionManager.open();
-      Selectors.delete(
-          "resource_group_id = ? and priority = ? "
-              + "and user_regex = ? and source_regex = ? "
-              + "and query_type = ? and client_tags = ? "
-              + "and selector_resource_estimate = ?",
-          selector.getResourceGroupId(),
-          selector.getPriority(),
-          selector.getUserRegex(),
-          selector.getSourceRegex(),
-          selector.getQueryType(),
-          selector.getClientTags(),
-          selector.getSelectorResourceEstimate());
+      String query =
+          String.format(
+              "resource_group_id %s and priority %s "
+                  + "and user_regex %s and source_regex %s "
+                  + "and query_type %s and client_tags %s "
+                  + "and selector_resource_estimate %s",
+              getMatchingString(selector.getResourceGroupId()),
+              getMatchingString(selector.getPriority()),
+              getMatchingString(selector.getUserRegex()),
+              getMatchingString(selector.getSourceRegex()),
+              getMatchingString(selector.getQueryType()),
+              getMatchingString(selector.getClientTags()),
+              getMatchingString(selector.getSelectorResourceEstimate()));
+      Selectors.delete(query);
+
     } finally {
       connectionManager.close();
     }
@@ -357,5 +362,14 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
       connectionManager.close();
     }
     return exactSelectorDetail;
+  }
+
+  public String getMatchingString(Object detail) {
+    if (detail == null) {
+      return "IS NULL";
+    } else if (detail.getClass().equals(String.class)) {
+      return "= '" + detail + "'";
+    }
+    return "= " + detail;
   }
 }
