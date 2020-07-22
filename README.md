@@ -135,10 +135,10 @@ The Gateway admin page is used to configure the gateway to multiple backends. Ex
 ## Resource Groups API
 
 ### Add a resource group
-To add a single resource group, specify all relevant fields in the body.
+To add a single resource group, specify all relevant fields in the body. Resource group id should not be specified since the database should autoincrement it.
 ```$xslt
 curl -X POST http://localhost:8080/presto/resourcegroup/create \
- -d '{  "resourceGroupId": 1, \
+ -d '{  
         "name": "resourcegroup1", \
         "softMemoryLimit": "100%", \
         "maxQueued": 100, \
@@ -189,10 +189,10 @@ curl -X POST http://localhost:8080/presto/resourcegroup/delete/{INSERT_ID_HERE}
 ```
 
 ### Add a selector
-To add a single selector, specify all relevant fields in the body.
+To add a single selector, specify all relevant fields in the body. Resource group id should not be specified since the database should autoincrement it.
 ```$xslt
 curl -X POST http://localhost:8080/presto/selector/create \
- -d '{  "resourceGroupId": 1, \
+ -d '{  
         "priority": 1, \
         "userRegex": "selector1", \
         "sourceRegex": "resourcegroup1", \
