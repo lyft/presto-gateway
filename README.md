@@ -211,11 +211,11 @@ To update a selector, the existing selector must be specified with all relevant 
 ```$xslt
 curl -X POST http://localhost:8080/presto/selector/update \
  -d '{  "current": {
-        "resourceGroupId": 1, \
-        "priority": 1, \
-        "userRegex": "selector1", \
-        "sourceRegex": "resourcegroup1", \
-        "queryType": "insert" \
+            "resourceGroupId": 1, \
+            "priority": 1, \
+            "userRegex": "selector1", \
+            "sourceRegex": "resourcegroup1", \
+            "queryType": "insert" \
         },
         "update":  {
             "resourceGroupId": 1, \
@@ -230,7 +230,7 @@ curl -X POST http://localhost:8080/presto/selector/update \
 ### Delete a selector
 To delete a selector, specify all relevant fields in the body.
 ```$xslt
-curl -X POST http://localhost:8080/presto/selector/delete/ \
+curl -X POST http://localhost:8080/presto/selector/delete \
  -d '{  "resourceGroupId": 1, \
         "priority": 2, \
         "userRegex": "selector1_updated", \
