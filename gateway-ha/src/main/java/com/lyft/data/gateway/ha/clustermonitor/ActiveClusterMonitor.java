@@ -112,7 +112,7 @@ public class ActiveClusterMonitor implements Managed {
           clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
           clusterStats.setProxyTo(backend.getProxyTo());
           clusterStats.setRoutingGroup(backend.getRoutingGroup());
-          log.info("Host: {}, Cluster_stat: {}", System.getProperty("HOSTNAME"), clusterStats);
+          log.info("Host: {}, Cluster_stat: {}", System.getenv("HOSTNAME"), clusterStats);
           break;
         } else {
           log.warn("Received non 200 response, response code: {}", responseCode);
