@@ -27,7 +27,7 @@ import org.apache.http.HttpStatus;
 public class ActiveClusterMonitor implements Managed {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final int BACKEND_CONNECT_TIMEOUT_SECONDS = 15;
-  private static final int MONITOR_TASK_DELAY_MIN = 1;
+  private static final int MONITOR_TASK_DELAY_SECS = 5;
 
   @Inject
   private List<PrestoClusterStatsObserver> clusterStatsObservers;
@@ -71,7 +71,7 @@ public class ActiveClusterMonitor implements Managed {
               log.error("Error performing backend monitor tasks", e);
             }
             try {
-              Thread.sleep(TimeUnit.MINUTES.toMillis(MONITOR_TASK_DELAY_MIN));
+              Thread.sleep(MONITOR_TASK_DELAY_SECS * 1000);
             } catch (Exception e) {
               log.error("Error with monitor task", e);
             }
@@ -112,6 +112,7 @@ public class ActiveClusterMonitor implements Managed {
           clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
           clusterStats.setProxyTo(backend.getProxyTo());
           clusterStats.setRoutingGroup(backend.getRoutingGroup());
+          log.info("Host: {}, Cluster_stat: {}", System.getProperty("HOSTNAME"), clusterStats);
           break;
         } else {
           log.warn("Received non 200 response, response code: {}", responseCode);
