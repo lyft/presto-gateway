@@ -65,7 +65,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       requestMeter.mark();
       try {
         String requestBody = CharStreams.toString(request.getReader());
-        log.info(
+        // 6sense: Changed to debug to save sumo logic expenses
+        log.debug(
             "Processing request endpoint: [{}], payload: [{}]",
             request.getRequestURI(),
             requestBody);
@@ -141,7 +142,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             + request.getRequestURI()
             + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
 
-    log.info("Rerouting [{}]--> [{}]", originalLocation, targetLocation);
+    // 6sense: Changed to debug to save sumo logic expenses
+    log.debug("Rerouting [{}]--> [{}]", originalLocation, targetLocation);
     return targetLocation;
   }
 
