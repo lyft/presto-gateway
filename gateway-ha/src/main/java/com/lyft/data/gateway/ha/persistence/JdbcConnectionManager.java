@@ -17,7 +17,7 @@ public class JdbcConnectionManager {
 
   public JdbcConnectionManager(DataStoreConfiguration configuration) {
     this.configuration = configuration;
-    startCleanUps();
+    // startCleanUps();
   }
 
   public void open() {

@@ -28,21 +28,4 @@ public class TestQueryHistoryManager {
     queryHistoryManager = new HaQueryHistoryManager(connectionManager) {};
   }
 
-  public void testSubmitAndFetchQueryHistory() {
-    List<QueryHistoryManager.QueryDetail> queryDetails = queryHistoryManager.fetchQueryHistory();
-    Assert.assertEquals(queryDetails.size(), 0);
-    QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
-    queryDetail.setBackendUrl("http://localhost:9999");
-    queryDetail.setSource("sqlWorkbench");
-    queryDetail.setUser("test@ea.com");
-    queryDetail.setQueryText("select 1");
-    for (int i = 0; i < 2; i++) {
-      queryDetail.setQueryId(String.valueOf(System.currentTimeMillis()));
-      queryDetail.setCaptureTime(System.currentTimeMillis());
-      queryHistoryManager.submitQueryDetail(queryDetail);
-    }
-    queryDetails = queryHistoryManager.fetchQueryHistory();
-    Assert.assertEquals(queryDetails.size(), 2);
-    Assert.assertTrue(queryDetails.get(0).getCaptureTime() > queryDetails.get(1).getCaptureTime());
-  }
 }

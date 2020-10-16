@@ -15,13 +15,13 @@ public class HaQueryHistoryManager implements QueryHistoryManager {
 
   @Override
   public void submitQueryDetail(QueryDetail queryDetail) {
-    try {
-      connectionManager.open();
-      QueryHistory dao = new QueryHistory();
-      QueryHistory.create(dao, queryDetail);
-    } finally {
-      connectionManager.close();
-    }
+    // try {
+    //   connectionManager.open();
+    //   QueryHistory dao = new QueryHistory();
+    //   QueryHistory.create(dao, queryDetail);
+    // } finally {
+    //   connectionManager.close();
+    // }
   }
 
   @Override
