@@ -53,6 +53,8 @@ public class GatewayBackend extends Model {
             backend.getRoutingGroup(),
             backendUrl,
             backend.getProxyTo(),
+            externalUrl,
+            backend.getExternalUrl(),
             active,
             backend.isActive())
         .insert();
