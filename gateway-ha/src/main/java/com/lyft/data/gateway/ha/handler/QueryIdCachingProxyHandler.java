@@ -124,7 +124,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_ORIGIN_TARGET_HEADER,
           request.getServerName());
       ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, backendAddress);
-      
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
       if (!handleAuthRequest(request)) {
@@ -247,15 +246,14 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           }
 
           if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
-            PrintWriter newResponse = response.getWriter();
-            CharArrayWriter writer = new CharArrayWriter();
-            String originalResponse = response.toString();
-            
-            String nextUri = results.get("nextUri").replace(
-                request.getHeader(HOST_HEADER), request.getHeader(PROXY_ORIGIN_TARGET_HEADER));
-            results.put("nextUri", nextUri);
-            response.setContentLength(results.toString().length());
-            newResponse.write(results.toString());
+            if (!Strings.isNullOrEmpty(request.getHeader(PROXY_ORIGIN_TARGET_HEADER))) {
+              PrintWriter newResponse = response.getWriter();
+              String nextUri = results.get("nextUri").replace(
+                  request.getHeader(HOST_HEADER), request.getHeader(PROXY_ORIGIN_TARGET_HEADER));
+              results.put("nextUri", nextUri);
+              response.setContentLength(results.toString().length());
+              newResponse.write(results.toString());
+            }
           }
         } else {
           log.error(
