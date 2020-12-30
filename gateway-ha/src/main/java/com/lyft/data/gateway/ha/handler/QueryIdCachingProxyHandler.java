@@ -10,7 +10,9 @@ import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
+import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +28,8 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PROXY_TARGET_HEADER = "proxytarget";
+  public static final String PROXY_ORIGIN_TARGET_HEADER = "X-Proxy-Origin";
+  public static final String HOST_HEADER = "Host";
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String V1_INFO_PATH = "/v1/info";
@@ -117,6 +121,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       }
       // set target backend so that we could save queryId to backend mapping later.
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
+      ((MultiReadHttpServletRequest) request).addHeader(PROXY_ORIGIN_TARGET_HEADER,
+          request.getServerName());
+      ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, backendAddress);
+      
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
       if (!handleAuthRequest(request)) {
@@ -236,6 +244,18 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
                 queryDetail.getBackendUrl());
           } else {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
+          }
+
+          if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
+            PrintWriter newResponse = response.getWriter();
+            CharArrayWriter writer = new CharArrayWriter();
+            String originalResponse = response.toString();
+            
+            String nextUri = results.get("nextUri").replace(
+                request.getHeader(HOST_HEADER), request.getHeader(PROXY_ORIGIN_TARGET_HEADER));
+            results.put("nextUri", nextUri);
+            response.setContentLength(results.toString().length());
+            newResponse.write(results.toString());
           }
         } else {
           log.error(
