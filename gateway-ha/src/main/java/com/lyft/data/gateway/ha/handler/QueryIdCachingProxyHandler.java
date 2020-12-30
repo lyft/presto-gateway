@@ -245,17 +245,23 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           } else {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
-
+          PrintWriter newResponse = response.getWriter();
           if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
             if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER))) {
-              PrintWriter newResponse = response.getWriter();
               String nextUri = results.get("nextUri").replace(
                   request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
               results.put("nextUri", nextUri);
-              response.setContentLength(results.toString().length());
-              newResponse.write(results.toString());
             }
           }
+          if (!Strings.isNullOrEmpty(results.get("infoUri"))) {
+            if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER))) {
+              String infoUri = results.get("infoUri").replace(
+                request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
+              results.put("infoUri", infoUri);
+              }
+            }
+            response.setContentLength(results.toString().length());
+            newResponse.write(results.toString());
         } else {
           log.error(
               "Non OK HTTP Status code with response [{}] , Status code [{}]",
