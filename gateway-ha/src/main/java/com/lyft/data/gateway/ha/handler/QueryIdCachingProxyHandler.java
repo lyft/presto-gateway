@@ -28,7 +28,7 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PROXY_TARGET_HEADER = "proxytarget";
-  public static final String PROXY_ORIGIN_TARGET_HEADER = "X-Proxy-Origin";
+  public static final String FORWARDED_HEADER = "X-Forwarded-Server";
   public static final String HOST_HEADER = "Host";
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
@@ -121,7 +121,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       }
       // set target backend so that we could save queryId to backend mapping later.
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
-      ((MultiReadHttpServletRequest) request).addHeader(PROXY_ORIGIN_TARGET_HEADER,
+      ((MultiReadHttpServletRequest) request).addHeader(FORWARDED_HEADER,
           request.getServerName());
       ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, backendAddress);
     }
@@ -246,10 +246,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           }
 
           if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
-            if (!Strings.isNullOrEmpty(request.getHeader(PROXY_ORIGIN_TARGET_HEADER))) {
+            if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER))) {
               PrintWriter newResponse = response.getWriter();
               String nextUri = results.get("nextUri").replace(
-                  request.getHeader(HOST_HEADER), request.getHeader(PROXY_ORIGIN_TARGET_HEADER));
+                  request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
               results.put("nextUri", nextUri);
               response.setContentLength(results.toString().length());
               newResponse.write(results.toString());
