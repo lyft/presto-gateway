@@ -260,8 +260,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
               results.put("infoUri", infoUri);
               }
             }
-            response.setContentLength(results.toString().length());
-            newResponse.write(results.toString());
+          response.setContentLength(results.toString().length());
+          newResponse.write(results.toString());
         } else {
           log.error(
               "Non OK HTTP Status code with response [{}] , Status code [{}]",
