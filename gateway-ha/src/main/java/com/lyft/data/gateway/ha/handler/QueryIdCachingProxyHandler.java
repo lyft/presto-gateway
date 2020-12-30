@@ -124,7 +124,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       ((MultiReadHttpServletRequest) request).addHeader(FORWARDED_HEADER,
           request.getServerName());
       ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, 
-          backendAddress.replaceFirst("http(s)://", ""));
+          backendAddress.replaceFirst("http(s)?://", ""));
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
       if (!handleAuthRequest(request)) {
