@@ -256,10 +256,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           if (!Strings.isNullOrEmpty(results.get("infoUri"))) {
             if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER))) {
               String infoUri = results.get("infoUri").replace(
-                request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
+                  request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
               results.put("infoUri", infoUri);
-              }
             }
+          }
           response.setContentLength(results.toString().length());
           newResponse.write(results.toString());
         } else {
