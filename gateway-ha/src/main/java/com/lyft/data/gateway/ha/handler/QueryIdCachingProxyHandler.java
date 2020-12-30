@@ -245,7 +245,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           } else {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
-          PrintWriter newResponse = response.getWriter();
+
           if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
             if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER))) {
               String nextUri = results.get("nextUri").replace(
@@ -261,6 +261,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             }
           }
           response.setContentLength(results.toString().length());
+          PrintWriter newResponse = response.getWriter();
           newResponse.write(results.toString());
         } else {
           log.error(
