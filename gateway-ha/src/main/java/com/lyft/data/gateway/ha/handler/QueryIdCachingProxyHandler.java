@@ -259,9 +259,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
                     request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
                 results.put("infoUri", infoUri);
               }
-              response.setContentLength(results.toString().length());
-              PrintWriter newResponse = response.getWriter();
-              newResponse.write(results.toString());
+              if (isGZipEncoding) {
+                buffer = gzFromPlainText(results.toString().getBytes());
+              } else {
+                buffer = results.toString().getBytes();
+              }
             }
           }
         } else {
