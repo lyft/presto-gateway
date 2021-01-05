@@ -13,6 +13,8 @@ import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -123,8 +125,16 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
       ((MultiReadHttpServletRequest) request).addHeader(FORWARDED_HEADER,
           request.getServerName());
-      ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, 
-          backendAddress.replaceFirst("http(s)?://", ""));
+      try {
+        URI backendUri = new URI(backendAddress);
+        ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, 
+            backendUri.getHost());
+        log.info("Replacing host header with [{}] from [{}]", 
+            request.getHeader(HOST_HEADER), 
+            request.getHeader(FORWARDED_HEADER));
+      } catch (URISyntaxException e) {
+        log.warn(e.toString());
+      }
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
       if (!handleAuthRequest(request)) {
@@ -249,20 +259,33 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER)) 
               && !Strings.isNullOrEmpty(request.getHeader(HOST_HEADER))) {
             if (request.getHeader(FORWARDED_HEADER) != request.getHeader(HOST_HEADER)) {
+              log.info("Replacing nextUri and infoUri with [{}] from [{}]", 
+                  request.getHeader(FORWARDED_HEADER), request.getHeader(HOST_HEADER));
               if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
                 String nextUri = results.get("nextUri").replace(
                     request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
                 results.put("nextUri", nextUri);
+                log.info("nextUri is [{}]", results.get("nextUri"));
               }
               if (!Strings.isNullOrEmpty(results.get("infoUri"))) {
                 String infoUri = results.get("infoUri").replace(
                     request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
                 results.put("infoUri", infoUri);
+                log.info("nextUri is [{}]", results.get("infoUri"));
               }
               if (isGZipEncoding) {
-                buffer = gzFromPlainText(results.toString().getBytes());
+                log.info("Request is compressed");
+                buffer = gzFromPlainText(results.toString().getBytes(
+                    response.getCharacterEncoding()));
+                response.setBufferSize(buffer.length);;
               } else {
-                buffer = results.toString().getBytes();
+                log.info("Request is uncompressed");
+                log.info(results.toString());
+                log.info(output);
+                buffer = results.toString().getBytes(response.getCharacterEncoding());
+                log.info(buffer.toString());
+                log.info("buffer sizes [{}] and [{}]", response.getBufferSize(), buffer.length);
+                log.info("headers are [{}]", response.getHeaderNames());
               }
             }
           }
