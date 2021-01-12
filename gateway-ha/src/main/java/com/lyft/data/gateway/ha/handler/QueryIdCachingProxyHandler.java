@@ -10,9 +10,7 @@ import com.lyft.data.gateway.ha.router.RoutingManager;
 import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
-import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -30,7 +28,7 @@ import org.eclipse.jetty.util.Callback;
 @Slf4j
 public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PROXY_TARGET_HEADER = "proxytarget";
-  public static final String FORWARDED_HEADER = "X-Forwarded-Server";
+  public static final String FORWARDED_HEADER = "X-Forwarded-Host";
   public static final String HOST_HEADER = "Host";
   public static final String V1_STATEMENT_PATH = "/v1/statement";
   public static final String V1_QUERY_PATH = "/v1/query";
@@ -64,6 +62,89 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     this.routingGroupSelector = routingGroupSelector;
     this.queryHistoryManager = queryHistoryManager;
     this.serverApplicationPort = serverApplicationPort;
+  }
+
+  protected static String extractQueryIdIfPresent(String path, String queryParams) {
+    if (path == null) {
+      return null;
+    }
+    String queryId = null;
+
+    log.debug("trying to extract query id from  path [{}] or queryString [{}]", path, queryParams);
+    if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
+      String[] tokens = path.split("/");
+      if (tokens.length >= 4) {
+        if (path.contains("queued")
+            || path.contains("scheduled")
+            || path.contains("executing")
+            || path.contains("partialCancel")) {
+          queryId = tokens[4];
+        } else {
+          queryId = tokens[3];
+        }
+      }
+    } else if (path.startsWith(PRESTO_UI_PATH)) {
+      Matcher matcher = QUERY_ID_PATTERN.matcher(path);
+      if (matcher.matches()) {
+        queryId = matcher.group(1);
+      }
+    }
+    log.debug("query id in url [{}]", queryId);
+    return queryId;
+  }
+
+  protected String extractQueryIdIfPresent(HttpServletRequest request) {
+    String path = request.getRequestURI();
+    String queryParams = request.getQueryString();
+    try {
+      String queryText = CharStreams.toString(request.getReader());
+      if (!Strings.isNullOrEmpty(queryText)
+          && queryText.toLowerCase().contains("system.runtime.kill_query")) {
+        // extract and return the queryId
+        String[] parts = queryText.split(",");
+        for (String part : parts) {
+          if (part.contains("query_id")) {
+            Matcher m = EXTRACT_BETWEEN_SINGLE_QUOTES.matcher(part);
+            if (m.find()) {
+              String queryQuoted = m.group();
+              if (!Strings.isNullOrEmpty(queryQuoted) && queryQuoted.length() > 0) {
+                return queryQuoted.substring(1, queryQuoted.length() - 1);
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error extracting query payload from request", e);
+    }
+
+    return extractQueryIdIfPresent(path, queryParams);
+  }
+
+  /**
+   * Generic handling of setting host header to the URI of the resolved backEnd address so that
+   * Presto generates the nextUri & infoUri as URIs that can actually be actually resolved
+   * by any DNS resolution service.
+   * for ex:  K8s ingress OR well as amazon ASGs
+   */
+  protected static void overwriteHostHeader(HttpServletRequest request, String backendAddress)
+      throws URISyntaxException {
+    // set target backend so that we could save queryId to backend mapping later.
+    ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
+    ((MultiReadHttpServletRequest) request).addHeader(FORWARDED_HEADER,
+        request.getServerName());
+
+    URI backendUri = new URI(backendAddress);
+    StringBuilder hostName = new StringBuilder();
+    hostName.append(backendUri.getHost());
+    if (backendUri.getPort() != -1) {
+      hostName.append(":").append(backendUri.getPort());
+    }
+
+    ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, hostName.toString());
+    log.debug("Replacing host header with [{}] from [{}]",
+        request.getHeader(HOST_HEADER),
+        request.getHeader(FORWARDED_HEADER));
   }
 
   @Override
@@ -121,19 +202,15 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           backendAddress = routingManager.provideAdhocBackend();
         }
       }
-      // set target backend so that we could save queryId to backend mapping later.
-      ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
-      ((MultiReadHttpServletRequest) request).addHeader(FORWARDED_HEADER,
-          request.getServerName());
+
+      // Presto Uses the HOST request Header to generate the nextUri & inforURI. Over-write
+      // the host header to the resolvable backend URI so that when client follows nextURI
+      // the requests are actually handled correctly while reWriting target
       try {
-        URI backendUri = new URI(backendAddress);
-        ((MultiReadHttpServletRequest) request).addHeader(HOST_HEADER, 
-            backendUri.getHost());
-        log.info("Replacing host header with [{}] from [{}]", 
-            request.getHeader(HOST_HEADER), 
-            request.getHeader(FORWARDED_HEADER));
-      } catch (URISyntaxException e) {
-        log.warn(e.toString());
+        overwriteHostHeader(request, backendAddress);
+      } catch (Exception e) {
+        log.warn(String.format(" Unable to set host headers for request : [{}] from "
+            + "backendAddress : [{}] ", request.getRequestURI(), backendAddress), e);
       }
     }
     if (isAuthEnabled() && request.getHeader("Authorization") != null) {
@@ -159,63 +236,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
     log.info("Rerouting [{}]--> [{}]", originalLocation, targetLocation);
     return targetLocation;
-  }
-
-  protected String extractQueryIdIfPresent(HttpServletRequest request) {
-    String path = request.getRequestURI();
-    String queryParams = request.getQueryString();
-    try {
-      String queryText = CharStreams.toString(request.getReader());
-      if (!Strings.isNullOrEmpty(queryText)
-          && queryText.toLowerCase().contains("system.runtime.kill_query")) {
-        // extract and return the queryId
-        String[] parts = queryText.split(",");
-        for (String part : parts) {
-          if (part.contains("query_id")) {
-            Matcher m = EXTRACT_BETWEEN_SINGLE_QUOTES.matcher(part);
-            if (m.find()) {
-              String queryQuoted = m.group();
-              if (!Strings.isNullOrEmpty(queryQuoted) && queryQuoted.length() > 0) {
-                return queryQuoted.substring(1, queryQuoted.length() - 1);
-              }
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      log.error("Error extracting query payload from request", e);
-    }
-
-    return extractQueryIdIfPresent(path, queryParams);
-  }
-
-  protected static String extractQueryIdIfPresent(String path, String queryParams) {
-    if (path == null) {
-      return null;
-    }
-    String queryId = null;
-
-    log.debug("trying to extract query id from  path [{}] or queryString [{}]", path, queryParams);
-    if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
-      String[] tokens = path.split("/");
-      if (tokens.length >= 4) {
-        if (path.contains("queued")
-            || path.contains("scheduled")
-            || path.contains("executing")
-            || path.contains("partialCancel")) {
-          queryId = tokens[4];
-        } else {
-          queryId = tokens[3];
-        }
-      }
-    } else if (path.startsWith(PRESTO_UI_PATH)) {
-      Matcher matcher = QUERY_ID_PATTERN.matcher(path);
-      if (matcher.matches()) {
-        queryId = matcher.group(1);
-      }
-    }
-    log.debug("query id in url [{}]", queryId);
-    return queryId;
   }
 
   protected void postConnectionHook(
@@ -255,40 +275,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
           } else {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
-
-          if (!Strings.isNullOrEmpty(request.getHeader(FORWARDED_HEADER)) 
-              && !Strings.isNullOrEmpty(request.getHeader(HOST_HEADER))) {
-            if (request.getHeader(FORWARDED_HEADER) != request.getHeader(HOST_HEADER)) {
-              log.info("Replacing nextUri and infoUri with [{}] from [{}]", 
-                  request.getHeader(FORWARDED_HEADER), request.getHeader(HOST_HEADER));
-              if (!Strings.isNullOrEmpty(results.get("nextUri"))) {
-                String nextUri = results.get("nextUri").replace(
-                    request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
-                results.put("nextUri", nextUri);
-                log.info("nextUri is [{}]", results.get("nextUri"));
-              }
-              if (!Strings.isNullOrEmpty(results.get("infoUri"))) {
-                String infoUri = results.get("infoUri").replace(
-                    request.getHeader(HOST_HEADER), request.getHeader(FORWARDED_HEADER));
-                results.put("infoUri", infoUri);
-                log.info("nextUri is [{}]", results.get("infoUri"));
-              }
-              if (isGZipEncoding) {
-                log.info("Request is compressed");
-                buffer = gzFromPlainText(results.toString().getBytes(
-                    response.getCharacterEncoding()));
-                response.setBufferSize(buffer.length);;
-              } else {
-                log.info("Request is uncompressed");
-                log.info(results.toString());
-                log.info(output);
-                buffer = results.toString().getBytes(response.getCharacterEncoding());
-                log.info(buffer.toString());
-                log.info("buffer sizes [{}] and [{}]", response.getBufferSize(), buffer.length);
-                log.info("headers are [{}]", response.getHeaderNames());
-              }
-            }
-          }
         } else {
           log.error(
               "Non OK HTTP Status code with response [{}] , Status code [{}]",
@@ -305,6 +291,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     }
     super.postConnectionHook(request, response, buffer, offset, length, callback);
   }
+
+
 
   private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request)
       throws IOException {
