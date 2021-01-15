@@ -15,10 +15,10 @@ public class HaRoutingManager extends RoutingManager {
 
   @Override
   protected String findBackendForUnknownQueryId(String queryId) {
-    log.debug("Querying history manager for [{}]", queryId);
     String backend;
     backend = queryHistoryManager.getBackendForQueryId(queryId);
     if (Strings.isNullOrEmpty(backend)) {
+      log.debug("Unable to find backend mapping for [{}]. Searching for suitable backend", queryId);
       backend = super.findBackendForUnknownQueryId(queryId);
     }
     return backend;

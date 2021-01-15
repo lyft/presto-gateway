@@ -218,10 +218,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         } else {
           output = new String(buffer);
         }
-        log.debug("Response output [{}]", output);
+        log.debug("For Request [{}] got Response output [{}]", request.getRequestURI(), output);
 
         QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request);
-        log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
+        log.debug("Extracting Proxy destination : [{}] for request : [{}]",
+            queryDetail.getBackendUrl(), request.getRequestURI());
 
         if (response.getStatus() == HttpStatus.OK_200) {
           HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
