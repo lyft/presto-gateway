@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  generation: 17
+  labels:
+    release: presto-gateway
+    bu: de
+  name: presto-gateway
+  namespace: presto
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: presto-gateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: a5c182c16d104b06108a7fe114174ea833a42b123b33655b1cc5d3703a639cb0
+      creationTimestamp:
+      labels:
+        app: presto-gateway
+    spec:
+      containers:
+      - env:
+        - name: APP_MODE
+          value: stage
+        - name: DB_HOST
+          value: datum_db
+        - name: DB_PORT
+          value: 3306
+        - name: DB_USER
+          value: prestogateway
+        - name: DB_PASS
+          value: pass1234
+        - name: APP_PORT
+          value: 8090
+        - name: ADMIN_PORT
+          value: 8091
+        image: utkarshsaxena/utk_presto_gateway:v1
+        imagePullPolicy: IfNotPresent
+        name: presto-gateway
+        ports:
+        - containerPort: 8091
+          name: admin-port
+          protocol: TCP
+        - containerPort: 8090
+          name: app-port
+          protocol: TCP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
