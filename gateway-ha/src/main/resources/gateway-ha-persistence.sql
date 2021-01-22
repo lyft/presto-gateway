@@ -12,9 +12,9 @@ query_text VARCHAR (256),
 created bigint,
 backend_url VARCHAR (256),
 user_name VARCHAR(256),
-source VARCHAR(256)
+source VARCHAR(256),
+INDEX query_history_created_idx (created)
 );
-CREATE INDEX query_history_created_idx ON query_history(created);
 
 CREATE TABLE IF NOT EXISTS resource_groups (
     resource_group_id BIGINT NOT NULL AUTO_INCREMENT,

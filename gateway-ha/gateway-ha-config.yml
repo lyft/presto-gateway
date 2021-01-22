@@ -4,9 +4,9 @@ requestRouter:
   historySize: 1000
 
 dataStore:
-  jdbcUrl: jdbc:mysql://127.0.0.1:3306/prestogateway
-  user: root
-  password: root123
+  jdbcUrl: jdbc:mysql:DB_HOST:DB_PORT/prestogateway
+  user: DB_USER
+  password: DB_PASS
   driver: com.mysql.cj.jdbc.Driver
 
 server:
