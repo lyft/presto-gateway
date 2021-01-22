@@ -4,18 +4,18 @@ requestRouter:
   historySize: 1000
 
 dataStore:
-  jdbcUrl: jdbc:mysql:DB_HOST:DB_PORT/prestogateway
+  jdbcUrl: jdbc:mysql://DB_HOST:DB_PORT/prestogateway
   user: DB_USER
   password: DB_PASS
-  driver: com.mysql.cj.jdbc.Driver
+  driver: com.mysql.jdbc.Driver
 
 server:
   applicationConnectors:
     - type: http
-      port: 8090
+      port: APP_PORT
   adminConnectors:
     - type: http
-      port: 8091
+      port: ADMIN_PORT
 
 notifier:
   smtpHost: localhost

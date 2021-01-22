@@ -1,0 +1,42 @@
+version: '3'
+services:
+  lyft_presto_gateway:
+    build:
+      context: .
+      dockerfile: dockerconf/Dockerfile.dev
+    image: razorpay/lyft_presto_gateway
+    container_name: lyft_presto_gateway
+    volumes:
+      - .:/app
+    environment:
+      APP_MODE: dev
+      DB_HOST: lyft_mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: root123
+      ADMIN_PORT: 8091
+      APP_PORT: 8090
+    entrypoint: /app/dockerconf/entrypoint.sh
+    expose:
+      - "8091"
+      - "8090"
+    ports:
+      - 28090:8090
+      - 28091:8091
+    networks:
+      - default
+    links:
+      - lyft_mysql
+  lyft_mysql:
+    restart: unless-stopped
+    image: mysql:5.7
+    container_name: lyft_mysql
+    ports:
+    - 33306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: prestogateway
+    volumes:
+    - ./dockerconf/mysqlconf:/etc/mysql/conf.d
+    networks:
+      - default

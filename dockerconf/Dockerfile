@@ -1,0 +1,19 @@
+#FROM openjdk:8-alpine3.9
+FROM maven:3.6.3-ibmjava-8-alpine
+
+ENV APP_VERSION 1.8.3
+WORKDIR /app
+
+RUN apk add mysql-client
+
+# mariadb/mysql odbc/jdbc lib package is still WIP in alpine, installing platform independent binary
+ARG JDBC_DRV_VER=8.0.18
+RUN mkdir -p /usr/share/java \
+    && curl -SL "https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${JDBC_DRV_VER}.tar.gz" \
+    | tar -xzC /usr/share/java/ \
+    && echo "export CLASSPATH=/usr/share/java/mysql-connector-java-${JDBC_DRV_VER}/mysql-connector-java-${JDBC_DRV_VER}.jar:$CLASSPATH" >> /etc/profile
+
+COPY . /app
+RUN mvn -T 1C clean install -Dmaven.artifact.threads=20 --batch-mode -DskipTests
+
+ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
