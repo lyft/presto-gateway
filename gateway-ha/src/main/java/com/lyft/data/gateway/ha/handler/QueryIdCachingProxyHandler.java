@@ -34,7 +34,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
-  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=](\\d+_\\d+_\\d+_\\w+).*");
+  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=?](\\d+_\\d+_\\d+_\\w+).*");
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
