@@ -13,7 +13,8 @@ public class TestQueryIdCachingProxyHandler {
     String[] paths = {
         "/ui/api/query/20200416_160256_03078_6b4yt",
         "/ui/api/query/20200416_160256_03078_6b4yt?bogus_fictional_param",
-        "/ui/api/query?query_id=20200416_160256_03078_6b4yt"};
+        "/ui/api/query?query_id=20200416_160256_03078_6b4yt",
+        "/ui/api/query.html?20200416_160256_03078_6b4yt"};
     for (String path : paths) {
       String queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
       assertEquals(queryId,"20200416_160256_03078_6b4yt");
