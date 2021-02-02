@@ -9,7 +9,7 @@
     <artifactId>prestogateway-parent</artifactId>
     <name>prestogateway-parent</name>
     <packaging>pom</packaging>
-    <version>1.8.4</version>
+    <version>1.8.5</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
