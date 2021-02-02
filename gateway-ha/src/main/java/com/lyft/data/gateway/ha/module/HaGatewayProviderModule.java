@@ -68,7 +68,7 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
       routerProxyConfig.setSsl(routerConfiguration.isSsl());
       routerProxyConfig.setKeystorePath(routerConfiguration.getKeystorePath());
       routerProxyConfig.setKeystorePass(routerConfiguration.getKeystorePass());
-
+      routerProxyConfig.setPreserveHost("false");
       ProxyHandler proxyHandler = getProxyHandler();
       gateway = new ProxyServer(routerProxyConfig, proxyHandler);
     }
