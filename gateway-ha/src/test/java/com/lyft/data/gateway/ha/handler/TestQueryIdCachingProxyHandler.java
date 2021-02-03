@@ -4,6 +4,13 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
 import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
+import org.mockito.Mockito;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class TestQueryIdCachingProxyHandler {
@@ -17,7 +24,7 @@ public class TestQueryIdCachingProxyHandler {
         "/ui/api/query.html?20200416_160256_03078_6b4yt"};
     for (String path : paths) {
       String queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
-      assertEquals(queryId,"20200416_160256_03078_6b4yt");
+      assertEquals(queryId, "20200416_160256_03078_6b4yt");
     }
     String[] nonPaths = {
         "/ui/api/query/myOtherThing",
@@ -27,4 +34,20 @@ public class TestQueryIdCachingProxyHandler {
       assertNull(queryId);
     }
   }
+
+  @Test
+  public void testForwardedHostHeaderOnProxyRequest() throws IOException {
+    String backendServer = "prestocluster";
+    String backendPort = "80";
+    HttpServletRequest mockServletRequest = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(mockServletRequest.getHeader("proxytarget")).thenReturn(String.format("http://%s"
+        + ":%s", backendServer, backendPort));
+    HttpClient httpClient = new HttpClient();
+    Request proxyRequest = httpClient.newRequest("http://localhost:80");
+    QueryIdCachingProxyHandler.setForwardedHostHeaderOnProxyRequest(mockServletRequest,
+        proxyRequest);
+    Assert.assertEquals(proxyRequest.getHeaders().get("Host"), String.format("%s:%s",
+        backendServer, backendPort));
+  }
+
 }
