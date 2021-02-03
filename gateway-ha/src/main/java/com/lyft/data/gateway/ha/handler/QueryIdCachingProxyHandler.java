@@ -83,26 +83,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     }
 
     if (isPathWhiteListed(request.getRequestURI())) {
-      // Set the Host Header to proxy target
       setForwardedHostHeaderOnProxyRequest(request, proxyRequest);
-      logRequestHeaders("After Setting Host Header on proxyRequest", proxyRequest);
     }
 
-  }
-
-  private void logRequestHeaders(String msg, Request request) {
-    HttpFields httpFields = request.getHeaders();
-    StringBuilder sb = new StringBuilder();
-    if (httpFields != null) {
-      Enumeration<String> headerNameFields = httpFields.getFieldNames();
-      while (headerNameFields.hasMoreElements()) {
-        String headerName = headerNameFields.nextElement();
-        String value = httpFields.get(headerName);
-        sb.append(headerName).append(":").append(value).append(",");
-      }
-    }
-    log.debug("[{}] For Request [{}], headers are [{}]", msg, request.getURI().toString(),
-        sb.toString());
   }
 
   private boolean isPathWhiteListed(String path) {
@@ -282,8 +265,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     super.postConnectionHook(request, response, buffer, offset, length, callback);
   }
 
-  private void setForwardedHostHeaderOnProxyRequest(HttpServletRequest request,
-                                                    Request proxyRequest) {
+  static void setForwardedHostHeaderOnProxyRequest(HttpServletRequest request,
+                                                   Request proxyRequest) {
     if (request.getHeader(PROXY_TARGET_HEADER) != null) {
       try {
         URI backendUri = new URI(request.getHeader(PROXY_TARGET_HEADER));
