@@ -6,6 +6,8 @@ import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroupsGlobalProperties;
 import com.lyft.data.gateway.ha.persistence.dao.Selectors;
 
+import com.sun.istack.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +45,13 @@ public class HaResourceGroupsManager implements ResourceGroupsManager {
    */
   @Override
   public List<ResourceGroupsDetail> readAllResourceGroups() {
+    return this.readAllResourceGroups(null);
+  }
+
+  @Override
+  public List<ResourceGroupsDetail> readAllResourceGroups(@Nullable String routingGroupDatabase) {
     try {
-      connectionManager.open();
+      connectionManager.open(routingGroupDatabase);
       List<ResourceGroups> resourceGroupList = ResourceGroups.findAll();
       return ResourceGroups.upcast(resourceGroupList);
     } finally {

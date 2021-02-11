@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager;
-import com.lyft.data.gateway.ha.router.ResourceGroupsManager.ExactSelectorsDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.GlobalPropertiesDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
@@ -49,8 +48,11 @@ public class PrestoResource {
 
   @GET
   @Path("/resourcegroup/read")
-  public Response readAllResourceGroups() {
-    return Response.ok(this.resourceGroupsManager.readAllResourceGroups()).build();
+  public Response readAllResourceGroups(@QueryParam("routingGroupDatabase")
+                                                String routingGroupDatabase) {
+    log.info("asdas");
+    return Response.ok(this.resourceGroupsManager.readAllResourceGroups(
+            routingGroupDatabase)).build();
   }
 
   @GET

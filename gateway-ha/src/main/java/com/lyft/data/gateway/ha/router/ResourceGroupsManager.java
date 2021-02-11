@@ -12,6 +12,8 @@ public interface ResourceGroupsManager {
 
   List<ResourceGroupsDetail> readAllResourceGroups();
 
+  List<ResourceGroupsDetail> readAllResourceGroups(String routingGroupDatabase);
+
   List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId);
 
   ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup);
