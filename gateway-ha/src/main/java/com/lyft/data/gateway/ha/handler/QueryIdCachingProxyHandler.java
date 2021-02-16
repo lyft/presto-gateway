@@ -11,6 +11,9 @@ import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.api.Request;
+
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.Callback;
 
@@ -33,8 +37,9 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String PRESTO_UI_PATH = "/ui";
   public static final String USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Presto-Source";
+  public static final String HOST_HEADER = "Host";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
-  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=](\\d+_\\d+_\\d+_\\w+).*");
+  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=?](\\d+_\\d+_\\d+_\\w+).*");
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
@@ -76,6 +81,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         log.warn("Error fetching the request payload", e);
       }
     }
+
+    if (isPathWhiteListed(request.getRequestURI())) {
+      setForwardedHostHeaderOnProxyRequest(request, proxyRequest);
+    }
+
   }
 
   private boolean isPathWhiteListed(String path) {
@@ -218,10 +228,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         } else {
           output = new String(buffer);
         }
-        log.debug("Response output [{}]", output);
+        log.debug("For Request [{}] got Response output [{}]", request.getRequestURI(), output);
 
         QueryHistoryManager.QueryDetail queryDetail = getQueryDetailsFromRequest(request);
-        log.debug("Proxy destination : {}", queryDetail.getBackendUrl());
+        log.debug("Extracting Proxy destination : [{}] for request : [{}]",
+            queryDetail.getBackendUrl(), request.getRequestURI());
 
         if (response.getStatus() == HttpStatus.OK_200) {
           HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
@@ -252,6 +263,29 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       log.error("Error in proxying falling back to super call", e);
     }
     super.postConnectionHook(request, response, buffer, offset, length, callback);
+  }
+
+  static void setForwardedHostHeaderOnProxyRequest(HttpServletRequest request,
+                                                   Request proxyRequest) {
+    if (request.getHeader(PROXY_TARGET_HEADER) != null) {
+      try {
+        URI backendUri = new URI(request.getHeader(PROXY_TARGET_HEADER));
+        StringBuilder hostName = new StringBuilder();
+        hostName.append(backendUri.getHost());
+        if (backendUri.getPort() != -1) {
+          hostName.append(":").append(backendUri.getPort());
+        }
+        String overrideHostName = hostName.toString();
+        log.debug("Incoming Request Host header : [{}], proxy request host header : [{}]",
+            request.getHeader(HOST_HEADER), overrideHostName);
+
+        proxyRequest.header(HOST_HEADER, overrideHostName);
+      } catch (URISyntaxException e) {
+        log.warn(e.toString());
+      }
+    } else {
+      log.warn("Proxy Target not set on request, unable to decipher HOST header");
+    }
   }
 
   private QueryHistoryManager.QueryDetail getQueryDetailsFromRequest(HttpServletRequest request)
