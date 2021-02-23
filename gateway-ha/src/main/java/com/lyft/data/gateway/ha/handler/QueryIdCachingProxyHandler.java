@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,8 +36,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_INFO_PATH = "/v1/info";
   public static final String UI_API_STATS_PATH = "/ui/api/stats";
   public static final String PRESTO_UI_PATH = "/ui";
-  public static final String USER_HEADER = "X-Presto-User";
-  public static final String SOURCE_HEADER = "X-Presto-Source";
+  public static final String USER_HEADER = "X-Trino-User";
+  public static final String ALTERNATE_USER_HEADER = "X-Presto-User";
+  public static final String SOURCE_HEADER = "X-Trino-Source";
+  public static final String ALTERNATE_SOURCE_HEADER = "X-Presto-Source";
   public static final String HOST_HEADER = "Host";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
   private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=?](\\d+_\\d+_\\d+_\\w+).*");
@@ -293,8 +296,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     QueryHistoryManager.QueryDetail queryDetail = new QueryHistoryManager.QueryDetail();
     queryDetail.setBackendUrl(request.getHeader(PROXY_TARGET_HEADER));
     queryDetail.setCaptureTime(System.currentTimeMillis());
-    queryDetail.setUser(request.getHeader(USER_HEADER));
-    queryDetail.setSource(request.getHeader(SOURCE_HEADER));
+    queryDetail.setUser(Optional.ofNullable(request.getHeader(USER_HEADER))
+            .orElse(request.getHeader(ALTERNATE_USER_HEADER)));
+    queryDetail.setSource(Optional.ofNullable(request.getHeader(SOURCE_HEADER))
+            .orElse(request.getHeader(ALTERNATE_SOURCE_HEADER)));
     String queryText = CharStreams.toString(request.getReader());
     queryDetail.setQueryText(
         queryText.length() > QUERY_TEXT_LENGTH_FOR_HISTORY
