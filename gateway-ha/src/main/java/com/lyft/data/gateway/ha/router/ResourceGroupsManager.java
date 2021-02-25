@@ -1,44 +1,51 @@
 package com.lyft.data.gateway.ha.router;
 
+import com.sun.istack.Nullable;
 import java.util.List;
-
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+
+
 public interface ResourceGroupsManager {
-  ResourceGroupsDetail createResourceGroup(ResourceGroupsDetail resourceGroup);
+  ResourceGroupsDetail createResourceGroup(ResourceGroupsDetail resourceGroup,
+                                           @Nullable String routingGroupDatabase);
 
-  List<ResourceGroupsDetail> readAllResourceGroups();
+  List<ResourceGroupsDetail> readAllResourceGroups(@Nullable String routingGroupDatabase);
 
-  List<ResourceGroupsDetail> readAllResourceGroups(String routingGroupDatabase);
+  List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId,
+                                               @Nullable String routingGroupDatabase);
 
-  List<ResourceGroupsDetail> readResourceGroup(long resourceGroupId);
+  ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup,
+                                           @Nullable String routingGroupDatabase);
 
-  ResourceGroupsDetail updateResourceGroup(ResourceGroupsDetail resourceGroup);
+  void deleteResourceGroup(long resourceGroupId, @Nullable String routingGroupDatabase);
 
-  void deleteResourceGroup(long resourceGroupId);
+  SelectorsDetail createSelector(SelectorsDetail selector, @Nullable String routingGroupDatabase);
 
-  SelectorsDetail createSelector(SelectorsDetail selector);
+  List<SelectorsDetail> readAllSelectors(@Nullable String routingGroupDatabase);
 
-  List<SelectorsDetail> readAllSelectors();
+  List<SelectorsDetail> readSelector(long resourceGroupId, @Nullable String routingGrouoDatabase);
 
-  List<SelectorsDetail> readSelector(long resourceGroupId);
+  SelectorsDetail updateSelector(SelectorsDetail selector, SelectorsDetail updatedSelector,
+                                 @Nullable String routingGroupDatabase);
 
-  SelectorsDetail updateSelector(SelectorsDetail selector, SelectorsDetail updatedSelector);
+  void deleteSelector(SelectorsDetail selector, @Nullable String routingGroupDatabase);
 
-  void deleteSelector(SelectorsDetail selector);
+  GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail,
+                                              @Nullable String routingGroupDatabase);
 
-  GlobalPropertiesDetail createGlobalProperty(GlobalPropertiesDetail globalPropertyDetail);
+  List<GlobalPropertiesDetail> readAllGlobalProperties(@Nullable String routingGroupDatabase);
 
-  List<GlobalPropertiesDetail> readAllGlobalProperties();
+  List<GlobalPropertiesDetail> readGlobalProperty(String name,
+                                                  @Nullable String routingGroupDatabase);
 
-  List<GlobalPropertiesDetail> readGlobalProperty(String name);
+  GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty,
+                                              @Nullable String routingGroupDatabase);
 
-  GlobalPropertiesDetail updateGlobalProperty(GlobalPropertiesDetail globalProperty);
-
-  void deleteGlobalProperty(String name);
+  void deleteGlobalProperty(String name, @Nullable String routingGroupDatabase);
 
   ExactSelectorsDetail createExactMatchSourceSelector(ExactSelectorsDetail exactSelectorDetail);
 

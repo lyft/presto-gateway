@@ -45,14 +45,15 @@ public class TestResourceGroupsManager {
     resourceGroup.setJmxExport(true);
     resourceGroup.setSoftMemoryLimit("80%");
 
-    ResourceGroupsDetail newResourceGroup = resourceGroupManager.createResourceGroup(resourceGroup);
+    ResourceGroupsDetail newResourceGroup = resourceGroupManager.createResourceGroup(resourceGroup,
+            null);
 
     Assert.assertEquals(newResourceGroup, resourceGroup);
   }
 
   @Test(dependsOnMethods = {"testCreateResourceGroup"})
   public void testReadResourceGroup() {
-    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups();
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups(null);
     Assert.assertEquals(resourceGroups.size(), 1);
 
     Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0L);
@@ -73,8 +74,8 @@ public class TestResourceGroupsManager {
     resourceGroup.setJmxExport(false);
     resourceGroup.setSoftMemoryLimit("20%");
 
-    ResourceGroupsDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup);
-    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups();
+    ResourceGroupsDetail updated = resourceGroupManager.updateResourceGroup(resourceGroup, null);
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups(null);
     Assert.assertEquals(resourceGroups.size(), 1);
     Assert.assertEquals(updated, resourceGroup);
 
@@ -87,7 +88,7 @@ public class TestResourceGroupsManager {
     resourceGroup.setJmxExport(true);
     resourceGroup.setSoftMemoryLimit("20%");
     resourceGroup.setSoftConcurrencyLimit(20);
-    resourceGroupManager.updateResourceGroup(resourceGroup);
+    resourceGroupManager.updateResourceGroup(resourceGroup, null);
 
     resourceGroup.setResourceGroupId(3L);
     resourceGroup.setName("resource_group_3");
@@ -96,9 +97,9 @@ public class TestResourceGroupsManager {
     resourceGroup.setJmxExport(true);
     resourceGroup.setSoftMemoryLimit("60%");
     resourceGroup.setSoftConcurrencyLimit(40);
-    resourceGroupManager.updateResourceGroup(resourceGroup);
+    resourceGroupManager.updateResourceGroup(resourceGroup, null);
 
-    resourceGroups = resourceGroupManager.readAllResourceGroups();
+    resourceGroups = resourceGroupManager.readAllResourceGroups(null);
 
     Assert.assertEquals(
         resourceGroups.size(), 3); // updated 2 non-existing groups, so count should be 3
@@ -121,15 +122,15 @@ public class TestResourceGroupsManager {
 
   @Test(dependsOnMethods = {"testUpdateResourceGroup"})
   public void testDeleteResourceGroup() {
-    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups();
+    List<ResourceGroupsDetail> resourceGroups = resourceGroupManager.readAllResourceGroups(null);
     Assert.assertEquals(resourceGroups.size(), 3);
 
     Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0L);
     Assert.assertEquals(resourceGroups.get(1).getResourceGroupId(), 1L);
     Assert.assertEquals(resourceGroups.get(2).getResourceGroupId(), 3L);
 
-    resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId());
-    resourceGroups = resourceGroupManager.readAllResourceGroups();
+    resourceGroupManager.deleteResourceGroup(resourceGroups.get(1).getResourceGroupId(), null);
+    resourceGroups = resourceGroupManager.readAllResourceGroups(null);
 
     Assert.assertEquals(resourceGroups.size(), 2);
     Assert.assertEquals(resourceGroups.get(0).getResourceGroupId(), 0L);
@@ -147,14 +148,14 @@ public class TestResourceGroupsManager {
     selector.setClientTags("client_tag");
     selector.setSelectorResourceEstimate("estimate");
 
-    SelectorsDetail newSelector = resourceGroupManager.createSelector(selector);
+    SelectorsDetail newSelector = resourceGroupManager.createSelector(selector, null);
 
     Assert.assertEquals(newSelector, selector);
   }
 
   @Test(dependsOnMethods = {"testCreateSelector"})
   public void testReadSelector() {
-    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors();
+    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors(null);
 
     Assert.assertEquals(selectors.size(), 1);
     Assert.assertEquals(selectors.get(0).getResourceGroupId(), 0L);
@@ -178,9 +179,9 @@ public class TestResourceGroupsManager {
     selector.setClientTags("client_tag_updated");
     selector.setSelectorResourceEstimate("estimate_updated");
 
-    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors();
-    SelectorsDetail updated = resourceGroupManager.updateSelector(selectors.get(0), selector);
-    selectors = resourceGroupManager.readAllSelectors();
+    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors(null);
+    SelectorsDetail updated = resourceGroupManager.updateSelector(selectors.get(0), selector, null);
+    selectors = resourceGroupManager.readAllSelectors(null);
 
     Assert.assertEquals(selectors.size(), 1);
     Assert.assertEquals(updated, selectors.get(0));
@@ -195,8 +196,8 @@ public class TestResourceGroupsManager {
     selector.setClientTags(null);
     selector.setSelectorResourceEstimate(null);
 
-    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector);
-    selectors = resourceGroupManager.readAllSelectors();
+    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector, null);
+    selectors = resourceGroupManager.readAllSelectors(null);
 
     Assert.assertEquals(selectors.size(), 2);
     Assert.assertEquals(updated, selectors.get(1));
@@ -211,8 +212,8 @@ public class TestResourceGroupsManager {
     selector.setClientTags(null);
     selector.setSelectorResourceEstimate(null);
 
-    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector);
-    selectors = resourceGroupManager.readAllSelectors();
+    updated = resourceGroupManager.updateSelector(new SelectorsDetail(), selector, null);
+    selectors = resourceGroupManager.readAllSelectors(null);
 
     Assert.assertEquals(selectors.size(), 3);
     Assert.assertEquals(updated, selectors.get(2));
@@ -220,11 +221,11 @@ public class TestResourceGroupsManager {
 
   @Test(dependsOnMethods = {"testUpdateSelector"})
   public void testDeleteSelector() {
-    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors();
+    List<SelectorsDetail> selectors = resourceGroupManager.readAllSelectors(null);
     Assert.assertEquals(selectors.size(), 3);
     Assert.assertEquals(selectors.get(0).getResourceGroupId(), 0L);
-    resourceGroupManager.deleteSelector(selectors.get(0));
-    selectors = resourceGroupManager.readAllSelectors();
+    resourceGroupManager.deleteSelector(selectors.get(0), null);
+    selectors = resourceGroupManager.readAllSelectors(null);
 
     Assert.assertEquals(selectors.size(), 2);
   }
@@ -235,7 +236,7 @@ public class TestResourceGroupsManager {
     globalPropertiesDetail.setValue("1h");
 
     GlobalPropertiesDetail newGlobalProperties =
-        resourceGroupManager.createGlobalProperty(globalPropertiesDetail);
+        resourceGroupManager.createGlobalProperty(globalPropertiesDetail, null);
 
     Assert.assertEquals(newGlobalProperties, globalPropertiesDetail);
 
@@ -243,7 +244,7 @@ public class TestResourceGroupsManager {
       GlobalPropertiesDetail invalidGlobalProperty = new GlobalPropertiesDetail();
       invalidGlobalProperty.setName("invalid_property");
       invalidGlobalProperty.setValue("1h");
-      resourceGroupManager.createGlobalProperty(invalidGlobalProperty);
+      resourceGroupManager.createGlobalProperty(invalidGlobalProperty, null);
     } catch (Exception ex) {
       Assert.assertTrue(ex.getCause() instanceof org.h2.jdbc.JdbcSQLException);
       Assert.assertTrue(ex.getCause().getMessage().startsWith("Check constraint violation:"));
@@ -252,7 +253,8 @@ public class TestResourceGroupsManager {
 
   @Test(dependsOnMethods = {"testCreateGlobalProperties"})
   public void testReadGlobalProperties() {
-    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties();
+    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager
+            .readAllGlobalProperties(null);
 
     Assert.assertEquals(globalProperties.size(), 1);
     Assert.assertEquals(globalProperties.get(0).getName(), "cpu_quota_period");
@@ -266,8 +268,9 @@ public class TestResourceGroupsManager {
     globalPropertiesDetail.setValue("updated_test_value");
 
     GlobalPropertiesDetail updated =
-        resourceGroupManager.updateGlobalProperty(globalPropertiesDetail);
-    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties();
+        resourceGroupManager.updateGlobalProperty(globalPropertiesDetail, null);
+    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager
+            .readAllGlobalProperties(null);
 
     Assert.assertEquals(globalProperties.size(), 1);
     Assert.assertEquals(updated, globalProperties.get(0));
@@ -276,7 +279,7 @@ public class TestResourceGroupsManager {
       GlobalPropertiesDetail invalidGlobalProperty = new GlobalPropertiesDetail();
       invalidGlobalProperty.setName("invalid_property");
       invalidGlobalProperty.setValue("1h");
-      resourceGroupManager.updateGlobalProperty(invalidGlobalProperty);
+      resourceGroupManager.updateGlobalProperty(invalidGlobalProperty, null);
     } catch (Exception ex) {
       Assert.assertTrue(ex.getCause() instanceof org.h2.jdbc.JdbcSQLException);
       Assert.assertTrue(ex.getCause().getMessage().startsWith("Check constraint violation:"));
