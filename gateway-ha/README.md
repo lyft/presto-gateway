@@ -29,7 +29,7 @@ Step 1: setup mysql. Install docker and run the below command when setting up fi
 ```$xslt
 docker run -d -p 3306:3306  --name mysqldb -e MYSQL_ROOT_PASSWORD=root123 -e MYSQL_DATABASE=prestogateway -d mysql:5.7
 ```
-Next time onwards, run the following commands to start gateway-ha-config.ymlmysqldb
+Next time onwards, run the following commands to start mysqldb
 
 ```$xslt
 docker start mysqldb

@@ -34,7 +34,7 @@ Edit the [config file](/gateway-ha/gateway-ha-config.yml) and update the mysql d
 
 ```
 cd gateway-ha/target/
-java -jar gateway-ha-1.8.5-jar-with-dependencies.jar server ../gateway-ha-config.yml
+java -jar gateway-ha-{{VERSION}}-jar-with-dependencies.jar server ../gateway-ha-config.yml
 ```
 Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
 
