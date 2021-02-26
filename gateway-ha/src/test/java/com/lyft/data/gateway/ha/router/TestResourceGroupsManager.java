@@ -45,7 +45,8 @@ public class TestResourceGroupsManager {
     resourceGroup.setJmxExport(true);
     resourceGroup.setSoftMemoryLimit("80%");
 
-    ResourceGroupsDetail newResourceGroup = resourceGroupManager.createResourceGroup(resourceGroup, null);
+    ResourceGroupsDetail newResourceGroup = resourceGroupManager.createResourceGroup(resourceGroup,
+            null);
 
     Assert.assertEquals(newResourceGroup, resourceGroup);
   }
@@ -252,7 +253,8 @@ public class TestResourceGroupsManager {
 
   @Test(dependsOnMethods = {"testCreateGlobalProperties"})
   public void testReadGlobalProperties() {
-    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties(null);
+    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties(
+            null);
 
     Assert.assertEquals(globalProperties.size(), 1);
     Assert.assertEquals(globalProperties.get(0).getName(), "cpu_quota_period");
@@ -267,7 +269,8 @@ public class TestResourceGroupsManager {
 
     GlobalPropertiesDetail updated =
         resourceGroupManager.updateGlobalProperty(globalPropertiesDetail, null);
-    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties(null);
+    List<GlobalPropertiesDetail> globalProperties = resourceGroupManager.readAllGlobalProperties(
+            null);
 
     Assert.assertEquals(globalProperties.size(), 1);
     Assert.assertEquals(updated, globalProperties.get(0));
