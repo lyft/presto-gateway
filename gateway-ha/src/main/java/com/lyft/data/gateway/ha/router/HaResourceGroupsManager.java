@@ -6,10 +6,9 @@ import com.lyft.data.gateway.ha.persistence.dao.ResourceGroups;
 import com.lyft.data.gateway.ha.persistence.dao.ResourceGroupsGlobalProperties;
 import com.lyft.data.gateway.ha.persistence.dao.Selectors;
 
-import com.sun.istack.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -3,10 +3,10 @@ package com.lyft.data.gateway.ha.persistence;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
 import com.lyft.data.gateway.ha.persistence.dao.QueryHistory;
 
-import com.sun.istack.Nullable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.javalite.activejdbc.Base;
 
