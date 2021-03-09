@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 @Slf4j
 @Test
 public class TestResourceGroupsManager {
-  private ResourceGroupsManager resourceGroupManager;
+  public ResourceGroupsManager resourceGroupManager;
 
   @BeforeClass(alwaysRun = true)
   public void setUp() {
@@ -35,6 +35,7 @@ public class TestResourceGroupsManager {
     resourceGroupManager = new HaResourceGroupsManager(connectionManager);
   }
 
+  @Test
   public void testCreateResourceGroup() {
     ResourceGroupsDetail resourceGroup = new ResourceGroupsDetail();
 
