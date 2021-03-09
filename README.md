@@ -134,6 +134,11 @@ The Gateway admin page is used to configure the gateway to multiple backends. Ex
 
 ## Resource Groups API
 
+For resource group and selector apis, we can now specify a query parameter with the request supporting multiple presto databases for different presto backends. This allows a user to configure a db for every presto backend with their own resource groups and selector tables. To use this, just specify the query parameter ?useSchema=<schemaname> to the request. Example, to list all resource groups,
+ ```$xslt
+curl -X GET http://localhost:8080/presto/resourcegroup/read/{INSERT_ID_HERE}?useSchema=newdatabasename
+```
+ 
 ### Add a resource group
 To add a single resource group, specify all relevant fields in the body.
 ```$xslt
