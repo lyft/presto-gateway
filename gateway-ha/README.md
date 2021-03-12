@@ -34,10 +34,14 @@ Next time onwards, run the following commands to start mysqldb
 ```$xslt
 docker start mysqldb
 ```
+Enter the mysql container
+
+```
+docker exec -it mysqldb bash -l
+```
 Now open mysql console and install the presto-gateway tables:
 ```$xslt
 mysql -uroot -proot123 -h127.0.0.1 -Dprestogateway
-
 ```
 Once logged in to mysql console, please run [gateway-ha-persistence.sql](/src/main/resources/gateway-ha-persistence.sql) to populate the tables.
 

@@ -6,6 +6,7 @@ import com.lyft.data.gateway.ha.persistence.dao.QueryHistory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.javalite.activejdbc.Base;
 
@@ -21,11 +22,20 @@ public class JdbcConnectionManager {
   }
 
   public void open() {
+    this.open(null);
+  }
+
+  public void open(@Nullable String routingGroupDatabase) {
+    String jdbcUrl = configuration.getJdbcUrl();
+    if (routingGroupDatabase != null) {
+      jdbcUrl = jdbcUrl.substring(0, jdbcUrl.lastIndexOf('/') + 1) + routingGroupDatabase;
+    }
+    log.debug("Jdbc url is " + jdbcUrl);
     Base.open(
-        configuration.getDriver(),
-        configuration.getJdbcUrl(),
-        configuration.getUser(),
-        configuration.getPassword());
+            configuration.getDriver(),
+            jdbcUrl,
+            configuration.getUser(),
+            configuration.getPassword());
     log.debug("Connection opened");
   }
 
