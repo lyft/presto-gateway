@@ -276,6 +276,18 @@ To delete a global property, specify the corresponding name (type String).
 curl -X POST http://localhost:8080/presto/globalproperty/delete/{INSERT_NAME_HERE}
 ```
 
+## Graceful shutdown
+Presto gateway supports graceful shutdown of Presto clusters. Even when a cluster is deactivated, any submitted query states can still be retrieved based on the Query ID.
+
+To graceful shutdown a Presto cluster without query losses, the steps are:
+1. Set the backend to deactivate state, this prevents any new incoming queries from getting assigned to the backend.
+2. Poll the Presto backend coorinator URL until the queued query count and the running query count both hit 0.
+3. Terminate the Presto Coordinator & Worker Java process.
+
+
+To gracefully shutdown a single worker process, see [this](https://trino.io/docs/current/admin/graceful-shutdown.html) for the operations.
+
+
 ## Contributing
 
 Want to help build Presto Gateway? Check out our [contributing documentation](CONTRIBUTING.md)
