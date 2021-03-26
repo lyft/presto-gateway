@@ -7,7 +7,7 @@ RUN mvn clean install
 FROM openjdk:8
 WORKDIR /app
 COPY --from=builder /app/VERSION /app/VERSION
-ENV VERSION=$(cat /app/VERSION)
+RUN VERSION=$(cat /app/VERSION)
 COPY --from=builder /app/gateway-ha/target/gateway-ha-${VERSION}-jar-with-dependencies.jar /app/gateway-ha-jar-with-dependencies.jar
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
