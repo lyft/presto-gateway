@@ -12,6 +12,7 @@ echo "Fetching bintray password"
 sql_user=$(aws ssm get-parameter --name "/presto/presto-gateway/sql_username" | grep "Value" | awk -F\" '{print $4}')
 sql_password=$(aws ssm get-parameter --name "/presto/presto-gateway/sql_password" --with-decryption | grep "Value" | awk -F\" '{print $4}')
 
-sed -i -e "s/\${SQL_USERNAME}/$sql_user/" -e "s/\${SQL_PASSWORD}/$sql_password/" /etc/presto-gateway/gateway-ha-config.yml
+sed -i "s|SQL_USERNAME|${sql_user}|g" /etc/presto-gateway/gateway-ha-config.yml 
+sed -i "s|SQL_PASSWORD|${sql_password}|g" /etc/presto-gateway/gateway-ha-config.yml 
 
 java -jar /app/gateway-ha-jar-with-dependencies.jar server /etc/presto-gateway/gateway-ha-config.yml
