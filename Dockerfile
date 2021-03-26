@@ -9,6 +9,6 @@ FROM openjdk:8
 WORKDIR /app
 COPY --from=builder /app/gateway-ha-jar-with-dependencies.jar /app/gateway-ha-jar-with-dependencies.jar
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+RUN apt-get update && apt-get install -y awscli && chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
 
