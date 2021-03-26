@@ -9,8 +9,7 @@ WORKDIR /app
 COPY --from=builder /app/VERSION /app/VERSION
 RUN echo "------ /app/VERSION value ------"
 RUN cat /app/VERSION
-ARG VERSION=$(cat /app/VERSION)
-ENV VERSION=${VERSION}
+ENV VERSION=${$(cat /app/VERSION)}
 RUN echo "---------- copying VERSION to ENV --------- "
 RUN echo ${VERSION}
 COPY --from=builder /app/gateway-ha/target/gateway-ha-${VERSION}-jar-with-dependencies.jar /app/gateway-ha-jar-with-dependencies.jar
