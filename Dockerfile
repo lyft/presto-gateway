@@ -10,5 +10,5 @@ WORKDIR /app
 COPY --from=builder /app/gateway-ha-jar-with-dependencies.jar /app/gateway-ha-jar-with-dependencies.jar
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
