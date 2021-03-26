@@ -1,0 +1,10 @@
+---
+pipeline:
+  prod-build:
+    image: plugins/ecr
+    repo: 612427630422.dkr.ecr.us-east-1.amazonaws.com/segmentation/presto-gateway
+    when:
+      branch: [ master ]
+    tags:
+      - ${DRONE_COMMIT_SHA:0:8}
+      - latest
