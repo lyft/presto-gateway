@@ -10,4 +10,5 @@ public class HaGatewayConfiguration extends AppConfiguration {
   private RequestRouterConfiguration requestRouter;
   private NotifierConfiguration notifier;
   private DataStoreConfiguration dataStore;
+  private PagerDutyConfiguration pagerduty;
 }

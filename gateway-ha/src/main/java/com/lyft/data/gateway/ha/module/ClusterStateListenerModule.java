@@ -6,8 +6,8 @@ import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.ha.clustermonitor.HealthChecker;
 import com.lyft.data.gateway.ha.clustermonitor.PrestoClusterStatsObserver;
 import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
-import com.lyft.data.gateway.ha.config.NotifierConfiguration;
-import com.lyft.data.gateway.ha.notifier.EmailNotifier;
+import com.lyft.data.gateway.ha.config.PagerDutyConfiguration;
+import com.lyft.data.gateway.ha.notifier.PagerDutyNotifier;
 import io.dropwizard.setup.Environment;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +29,8 @@ public class ClusterStateListenerModule extends AppModule<HaGatewayConfiguration
   @Singleton
   public List<PrestoClusterStatsObserver> getClusterStatsObservers() {
     observers = new ArrayList<>();
-    NotifierConfiguration notifierConfiguration = getConfiguration().getNotifier();
-    observers.add(new HealthChecker(new EmailNotifier(notifierConfiguration)));
+    PagerDutyConfiguration pdConfig = getConfiguration().getPagerduty();
+    observers.add(new HealthChecker(new PagerDutyNotifier(pdConfig)));
     return observers;
   }
 }

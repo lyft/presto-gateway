@@ -26,14 +26,17 @@ notifier:
 
 pagerduty:
   integrationKey: a22d1cfc9f6b494bae6452fc31bcb6f3
-  env: staging
-  region: ap-south-1
+  env: prod
+  region: us-east-1
 
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+  - com.lyft.data.gateway.ha.module.ClusterStateListenerModule
+  - com.lyft.data.gateway.ha.module.NotifierModule
 
 managedApps:
   - com.lyft.data.gateway.ha.GatewayManagedApp
+  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
 
 # Logging settings.
 logging:

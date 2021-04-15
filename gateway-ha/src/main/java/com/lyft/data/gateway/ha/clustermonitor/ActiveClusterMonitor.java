@@ -92,6 +92,7 @@ public class ActiveClusterMonitor implements Managed {
       conn.setRequestMethod(HttpMethod.GET);
       conn.connect();
       int responseCode = conn.getResponseCode();
+      log.debug("presto cluster v1 api call responseCode: " + responseCode);
       if (responseCode == HttpStatus.SC_OK) {
         clusterStats.setHealthy(true);
         BufferedReader reader =
@@ -102,6 +103,7 @@ public class ActiveClusterMonitor implements Managed {
           sb.append(line + "\n");
         }
         HashMap<String, Object> result = OBJECT_MAPPER.readValue(sb.toString(), HashMap.class);
+        log.debug("cluster stats: " + result.toString());
         clusterStats.setNumWorkerNodes((int) result.get("activeWorkers"));
         clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
         clusterStats.setRunningQueryCount((int) result.get("runningQueries"));

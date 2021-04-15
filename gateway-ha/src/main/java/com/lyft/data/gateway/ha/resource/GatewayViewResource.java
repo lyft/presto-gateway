@@ -100,6 +100,7 @@ public class GatewayViewResource {
     return clusterToQueryCount;
   }
 
+  @SuppressWarnings("Lombok")
   @Data
   public static class GatewayView extends View {
     private final long gatewayStartTime = START_TIME;
