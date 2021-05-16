@@ -2,7 +2,7 @@
 pipeline:
   prod-build:
     image: plugins/ecr
-    repo: 612427630422.dkr.ecr.us-east-1.amazonaws.com/segmentation/presto-gateway
+    repo: 612427630422.dkr.ecr.us-east-1.amazonaws.com/datawarehouse/presto-gateway
     when:
       branch: [ master ]
     tags:
