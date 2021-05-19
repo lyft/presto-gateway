@@ -4,7 +4,7 @@ requestRouter:
   historySize: 1000
 
 dataStore:
-  jdbcUrl: jdbc:mysql://uis-airflow-mysql.moeinternal.com:3306/prestogateway
+  jdbcUrl: jdbc:mysql://presto-gateway-rds.moe.net:3306/prestogateway
   user: SQL_USERNAME
   password: SQL_PASSWORD
   driver: com.mysql.cj.jdbc.Driver
