@@ -4,7 +4,6 @@ import static com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler.UI_API
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.lyft.data.gateway.ha.config.MonitorConfiguration;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
@@ -50,8 +49,8 @@ public class ActiveClusterMonitor implements Managed {
     this.gatewayBackendManager = gatewayBackendManager;
     this.connectionTimeout = monitorConfiguration.getConnectionTimeout();
     this.taskDelayMin = monitorConfiguration.getTaskDelayMin();
-    System.out.println("Setting timeout to " + connectionTimeout);
-    System.out.println("Setting interval to " + taskDelayMin);
+    log.info("Running cluster monitor with connection timeout of {} and task delay of {}",
+        connectionTimeout, taskDelayMin);
   }
 
   /**
