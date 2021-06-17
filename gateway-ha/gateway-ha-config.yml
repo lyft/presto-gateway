@@ -24,9 +24,9 @@ notifier:
   recipients:
     - prestodev@yourorg.com
 
-# Default timeout is 15
+# This can be adjusted based on the coordinator state
 monitor:
-  connectionTimeout: 30
+  connectionTimeout: 15
 
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule

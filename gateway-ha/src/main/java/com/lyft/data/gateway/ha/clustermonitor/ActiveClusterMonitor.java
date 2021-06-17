@@ -29,6 +29,7 @@ public class ActiveClusterMonitor implements Managed {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   public static final int BACKEND_CONNECT_TIMEOUT_SECONDS = 15;
   public static final int MONITOR_TASK_DELAY_MIN = 1;
+  public static final int DEFAULT_THREAD_POOL_SIZE = 10;
 
   private final List<PrestoClusterStatsObserver> clusterStatsObservers;
   private final GatewayBackendManager gatewayBackendManager;
@@ -37,7 +38,7 @@ public class ActiveClusterMonitor implements Managed {
 
   private volatile boolean monitorActive = true;
 
-  private ExecutorService executorService = Executors.newFixedThreadPool(10);
+  private ExecutorService executorService = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
   private ExecutorService singleTaskExecutor = Executors.newSingleThreadExecutor();
 
   @Inject
