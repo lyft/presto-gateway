@@ -24,11 +24,17 @@ notifier:
   recipients:
     - prestodev@yourorg.com
 
+# This can be adjusted based on the coordinator state
+monitor:
+  connectionTimeout: 15
+
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+  - com.lyft.data.gateway.ha.module.ClusterStateListenerModule
 
 managedApps:
   - com.lyft.data.gateway.ha.GatewayManagedApp
+  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
 
 # Logging settings.
 logging:
