@@ -75,7 +75,7 @@ public class TestProxyServer {
     }
   }
 
-  private ProxyServerConfiguration buildConfig(String backendUrl, int localPort) {
+  public static ProxyServerConfiguration buildConfig(String backendUrl, int localPort) {
     ProxyServerConfiguration config = new ProxyServerConfiguration();
     config.setName("MockBackend");
     config.setPrefix("/");
