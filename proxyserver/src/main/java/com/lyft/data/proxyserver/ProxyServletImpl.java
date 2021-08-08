@@ -17,6 +17,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 @Slf4j
 public class ProxyServletImpl extends ProxyServlet.Transparent {
   private ProxyHandler proxyHandler;
+  private ProxyServerConfiguration serverConfig;
 
   public void setProxyHandler(ProxyHandler proxyHandler) {
     this.proxyHandler = proxyHandler;
@@ -28,7 +29,14 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
   @Override
   protected HttpClient newHttpClient() {
     SslContextFactory sslFactory = new SslContextFactory();
-    sslFactory.setTrustAll(true);
+
+    if (serverConfig != null && serverConfig.isForwardKeystore()) {
+      sslFactory.setKeyStorePath(serverConfig.getKeystorePath());
+      sslFactory.setKeyStorePassword(serverConfig.getKeystorePass());
+    } else {
+      sslFactory.setTrustAll(true);
+    }
+
     sslFactory.setStopTimeout(TimeUnit.SECONDS.toMillis(15));
     sslFactory.setSslSessionTimeout((int) TimeUnit.SECONDS.toMillis(15));
 
@@ -92,5 +100,9 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
     } catch (Throwable var9) {
       callback.failed(var9);
     }
+  }
+
+  public void setServerConfig(ProxyServerConfiguration config) {
+    this.serverConfig = config;
   }
 }

@@ -239,6 +239,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
         if (response.getStatus() == HttpStatus.OK_200) {
           HashMap<String, String> results = OBJECT_MAPPER.readValue(output, HashMap.class);
+
           queryDetail.setQueryId(results.get("id"));
 
           if (!Strings.isNullOrEmpty(queryDetail.getQueryId())) {
@@ -252,6 +253,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             log.debug("QueryId [{}] could not be cached", queryDetail.getQueryId());
           }
         } else {
+          queryDetail.setQueryId("error_query_id_" + Math.random());
           log.error(
               "Non OK HTTP Status code with response [{}] , Status code [{}]",
               output,
