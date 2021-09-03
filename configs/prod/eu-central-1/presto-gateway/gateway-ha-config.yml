@@ -4,7 +4,7 @@ requestRouter:
   historySize: 1000
 
 dataStore:
-  jdbcUrl: jdbc:mysql://uis-airflow-mysql.moeinternal.com:3306/prestogateway
+  jdbcUrl: jdbc:mysql://presto-gateway-rds.moeinternal.com:3306/prestogateway
   user: SQL_USERNAME
   password: SQL_PASSWORD
   driver: com.mysql.cj.jdbc.Driver
@@ -27,7 +27,7 @@ notifier:
 pagerduty:
   integrationKey: a22d1cfc9f6b494bae6452fc31bcb6f3
   env: prod
-  region: eu-central-1
+  region: ap-south-1
 
 modules:
   - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
@@ -36,7 +36,7 @@ modules:
 
 managedApps:
   - com.lyft.data.gateway.ha.GatewayManagedApp
-  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
+  # - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
 
 # Logging settings.
 logging:
