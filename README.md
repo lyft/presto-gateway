@@ -29,6 +29,21 @@ Edit the [config file](/gateway-ha/gateway-ha-config.yml) and update the mysql d
 cd gateway-ha/target/
 java -jar gateway-ha-{{VERSION}}-jar-with-dependencies.jar server ../gateway-ha-config.yml
 ```
+
+If you encounter a `Failed to connect to JDBC URL` error, this may be due to newer versions of java disabling certain algorithms
+when using SSL/TLS, in particular `TLSv1` and `TLSv1.1`. This will cause `Bad handshake` errors when connecting to the MySQL server.
+To enable `TLSv1` and `TLSv1.1` open the following file in any editor (`sudo` access needed):
+```
+/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/jre/lib/security/java.security
+```
+Search for `jdk.tls.disabledAlgorithms`, it should look something like this:
+```
+jdk.tls.disabledAlgorithms=SSLv3, TLSv1, TLSv1.1, RC4, DES, MD5withRSA, \
+    DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon, NULL, \
+    include jdk.disabled.namedCurves
+```
+Remove `TLSv1, TLSv1.1` and redo the above steps to build and run `presto-gateway`.
+
 Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
 
 ## Gateway API
