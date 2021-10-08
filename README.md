@@ -20,13 +20,6 @@ mysql -uroot -proot123 -h127.0.0.1 -Dprestogateway
 ```
 Once logged in to mysql console, please run [gateway-ha-persistence.sql](/gateway-ha/src/main/resources/gateway-ha-persistence.sql) to populate the tables.
 
-
-Step 2: Edit the configuration `gateway-ha-config.yml`
-
-Step 3: Add below program argument to class `HaGatewayLauncher` and debug in IDE
-```$xslt
-server /path/to/gateway-ha/src/test/resources/config-template.yml
-```
 ### Build and run
 run `mvn clean install` to build `presto-gateway`
 
