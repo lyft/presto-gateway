@@ -2,6 +2,10 @@ package com.lyft.data.gateway.ha.router;
 
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import org.jeasy.rules.api.Facts;
+import org.jeasy.rules.api.Rules;
+import org.jeasy.rules.api.RulesEngine;
+import org.jeasy.rules.core.DefaultRulesEngine;
 
 /** RoutingGroupSelector provides a way to match an HTTP request to a Gateway routing group. */
 public interface RoutingGroupSelector {
@@ -15,6 +19,21 @@ public interface RoutingGroupSelector {
   static RoutingGroupSelector byRoutingGroupHeader() {
     return request -> Optional.ofNullable(request.getHeader(ROUTING_GROUP_HEADER))
             .orElse(request.getHeader(ALTERNATE_ROUTING_GROUP_HEADER));
+  }
+
+  /**
+   * Routing group selector that uses routing engine rules
+   * to determine the right routing group.
+   */
+  static RoutingGroupSelector byRoutingRulesEngine(Rules rules) {
+    return request -> {
+      RulesEngine rulesEngine = new DefaultRulesEngine();
+      Facts facts = new Facts();
+      facts.put("request", request);
+      facts.put("facts", facts);
+      rulesEngine.fire(rules, facts);
+      return facts.get("routingGroup");
+    };
   }
 
   /**
