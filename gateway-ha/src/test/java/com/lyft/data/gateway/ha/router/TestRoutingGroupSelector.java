@@ -51,4 +51,29 @@ public class TestRoutingGroupSelector {
         "etl");
 
   }
+
+  public void testByRoutingRulesEngine_FromFile() {
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    Rules rules = new Rules();
+
+    try {
+      MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
+      rules = ruleFactory.createRules(
+          new FileReader("src/test/resources/rules/routing_rules.yml"));
+    } catch (Exception e) {
+      System.out.println(e.getStackTrace());
+      System.out.println(e);
+    }
+
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
+    Assert.assertEquals(
+        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
+        "etl");
+
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow-coco");
+    Assert.assertEquals(
+        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
+        "etl-critical");
+
+  }
 }

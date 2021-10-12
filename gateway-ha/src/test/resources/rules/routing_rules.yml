@@ -1,0 +1,14 @@
+---
+name: "airflow"
+description: "default routing group for airflow queries is etl"
+priority: 1
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
+actions:
+  - "facts.put(\"routingGroup\", \"etl\")"
+---
+name: "airflow coco"
+description: "airflow coco query goesto etl-critical"
+priority: 2
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow-coco\""
+actions:
+  - "facts.put(\"routingGroup\", \"etl-critical\")"
