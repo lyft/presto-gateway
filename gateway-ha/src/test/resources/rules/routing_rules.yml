@@ -1,14 +1,18 @@
 ---
 name: "airflow"
-description: "default routing group for airflow queries is etl"
-priority: 1
+description: "if query from airflow, route to etl group"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
 actions:
   - "facts.put(\"routingGroup\", \"etl\")"
 ---
 name: "airflow coco"
-description: "airflow coco query goesto etl-critical"
-priority: 2
-condition: "request.getHeader(\"X-Trino-Source\") == \"airflow-coco\""
+description: "if query from airflow with label coco, route to etl-critical group"
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\").contains(\"label=coco\")"
 actions:
   - "facts.put(\"routingGroup\", \"etl-critical\")"
+---
+name: "mode"
+description: "if query from mode, route to scheduled group"
+condition: "request.getHeader(\"X-Trino-Source\") == \"mode\""
+actions:
+  - "facts.put(\"routingGroup\", \"scheduled\")"

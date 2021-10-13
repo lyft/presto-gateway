@@ -10,7 +10,6 @@ import org.jeasy.rules.api.Rule;
 import org.jeasy.rules.api.Rules;
 import org.jeasy.rules.core.RuleBuilder;
 import org.jeasy.rules.mvel.MVELRuleFactory;
-import org.jeasy.rules.support.reader.JsonRuleDefinitionReader;
 import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -18,6 +17,7 @@ import org.testng.annotations.Test;
 @Test
 public class TestRoutingGroupSelector {
   public static final String TRINO_SOURCE_HEADER = "X-Trino-Source";
+  public static final String TRINO_CLIENT_TAGS_HEADER = "X-Trino-Client-Tags";
 
   public void testByRoutingGroupHeader() {
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
@@ -39,7 +39,7 @@ public class TestRoutingGroupSelector {
 
     Rule airflowRule = new RuleBuilder()
         .name("airflow rule")
-        .description("if airflow route to etl cluster")
+        .description("if query from airflow, route to etl group")
         .when(facts -> ((HttpServletRequest) facts.get("request")).getHeader(
               TRINO_SOURCE_HEADER).equals("airflow"))
         .then(facts -> facts.put("routingGroup", "etl"))
@@ -65,15 +65,30 @@ public class TestRoutingGroupSelector {
       System.out.println(e);
     }
 
+    // query from airflow goes to etl
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
     Assert.assertEquals(
         RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
         "etl");
 
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow-coco");
+    // query from airflow with label coco goes to etl-critical
+    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
+        "email=person@example.com,label=coco");
     Assert.assertEquals(
         RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
         "etl-critical");
+
+    // query from mode goes to scheduled
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("mode");
+    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(null); // reset client tags
+    Assert.assertEquals(
+        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
+        "scheduled");
+
+    // no rules matched should return null routing group
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn(null);
+    Assert.assertNull(
+        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest));
 
   }
 }
