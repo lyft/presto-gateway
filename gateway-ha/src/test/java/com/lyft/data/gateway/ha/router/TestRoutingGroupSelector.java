@@ -35,8 +35,8 @@ public class TestRoutingGroupSelector {
   public void testByRoutingRulesEngine() {
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 
+    // query from airflow goes to etl
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
-
     Rule airflowRule = new RuleBuilder()
         .name("airflow rule")
         .description("if query from airflow, route to etl group")
@@ -52,18 +52,13 @@ public class TestRoutingGroupSelector {
 
   }
 
-  public void testByRoutingRulesEngine_FromFile() {
+  public void testByRoutingRulesEngine_FromFile() throws Exception {
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     Rules rules = new Rules();
 
-    try {
-      MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
-      rules = ruleFactory.createRules(
-          new FileReader("src/test/resources/rules/routing_rules.yml"));
-    } catch (Exception e) {
-      System.out.println(e.getStackTrace());
-      System.out.println(e);
-    }
+    MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
+    rules = ruleFactory.createRules(
+        new FileReader("src/test/resources/rules/routing_rules.yml"));
 
     // query from airflow goes to etl
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
@@ -85,8 +80,8 @@ public class TestRoutingGroupSelector {
         RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
         "scheduled");
 
-    // no rules matched should return null routing group
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn(null);
+    // if no rules matched, should return null
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("unknown");
     Assert.assertNull(
         RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest));
 
