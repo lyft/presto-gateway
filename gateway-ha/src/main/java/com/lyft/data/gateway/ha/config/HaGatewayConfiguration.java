@@ -11,4 +11,5 @@ public class HaGatewayConfiguration extends AppConfiguration {
   private NotifierConfiguration notifier;
   private DataStoreConfiguration dataStore;
   private MonitorConfiguration monitor = new MonitorConfiguration();
+  private RoutingRulesConfiguration routingRules = new RoutingRulesConfiguration();
 }

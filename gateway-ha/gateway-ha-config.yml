@@ -1,3 +1,7 @@
+routingRules:
+  rulesEngineEnabled: true
+  rulesConfigPath: "src/test/resources/rules/routing_rules.yml"
+
 requestRouter:
   port: 8080
   name: prestoRouter

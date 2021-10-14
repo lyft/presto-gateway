@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
 import com.lyft.data.gateway.ha.config.RequestRouterConfiguration;
+import com.lyft.data.gateway.ha.config.RoutingRulesConfiguration;
 import com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
@@ -21,6 +22,10 @@ import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
+import java.io.FileReader;
+import org.jeasy.rules.api.Rules;
+import org.jeasy.rules.mvel.MVELRuleFactory;
+import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
@@ -45,10 +50,29 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
         getEnvironment()
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
+
+    RoutingRulesConfiguration routingRulesConfig = getConfiguration().getRoutingRules();
+    RoutingGroupSelector routingGroupSelector = RoutingGroupSelector.byRoutingGroupHeader();
+
+    if (routingRulesConfig.isRulesEngineEnabled()) {
+      String rulesConfigPath = routingRulesConfig.getRulesConfigPath();
+
+      try {
+        MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
+        Rules rules = ruleFactory.createRules(
+            new FileReader(rulesConfigPath));
+        routingGroupSelector = RoutingGroupSelector.byRoutingRulesEngine(rules);
+      } catch (Exception e) {
+        System.out.println(
+            "Error opening rules configuration file %s."
+            + "Using routing group header as default..".format(rulesConfigPath));
+      }
+    }
+
     return new QueryIdCachingProxyHandler(
         getQueryHistoryManager(),
         getRoutingManager(),
-        RoutingGroupSelector.byRoutingGroupHeader(),
+        routingGroupSelector,
         getApplicationPort(),
         requestMeter);
   }
