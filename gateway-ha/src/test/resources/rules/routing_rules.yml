@@ -7,9 +7,9 @@ actions:
 ---
 name: "airflow coco"
 description: "if query from airflow with label coco, route to etl-critical group"
-condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\").contains(\"label=coco\")"
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\").contains(\"label=special\")"
 actions:
-  - "facts.put(\"routingGroup\", \"etl-critical\")"
+  - "facts.put(\"routingGroup\", \"etl-special\")"
 ---
 name: "mode"
 description: "if query from mode, route to scheduled group"

@@ -68,10 +68,10 @@ public class TestRoutingGroupSelector {
 
     // query from airflow with label coco goes to etl-critical
     when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
-        "email=person@example.com,label=coco");
+        "email=person@example.com,label=special");
     Assert.assertEquals(
         RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
-        "etl-critical");
+        "etl-special");
 
     // query from mode goes to scheduled
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("mode");
