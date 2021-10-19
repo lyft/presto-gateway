@@ -16,4 +16,7 @@ public class RequestRouterConfiguration {
   private String keystorePass;
 
   private int historySize = 2000;
+
+  // Use the certificate between gateway and presto?
+  private boolean forwardKeystore;
 }

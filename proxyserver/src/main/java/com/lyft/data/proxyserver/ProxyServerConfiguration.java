@@ -13,6 +13,7 @@ public class ProxyServerConfiguration {
   private boolean ssl;
   private String keystorePath;
   private String keystorePass;
+  private boolean forwardKeystore;
 
   protected String getPrefix() {
     return prefix;
@@ -36,6 +37,10 @@ public class ProxyServerConfiguration {
 
   protected String getKeystorePass() {
     return keystorePass;
+  }
+
+  protected boolean isForwardKeystore() {
+    return forwardKeystore;
   }
 
   protected int getLocalPort() {
