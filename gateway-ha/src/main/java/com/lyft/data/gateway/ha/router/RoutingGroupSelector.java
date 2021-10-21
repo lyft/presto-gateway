@@ -1,11 +1,14 @@
 package com.lyft.data.gateway.ha.router;
 
+import java.io.FileReader;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.api.Rules;
 import org.jeasy.rules.api.RulesEngine;
 import org.jeasy.rules.core.DefaultRulesEngine;
+import org.jeasy.rules.mvel.MVELRuleFactory;
+import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 /** RoutingGroupSelector provides a way to match an HTTP request to a Gateway routing group. */
 public interface RoutingGroupSelector {
@@ -25,14 +28,27 @@ public interface RoutingGroupSelector {
    * Routing group selector that uses routing engine rules
    * to determine the right routing group.
    */
-  static RoutingGroupSelector byRoutingRulesEngine(Rules rules) {
+  static RoutingGroupSelector byRoutingRulesEngine(String rulesConfigPath) {
+    RulesEngine rulesEngine = new DefaultRulesEngine();
+    MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
+
     return request -> {
-      RulesEngine rulesEngine = new DefaultRulesEngine();
-      Facts facts = new Facts();
-      facts.put("request", request);
-      facts.put("facts", facts);
-      rulesEngine.fire(rules, facts);
-      return facts.get("routingGroup");
+      try {
+        Rules rules = ruleFactory.createRules(
+            new FileReader(rulesConfigPath));
+        Facts facts = new Facts();
+        facts.put("request", request);
+        facts.put("facts", facts);
+        rulesEngine.fire(rules, facts);
+        return facts.get("routingGroup");
+      } catch (Exception e) {
+        // TODO: log
+        System.out.println(
+            "Error opening rules configuration file %s."
+            + "Using routing group header as default..".format(rulesConfigPath));
+        return Optional.ofNullable(request.getHeader(ROUTING_GROUP_HEADER))
+          .orElse(request.getHeader(ALTERNATE_ROUTING_GROUP_HEADER));
+      }
     };
   }
 

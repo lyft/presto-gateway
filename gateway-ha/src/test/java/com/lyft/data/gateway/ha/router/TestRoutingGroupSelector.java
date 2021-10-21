@@ -33,57 +33,70 @@ public class TestRoutingGroupSelector {
   }
 
   public void testByRoutingRulesEngine() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
 
-    // query from airflow goes to etl
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
-    Rule airflowRule = new RuleBuilder()
-        .name("airflow rule")
-        .description("if query from airflow, route to etl group")
-        .when(facts -> ((HttpServletRequest) facts.get("request")).getHeader(
-              TRINO_SOURCE_HEADER).equals("airflow"))
-        .then(facts -> facts.put("routingGroup", "etl"))
-        .build();
-
-    Rules rules = new Rules(airflowRule);
     Assert.assertEquals(
-        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
-        "etl");
-
+        routingGroupSelector.findRoutingGroup(mockRequest), "etl");
   }
 
-  public void testByRoutingRulesEngine_FromFile() throws Exception {
+  public void testByRoutingRulesEngineSpecialLabel() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-    Rules rules = new Rules();
 
-    MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
-    rules = ruleFactory.createRules(
-        new FileReader("src/test/resources/rules/routing_rules.yml"));
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
+    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
+        "email=test@example.com,label=special");
+    Assert.assertEquals(
+        routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
+  }
 
-    // query from airflow goes to etl
+  public void testByRoutingRulesEngineCompositeRules() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
     Assert.assertEquals(
-        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
-        "etl");
+        routingGroupSelector.findRoutingGroup(mockRequest), "etl");
+  }
 
-    // query from airflow with label coco goes to etl-critical
+  public void testByRoutingRulesEngineCompositeRulesSpecialLabel() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
     when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
-        "email=person@example.com,label=special");
+        "email=test@example.com,label=special");
     Assert.assertEquals(
-        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
-        "etl-special");
+        routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
+  }
 
-    // query from mode goes to scheduled
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("mode");
-    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(null); // reset client tags
+
+  public void testByRoutingRulesEngineFileNotFound() {
+    String rulesConfigPath = null;
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+    when(mockRequest.getHeader(ROUTING_GROUP_HEADER)).thenReturn("batch_backend");
     Assert.assertEquals(
-        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest),
-        "scheduled");
+        RoutingGroupSelector.byRoutingGroupHeader().findRoutingGroup(mockRequest), "batch_backend");
+  }
 
-    // if no rules matched, should return null
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("unknown");
-    Assert.assertNull(
-        RoutingGroupSelector.byRoutingRulesEngine(rules).findRoutingGroup(mockRequest));
-
+  public void testByRoutingRulesEngineFileChange() {
   }
 }

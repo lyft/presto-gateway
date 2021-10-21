@@ -10,9 +10,3 @@ description: "if query from airflow with special label, route to etl-special gro
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\").contains(\"label=special\")"
 actions:
   - "facts.put(\"routingGroup\", \"etl-special\")"
----
-name: "mode"
-description: "if query from mode, route to scheduled group"
-condition: "request.getHeader(\"X-Trino-Source\") == \"mode\""
-actions:
-  - "facts.put(\"routingGroup\", \"scheduled\")"

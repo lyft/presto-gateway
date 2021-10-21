@@ -22,10 +22,6 @@ import com.lyft.data.proxyserver.ProxyHandler;
 import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
-import java.io.FileReader;
-import org.jeasy.rules.api.Rules;
-import org.jeasy.rules.mvel.MVELRuleFactory;
-import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
@@ -51,22 +47,13 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
 
-    RoutingRulesConfiguration routingRulesConfig = getConfiguration().getRoutingRules();
+    // By default, use routing group header to route
     RoutingGroupSelector routingGroupSelector = RoutingGroupSelector.byRoutingGroupHeader();
-
+    // Use rules engine if enabled
+    RoutingRulesConfiguration routingRulesConfig = getConfiguration().getRoutingRules();
     if (routingRulesConfig.isRulesEngineEnabled()) {
       String rulesConfigPath = routingRulesConfig.getRulesConfigPath();
-
-      try {
-        MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
-        Rules rules = ruleFactory.createRules(
-            new FileReader(rulesConfigPath));
-        routingGroupSelector = RoutingGroupSelector.byRoutingRulesEngine(rules);
-      } catch (Exception e) {
-        System.out.println(
-            "Error opening rules configuration file %s."
-            + "Using routing group header as default..".format(rulesConfigPath));
-      }
+      routingGroupSelector = RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
     }
 
     return new QueryIdCachingProxyHandler(
