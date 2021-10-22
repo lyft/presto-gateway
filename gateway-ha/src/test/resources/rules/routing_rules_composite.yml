@@ -5,7 +5,7 @@ composingRules:
   - name: "main condition"
     description: "source is airflow"
     priority: 0
-    condition: "request.?getHeader(\"X-Trino-Source\") == \"airflow\""
+    condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
     actions:
       - ""
   - name: "airflow subrules"
