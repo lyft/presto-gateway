@@ -3,6 +3,7 @@ package com.lyft.data.gateway.ha.router;
 import java.io.FileReader;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.jeasy.rules.api.Facts;
 import org.jeasy.rules.api.Rules;
 import org.jeasy.rules.api.RulesEngine;
@@ -14,6 +15,9 @@ import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 public interface RoutingGroupSelector {
   String ROUTING_GROUP_HEADER = "X-Trino-Routing-Group";
   String ALTERNATE_ROUTING_GROUP_HEADER = "X-Presto-Routing-Group";
+
+  @Slf4j
+  final class Logger {}
 
   /**
    * Routing group selector that relies on the X-Trino-Routing-Group or X-Presto-Routing-Group
@@ -42,8 +46,7 @@ public interface RoutingGroupSelector {
         rulesEngine.fire(rules, facts);
         return facts.get("routingGroup");
       } catch (Exception e) {
-        // TODO: log
-        System.out.println(
+        Logger.log.error(
             "Error opening rules configuration file %s."
             + "Using routing group header as default..".format(rulesConfigPath));
         return Optional.ofNullable(request.getHeader(ROUTING_GROUP_HEADER))
