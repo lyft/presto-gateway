@@ -4,7 +4,10 @@ import static com.lyft.data.gateway.ha.router.RoutingGroupSelector.ROUTING_GROUP
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.Scanner;
 import javax.servlet.http.HttpServletRequest;
 import org.jeasy.rules.api.Rule;
 import org.jeasy.rules.api.Rules;
@@ -84,19 +87,7 @@ public class TestRoutingGroupSelector {
         routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
   }
 
-
-  public void testByRoutingRulesEngineFileNotFound() {
-    String rulesConfigPath = null;
-    RoutingGroupSelector routingGroupSelector =
-        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getHeader(ROUTING_GROUP_HEADER)).thenReturn("batch_backend");
-    Assert.assertEquals(
-        RoutingGroupSelector.byRoutingGroupHeader().findRoutingGroup(mockRequest), "batch_backend");
-  }
-
   public void testByRoutingRulesEngineFileChange() {
   }
+
 }

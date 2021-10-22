@@ -7,6 +7,6 @@ actions:
 ---
 name: "airflow special"
 description: "if query from airflow with special label, route to etl-special group"
-condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\").contains(\"label=special\")"
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
 actions:
   - "facts.put(\"routingGroup\", \"etl-special\")"
