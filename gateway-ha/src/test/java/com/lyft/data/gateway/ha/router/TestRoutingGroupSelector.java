@@ -61,6 +61,20 @@ public class TestRoutingGroupSelector {
         routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
   }
 
+  public void testByRoutingRulesEngineNoMatch() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    // even though special label is present, query is not from airflow.
+    // should return no match
+    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
+        "email=test@example.com,label=special");
+    Assert.assertEquals(
+        routingGroupSelector.findRoutingGroup(mockRequest), null);
+  }
+
   public void testByRoutingRulesEngineCompositeRules() {
     String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
     RoutingGroupSelector routingGroupSelector =
@@ -85,6 +99,20 @@ public class TestRoutingGroupSelector {
         "email=test@example.com,label=special");
     Assert.assertEquals(
         routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
+  }
+
+  public void testByRoutingRulesEngineCompositeRulesNoMatch() {
+    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
+    RoutingGroupSelector routingGroupSelector =
+        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    // even though special label is present, query is not from airflow.
+    // should return no match
+    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
+        "email=test@example.com,label=special");
+    Assert.assertEquals(
+        routingGroupSelector.findRoutingGroup(mockRequest), null);
   }
 
   public void testByRoutingRulesEngineFileChange() {
