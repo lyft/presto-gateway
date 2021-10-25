@@ -46,9 +46,8 @@ public interface RoutingGroupSelector {
         rulesEngine.fire(rules, facts);
         return facts.get("routingGroup");
       } catch (Exception e) {
-        Logger.log.error(
-            "Error opening rules configuration file %s."
-            + "Using routing group header as default..".format(rulesConfigPath));
+        Logger.log.error("Error opening rules configuration file,"
+            + " using routing group header as default.", e);
         return Optional.ofNullable(request.getHeader(ROUTING_GROUP_HEADER))
           .orElse(request.getHeader(ALTERNATE_ROUTING_GROUP_HEADER));
       }
