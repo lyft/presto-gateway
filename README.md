@@ -349,7 +349,6 @@ actions:
   - "facts.put(\"routingGroup\", \"etl\")"
 ---
 ```
-
 This could be hard to maintain as we add more rules. To have better control over the execution of rules, we could use rule priorities and composite rules.
 
 #### Rule Priority
