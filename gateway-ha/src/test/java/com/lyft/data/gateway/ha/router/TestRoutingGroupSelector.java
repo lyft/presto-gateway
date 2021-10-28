@@ -5,16 +5,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Scanner;
 import javax.servlet.http.HttpServletRequest;
-import org.jeasy.rules.api.Rule;
-import org.jeasy.rules.api.Rules;
-import org.jeasy.rules.core.RuleBuilder;
-import org.jeasy.rules.mvel.MVELRuleFactory;
-import org.jeasy.rules.support.reader.YamlRuleDefinitionReader;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @Test
@@ -35,8 +30,20 @@ public class TestRoutingGroupSelector {
     Assert.assertNull(RoutingGroupSelector.byRoutingGroupHeader().findRoutingGroup(mockRequest));
   }
 
-  public void testByRoutingRulesEngine() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
+  @DataProvider(name = "routingRuleConfigFiles")
+  public Object[][] provideData() {
+    String rulesDir = "src/test/resources/rules/";
+
+    return new Object[][] {
+      { rulesDir + "routing_rules_atomic.yml" },
+      { rulesDir + "routing_rules_composite.yml" },
+      { rulesDir + "routing_rules_priorities.yml" },
+      { rulesDir + "routing_rules_if_statements.yml" }
+    };
+  }
+
+  @Test(dataProvider = "routingRuleConfigFiles")
+  public void testByRoutingRulesEngine(String rulesConfigPath) {
     RoutingGroupSelector routingGroupSelector =
         RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
 
@@ -47,8 +54,8 @@ public class TestRoutingGroupSelector {
         routingGroupSelector.findRoutingGroup(mockRequest), "etl");
   }
 
-  public void testByRoutingRulesEngineSpecialLabel() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
+  @Test(dataProvider = "routingRuleConfigFiles")
+  public void testByRoutingRulesEngineSpecialLabel(String rulesConfigPath) {
     RoutingGroupSelector routingGroupSelector =
         RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
 
@@ -61,48 +68,8 @@ public class TestRoutingGroupSelector {
         routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
   }
 
-  public void testByRoutingRulesEngineNoMatch() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules.yml";
-    RoutingGroupSelector routingGroupSelector =
-        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-    // even though special label is present, query is not from airflow.
-    // should return no match
-    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
-        "email=test@example.com,label=special");
-    Assert.assertEquals(
-        routingGroupSelector.findRoutingGroup(mockRequest), null);
-  }
-
-  public void testByRoutingRulesEngineCompositeRules() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
-    RoutingGroupSelector routingGroupSelector =
-        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
-    Assert.assertEquals(
-        routingGroupSelector.findRoutingGroup(mockRequest), "etl");
-  }
-
-  public void testByRoutingRulesEngineCompositeRulesSpecialLabel() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
-    RoutingGroupSelector routingGroupSelector =
-        RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
-
-    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-    when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
-    when(mockRequest.getHeader(TRINO_CLIENT_TAGS_HEADER)).thenReturn(
-        "email=test@example.com,label=special");
-    Assert.assertEquals(
-        routingGroupSelector.findRoutingGroup(mockRequest), "etl-special");
-  }
-
-  public void testByRoutingRulesEngineCompositeRulesNoMatch() {
-    String rulesConfigPath = "src/test/resources/rules/routing_rules_composite.yml";
+  @Test(dataProvider = "routingRuleConfigFiles")
+  public void testByRoutingRulesEngineNoMatch(String rulesConfigPath) {
     RoutingGroupSelector routingGroupSelector =
         RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
 
@@ -144,7 +111,7 @@ public class TestRoutingGroupSelector {
         + "description: \"if query from airflow, route to etl group\"\n"
         + "condition: \"request.getHeader(\\\"X-Trino-Source\\\") == \\\"airflow\\\"\"\n"
         + "actions:\n"
-        + "  - \"facts.put(\\\"routingGroup\\\", \\\"etl2\\\")\"");
+        + "  - \"facts.put(\\\"routingGroup\\\", \\\"etl2\\\")\""); // change from etl to etl2
     fw.close();
 
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
