@@ -350,6 +350,7 @@ actions:
 ---
 ```
 This could be hard to maintain as we add more rules. To have better control over the execution of rules, we could use rule priorities and composite rules.
+Overall, with priorities, composite rules, and the constructs that MVEL support, you should likely be able to express your routing logic.
 
 #### Rule Priority
 We can assign an integer value `priority` to a rule. The lower this integer is, the earlier it will fire.
@@ -448,6 +449,37 @@ composingRules:
         condition: "true"
         actions:
           - "facts.put(\"routingGroup\", \"etl\")"
+```
+
+##### If statements (MVEL Flow Control)
+Above, we saw how we can use `ConditionalRuleGroup` and `ActivationRuleGroup` to implement and `if/else` workflow.
+We could also take advantage of the fact that MVEL supports `if` statements and other flow control (loops, etc).
+The following logic in pseudocode:
+```
+if source == "airflow":
+  if clientTags["label"] == "foo":
+    return "etl-foo"
+  else if clientTags["label"] = "bar":
+    return "etl-bar"
+  else
+    return "etl"
+```
+Can be implemented with these rules:
+```yaml
+---
+name: "airflow rules"
+description: "if query from airflow"
+condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
+actions:
+  - "if (request.getHeader(\"X-Trino-Client-Tags\") contains \"label=foo\") {
+      facts.put(\"routingGroup\", \"etl-foo\")
+    }
+    else "if (request.getHeader(\"X-Trino-Client-Tags\") contains \"label=bar\") {
+      facts.put(\"routingGroup\", \"etl-bar\")
+    }
+    else {
+      facts.put(\"routingGroup\", \"etl\")
+    }"
 ```
 
 ### Enabling routing rules engine
