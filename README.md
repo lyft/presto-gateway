@@ -337,7 +337,7 @@ If no rules match, then request is routed to adhoc.
 ### Execution of Rules
 All rules whose conditions are satisfied will fire. For example, in the two example rules given above, a query with source `airflow` and label `special`
 will satisfy both rules. The `routingGroup` is set to `etl` and then to `etl-critical` because of the order in which the rules of defined.
-If we swap the order of the rules, then we would get `etl` instead, which is undesirable.
+If we swap the order of the rules, then we would possibly get `etl` instead, which is undesirable.
 
 One could solve this by writing the rules such that they're atomic (any query will match exactly one rule). For example we can change the first rule to
 ```yaml
