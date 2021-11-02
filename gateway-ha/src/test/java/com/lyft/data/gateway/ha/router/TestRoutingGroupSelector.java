@@ -92,7 +92,7 @@ public class TestRoutingGroupSelector {
         + "description: \"if query from airflow, route to etl group\"\n"
         + "condition: \"request.getHeader(\\\"X-Trino-Source\\\") == \\\"airflow\\\"\"\n"
         + "actions:\n"
-        + "  - \"facts.put(\\\"routingGroup\\\", \\\"etl\\\")\"");
+        + "  - \"result.put(\\\"routingGroup\\\", \\\"etl\\\")\"");
     fw.close();
 
     RoutingGroupSelector routingGroupSelector =
@@ -111,7 +111,7 @@ public class TestRoutingGroupSelector {
         + "description: \"if query from airflow, route to etl group\"\n"
         + "condition: \"request.getHeader(\\\"X-Trino-Source\\\") == \\\"airflow\\\"\"\n"
         + "actions:\n"
-        + "  - \"facts.put(\\\"routingGroup\\\", \\\"etl2\\\")\""); // change from etl to etl2
+        + "  - \"result.put(\\\"routingGroup\\\", \\\"etl2\\\")\""); // change from etl to etl2
     fw.close();
 
     when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");

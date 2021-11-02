@@ -311,16 +311,16 @@ name: "airflow"
 description: "if query from airflow, route to etl group"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
 actions:
-  - "facts.put(\"routingGroup\", \"etl\")"
+  - "result.put(\"routingGroup\", \"etl\")"
 ---
 name: "airflow special"
 description: "if query from airflow with special label, route to etl-special group"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
 actions:
-  - "facts.put(\"routingGroup\", \"etl-special\")"
+  - "result.put(\"routingGroup\", \"etl-special\")"
 ```
 In the condition, you can access the methods of a [HttpServletRequest](https://docs.oracle.com/javaee/6/api/javax/servlet/http/HttpServletRequest.html) object called `request`.
-There should be at least one action of the form `facts.put(\"routingGroup\", \"foo\")` which says that if a request satisfies the condition, it should be routed to `foo`.
+There should be at least one action of the form `result.put(\"routingGroup\", \"foo\")` which says that if a request satisfies the condition, it should be routed to `foo`.
 
 The condition and actions are written in [MVEL](http://mvel.documentnode.com/), an expression language with Java-like syntax.
 In most cases, users can write their conditions/actions in Java syntax and expect it to work. There are some MVEL-specific operators that could be useful though.
@@ -346,7 +346,7 @@ name: "airflow"
 description: "if query from airflow, route to etl group"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\") == null"
 actions:
-  - "facts.put(\"routingGroup\", \"etl\")"
+  - "result.put(\"routingGroup\", \"etl\")"
 ---
 ```
 This could be hard to maintain as we add more rules. To have better control over the execution of rules, we could use rule priorities and composite rules.
@@ -363,14 +363,14 @@ description: "if query from airflow, route to etl group"
 priority: 0
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
 actions:
-  - "facts.put(\"routingGroup\", \"etl\")"
+  - "result.put(\"routingGroup\", \"etl\")"
 ---
 name: "airflow special"
 description: "if query from airflow with special label, route to etl-special group"
 priority: 1
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
 actions:
-  - "facts.put(\"routingGroup\", \"etl-special\")"
+  - "result.put(\"routingGroup\", \"etl-special\")"
 ```
 Note that both rules will still fire. The difference is that we've guaranteed that the first rule (priority 0) is fired before the second rule (priority 1). Thus `routingGroup`
 is set to `etl` and then to `etl-critical`, so the `routingGroup` will always be `etl-critical` in the end.
@@ -394,13 +394,13 @@ composingRules:
     priority: 0
     condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\" && request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
     actions:
-      - "facts.put(\"routingGroup\", \"etl-special\")"
+      - "result.put(\"routingGroup\", \"etl-special\")"
   - name: "airflow"
     description: "if query from airflow, route to etl group"
     priority: 1
     condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
     actions:
-      - "facts.put(\"routingGroup\", \"etl\")"
+      - "result.put(\"routingGroup\", \"etl\")"
 ```
 Note that the priorities have switched. The more specific rule has a higher priority, since we want it to be fired first.
 A query coming from airflow with special label is matched to the "airflow special" rule first, since it's higher priority,
@@ -437,18 +437,18 @@ composingRules:
         priority: 0
         condition: "request.getHeader(\"X-Trino-Client-Tags\") contains \"label=foo\""
         actions:
-          - "facts.put(\"routingGroup\", \"etl-foo\")"
+          - "result.put(\"routingGroup\", \"etl-foo\")"
       - name: "label bar"
         description: "label client tag is bar"
         priority: 0
         condition: "request.getHeader(\"X-Trino-Client-Tags\") contains \"label=bar\""
         actions:
-          - "facts.put(\"routingGroup\", \"etl-bar\")"
+          - "result.put(\"routingGroup\", \"etl-bar\")"
       - name: "airflow default"
         description: "airflow queries default to etl"
         condition: "true"
         actions:
-          - "facts.put(\"routingGroup\", \"etl\")"
+          - "result.put(\"routingGroup\", \"etl\")"
 ```
 
 ##### If statements (MVEL Flow Control)
@@ -472,13 +472,13 @@ description: "if query from airflow"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
 actions:
   - "if (request.getHeader(\"X-Trino-Client-Tags\") contains \"label=foo\") {
-      facts.put(\"routingGroup\", \"etl-foo\")
+      result.put(\"routingGroup\", \"etl-foo\")
     }
     else "if (request.getHeader(\"X-Trino-Client-Tags\") contains \"label=bar\") {
-      facts.put(\"routingGroup\", \"etl-bar\")
+      result.put(\"routingGroup\", \"etl-bar\")
     }
     else {
-      facts.put(\"routingGroup\", \"etl\")
+      result.put(\"routingGroup\", \"etl\")
     }"
 ```
 

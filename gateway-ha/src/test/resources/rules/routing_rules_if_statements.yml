@@ -4,8 +4,8 @@ description: "if query from airflow, route to etl group"
 condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
 actions:
   - "if (request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\") {
-      facts.put(\"routingGroup\", \"etl-special\")
+      result.put(\"routingGroup\", \"etl-special\")
     }
     else {
-      facts.put(\"routingGroup\", \"etl\")
+      result.put(\"routingGroup\", \"etl\")
     }"

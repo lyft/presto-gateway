@@ -1,6 +1,7 @@
 package com.lyft.data.gateway.ha.router;
 
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -41,10 +42,11 @@ public interface RoutingGroupSelector {
         Rules rules = ruleFactory.createRules(
             new FileReader(rulesConfigPath));
         Facts facts = new Facts();
+        HashMap<String, String> result = new HashMap<String, String>();
         facts.put("request", request);
-        facts.put("facts", facts);
+        facts.put("result", result);
         rulesEngine.fire(rules, facts);
-        return facts.get("routingGroup");
+        return result.get("routingGroup");
       } catch (Exception e) {
         Logger.log.error("Error opening rules configuration file,"
             + " using routing group header as default.", e);

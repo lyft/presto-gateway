@@ -16,9 +16,9 @@ composingRules:
         priority: 0
         condition: "request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
         actions:
-          - "facts.put(\"routingGroup\", \"etl-special\")"
+          - "result.put(\"routingGroup\", \"etl-special\")"
       - name: "airflow default"
         description: "airflow queries default to etl"
         condition: "true"
         actions:
-          - "facts.put(\"routingGroup\", \"etl\")"
+          - "result.put(\"routingGroup\", \"etl\")"
