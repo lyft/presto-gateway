@@ -297,7 +297,7 @@ To gracefully shutdown a single worker process, see [this](https://trino.io/docs
 
 ## Routing Rules Engine
 By default, presto-gateway reads the `X-Trino-Routing-Group` request header to route requests.
-If this header is not specified, requests are sent to adhoc.
+If this header is not specified, requests are sent to default routing group (adhoc).
 
 The routing rules engine feature enables you to write custom logic to route requests based on the request info such as any of the [request headers](https://trino.io/docs/current/develop/client-protocol.html#client-request-headers).
 Routing rules are separated from presto-gateway application code to a configuration file, allowing for dynamic rule changes.
