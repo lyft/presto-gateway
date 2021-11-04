@@ -335,7 +335,7 @@ condition: "request.getHeader(\"X-Trino-Client-Tags\") contains \"label=foo\""
 If no rules match, then request is routed to adhoc.
 
 ### Execution of Rules
-All rules whose conditions are satisfied will fire. For example, in the two example rules given above, a query with source `airflow` and label `special`
+All rules whose conditions are satisfied will fire. For example, in the "airflow" and "airflow special" example rules given above, a query with source `airflow` and label `special`
 will satisfy both rules. The `routingGroup` is set to `etl` and then to `etl-special` because of the order in which the rules of defined.
 If we swap the order of the rules, then we would possibly get `etl` instead, which is undesirable.
 
