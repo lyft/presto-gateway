@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
 import com.lyft.data.gateway.ha.config.HaGatewayConfiguration;
 import com.lyft.data.gateway.ha.config.RequestRouterConfiguration;
+import com.lyft.data.gateway.ha.config.RoutingRulesConfiguration;
 import com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
@@ -45,10 +46,20 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
         getEnvironment()
             .metrics()
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
+
+    // By default, use routing group header to route
+    RoutingGroupSelector routingGroupSelector = RoutingGroupSelector.byRoutingGroupHeader();
+    // Use rules engine if enabled
+    RoutingRulesConfiguration routingRulesConfig = getConfiguration().getRoutingRules();
+    if (routingRulesConfig.isRulesEngineEnabled()) {
+      String rulesConfigPath = routingRulesConfig.getRulesConfigPath();
+      routingGroupSelector = RoutingGroupSelector.byRoutingRulesEngine(rulesConfigPath);
+    }
+
     return new QueryIdCachingProxyHandler(
         getQueryHistoryManager(),
         getRoutingManager(),
-        RoutingGroupSelector.byRoutingGroupHeader(),
+        routingGroupSelector,
         getApplicationPort(),
         requestMeter);
   }

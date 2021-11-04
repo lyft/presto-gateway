@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.8.6</version>
+        <version>1.8.7</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -25,6 +25,7 @@
         <dropwizard.version>1.3.8</dropwizard.version>
         <guice.version>4.1.0</guice.version>
         <guava.version>23.0</guava.version>
+        <jeasy.version>4.1.0</jeasy.version>
         <reflections.version>0.9.10</reflections.version>
         <ehcache.version>3.8.1</ehcache.version>
         <activejdbc.version>2.3</activejdbc.version>
@@ -34,6 +35,26 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jeasy</groupId>
+            <artifactId>easy-rules-core</artifactId>
+            <version>${jeasy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jeasy</groupId>
+            <artifactId>easy-rules-mvel</artifactId>
+            <version>${jeasy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jeasy</groupId>
+            <artifactId>easy-rules-support</artifactId>
+            <version>${jeasy.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+          <version>2.10.1</version>
+        </dependency>
         <dependency>
             <groupId>com.lyft.data</groupId>
             <artifactId>baseapp</artifactId>
