@@ -483,7 +483,8 @@ actions:
 ```
 
 ### Enabling routing rules engine
-To enable routing rules engine, add the following lines to `gateway-ha-config.yml`.
+To enable routing rules engine, find the following lines in `gateway-ha-config.yml`.
+Set `rulesEngineEnabled` to True and `rulesConfigPath` to the path to your rules config file.
 ```
 routingRules:
   rulesEngineEnabled: true
