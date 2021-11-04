@@ -336,7 +336,7 @@ If no rules match, then request is routed to adhoc.
 
 ### Execution of Rules
 All rules whose conditions are satisfied will fire. For example, in the two example rules given above, a query with source `airflow` and label `special`
-will satisfy both rules. The `routingGroup` is set to `etl` and then to `etl-critical` because of the order in which the rules of defined.
+will satisfy both rules. The `routingGroup` is set to `etl` and then to `etl-special` because of the order in which the rules of defined.
 If we swap the order of the rules, then we would possibly get `etl` instead, which is undesirable.
 
 One could solve this by writing the rules such that they're atomic (any query will match exactly one rule). For example we can change the first rule to
@@ -373,7 +373,7 @@ actions:
   - "result.put(\"routingGroup\", \"etl-special\")"
 ```
 Note that both rules will still fire. The difference is that we've guaranteed that the first rule (priority 0) is fired before the second rule (priority 1). Thus `routingGroup`
-is set to `etl` and then to `etl-critical`, so the `routingGroup` will always be `etl-critical` in the end.
+is set to `etl` and then to `etl-special`, so the `routingGroup` will always be `etl-special` in the end.
 
 Above, the more specific rules have less priority since we want them to be the last to set `routingGroup`. This is a little counterintuitive.
 To further control the execution of rules, for example to have only one rule fire, we can use composite rules.
