@@ -13,7 +13,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
             renderConfigSelector();
-	    document.getElementById("entity_editor_tab").style.display = "inline";
+        document.getElementById("entity_editor_tab").style.display = "inline";
             document.getElementById("entity_editor_tab").style.backgroundColor = "grey";
         })
     </script>

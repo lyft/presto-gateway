@@ -68,7 +68,10 @@ function renderEntitySelector() {
 function buildNameForEntity(entity, entityType) {
     switch (entityType) {
         case "GATEWAY_BACKEND":
+        case "RESOURCE_GROUP":
             return entity.name;
+        case "SELECTOR":
+            return entity.resourceGroupId;
         default:
             console.log("entity type not found : " + entityType);
             return entity[0];

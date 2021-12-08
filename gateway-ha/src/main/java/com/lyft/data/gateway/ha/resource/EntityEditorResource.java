@@ -6,6 +6,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.router.GatewayBackendManager;
+import com.lyft.data.gateway.ha.router.HaResourceGroupsManager;
+import com.lyft.data.gateway.ha.router.ResourceGroupsManager;
+import com.lyft.data.gateway.ha.router.ResourceGroupsManager.ResourceGroupsDetail;
+import com.lyft.data.gateway.ha.router.ResourceGroupsManager.SelectorsDetail;
 import io.dropwizard.views.View;
 
 import java.io.IOException;
@@ -30,7 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 @Path("entity")
 public class EntityEditorResource {
 
-  @Inject private GatewayBackendManager gatewayBackendManager;
+  @Inject
+  private GatewayBackendManager gatewayBackendManager;
+  @Inject
+  private ResourceGroupsManager resourceGroupsManager;
+
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @GET
@@ -43,10 +51,6 @@ public class EntityEditorResource {
     protected EntityView(String templateName) {
       super(templateName, Charset.defaultCharset());
     }
-  }
-
-  private enum EntityType {
-    GATEWAY_BACKEND
   }
 
   @GET
@@ -63,11 +67,28 @@ public class EntityEditorResource {
     }
     EntityType entityType = EntityType.valueOf(entityTypeStr);
     try {
+      //TODO: allow selector of databases
       switch (entityType) {
         case GATEWAY_BACKEND:
           ProxyBackendConfiguration backend =
               OBJECT_MAPPER.readValue(jsonPayload, ProxyBackendConfiguration.class);
           gatewayBackendManager.updateBackend(backend);
+          break;
+        case RESOURCE_GROUP:
+          ResourceGroupsDetail resourceGroupDetails = OBJECT_MAPPER.readValue(jsonPayload,
+              ResourceGroupsDetail.class);
+          resourceGroupsManager.updateResourceGroup(resourceGroupDetails, null);
+          break;
+        case SELECTOR:
+          SelectorsDetail selectorDetails = OBJECT_MAPPER.readValue(jsonPayload,
+              SelectorsDetail.class);
+          List<SelectorsDetail> oldSelectorDetails =
+              resourceGroupsManager.readSelector(selectorDetails.getResourceGroupId(), null);
+          if (oldSelectorDetails.size() >= 1) {
+            resourceGroupsManager.updateSelector(oldSelectorDetails.get(0), selectorDetails, null);
+          } else {
+            resourceGroupsManager.createSelector(selectorDetails, null);
+          }
           break;
         default:
       }
@@ -81,12 +102,17 @@ public class EntityEditorResource {
   @GET
   @Path("/{entityType}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getAllEntitiesForType(@PathParam("entityType") String entityTypeStr) {
+  public Response getAllEntitiesForType(@PathParam("entityType") String entityTypeStr,
+      @PathParam("database") String database) {
     EntityType entityType = EntityType.valueOf(entityTypeStr);
 
     switch (entityType) {
       case GATEWAY_BACKEND:
         return Response.ok(gatewayBackendManager.getAllBackends()).build();
+      case RESOURCE_GROUP:
+        return Response.ok(resourceGroupsManager.readAllResourceGroups(database)).build();
+      case SELECTOR:
+        return Response.ok(resourceGroupsManager.readAllSelectors(database)).build();
       default:
     }
     return Response.ok(ImmutableList.of()).build();
