@@ -61,15 +61,17 @@ public class EntityEditorResource {
   }
 
   @POST
-  public Response updateEntity(@QueryParam("entityType") String entityTypeStr, String jsonPayload) {
+  public Response updateEntity(@QueryParam("entityType") String entityTypeStr,
+      @QueryParam("useSchema") String database,
+      String jsonPayload) {
     if (Strings.isNullOrEmpty(entityTypeStr)) {
       throw new WebApplicationException("EntryType can not be null");
     }
     EntityType entityType = EntityType.valueOf(entityTypeStr);
     try {
-      //TODO: allow selector of databases
       switch (entityType) {
         case GATEWAY_BACKEND:
+          //TODO: make the gateway backend database sensitive
           ProxyBackendConfiguration backend =
               OBJECT_MAPPER.readValue(jsonPayload, ProxyBackendConfiguration.class);
           gatewayBackendManager.updateBackend(backend);
@@ -77,17 +79,18 @@ public class EntityEditorResource {
         case RESOURCE_GROUP:
           ResourceGroupsDetail resourceGroupDetails = OBJECT_MAPPER.readValue(jsonPayload,
               ResourceGroupsDetail.class);
-          resourceGroupsManager.updateResourceGroup(resourceGroupDetails, null);
+          resourceGroupsManager.updateResourceGroup(resourceGroupDetails, database);
           break;
         case SELECTOR:
           SelectorsDetail selectorDetails = OBJECT_MAPPER.readValue(jsonPayload,
               SelectorsDetail.class);
           List<SelectorsDetail> oldSelectorDetails =
-              resourceGroupsManager.readSelector(selectorDetails.getResourceGroupId(), null);
+              resourceGroupsManager.readSelector(selectorDetails.getResourceGroupId(), database);
           if (oldSelectorDetails.size() >= 1) {
-            resourceGroupsManager.updateSelector(oldSelectorDetails.get(0), selectorDetails, null);
+            resourceGroupsManager.updateSelector(oldSelectorDetails.get(0),
+                selectorDetails, database);
           } else {
-            resourceGroupsManager.createSelector(selectorDetails, null);
+            resourceGroupsManager.createSelector(selectorDetails, database);
           }
           break;
         default:
@@ -103,7 +106,7 @@ public class EntityEditorResource {
   @Path("/{entityType}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllEntitiesForType(@PathParam("entityType") String entityTypeStr,
-      @PathParam("database") String database) {
+      @QueryParam("useSchema") String database) {
     EntityType entityType = EntityType.valueOf(entityTypeStr);
 
     switch (entityType) {

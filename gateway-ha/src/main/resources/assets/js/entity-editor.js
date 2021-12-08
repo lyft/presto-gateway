@@ -35,7 +35,14 @@ function renderConfigSelector() {
         + "</div> <div id='entityEditorBottom'></div>";
 
     $("#entity-editor-place-holder").html(html);
-    submitData("/entity", "", "get").done(function (data) {
+
+    var database = $("#databaseOverride").val();
+    var readEntityUrl = "/entity";
+    var getParameters = "";
+    if (database) {
+      getParameters = {"useSchema": database}
+    }
+    submitData(readEntityUrl, getParameters, "get").done(function (data) {
         var select = "<option value='select'>Select</option>";
         for (var i in data) {
             select += "<option value='" + data[i] + "'>" + data[i] + "</option>";
@@ -51,8 +58,13 @@ function renderEntitySelector() {
     $("#entitySelector").empty();
     entityData = "";
 
+    var database = $("#databaseOverride").val();
+    var getParameters = "";
+    if (database) {
+      getParameters = {"useSchema": database}
+    }
     if (entityType !== 'select') {
-        submitData("/entity/" + entityType, "", "get").done(function (data) {
+        submitData("/entity/" + entityType, getParameters, "get").done(function (data) {
             entityData = data;
             var select = "<option value='select'>Select</option>";
             for (var i in data) {
@@ -104,7 +116,13 @@ function renderEntityEditor() {
 function updateObject() {
     var entityType = $("#entityTypeSelector").find(':selected').val();
     var jsonVal = JSON.stringify(editor.get());
-    submitData("/entity?entityType=" + entityType, jsonVal, "post").done(function (data) {
+
+    var database = $("#databaseOverride").val();
+    var updateParams = {"entityType":entityType };
+    if (database) {
+      updateParams["useSchema"] = database;
+    }
+    submitData("/entity?" + $.param(updateParams), jsonVal, "post").done(function (data) {
         console.log(data);
         renderEntitySelector();
     })
