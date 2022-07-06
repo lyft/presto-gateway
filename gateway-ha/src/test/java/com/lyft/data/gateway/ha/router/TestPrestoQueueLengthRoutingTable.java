@@ -85,7 +85,7 @@ public class TestPrestoQueueLengthRoutingTable {
     }
 
     clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
   }
 
   private void registerBackEndsWithRandomQueueLengths(String groupName, int numBackends) {
@@ -101,7 +101,7 @@ public class TestPrestoQueueLengthRoutingTable {
     }
 
     clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
   }
 
   private void registerBackEnds(String groupName, int numBackends,
@@ -118,7 +118,7 @@ public class TestPrestoQueueLengthRoutingTable {
     }
 
     clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
   }
 
   private void resetBackends(String groupName, int numBk, int queueDistribution) {
@@ -295,7 +295,7 @@ public class TestPrestoQueueLengthRoutingTable {
       }
       globalToggle.set(!globalToggle.get());
       clusterQueueMap.put(mockRoutingGroup, queueLenghts);
-      routingTable.updateRoutingTable(clusterQueueMap);
+      routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
     };
 
     resetBackends(mockRoutingGroup, numBk, 0);

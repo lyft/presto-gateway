@@ -2,6 +2,7 @@ package com.lyft.data.gateway.ha.router;
 
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,17 +27,19 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
+
   private static final Random RANDOM = new Random();
   private static final int MIN_WT = 1;
   private static final int MAX_WT = 100;
   private final Object lockObject = new Object();
   private ConcurrentHashMap<String, Integer> routingGroupWeightSum;
   private ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> clusterQueueLengthMap;
+
   private Map<String, TreeMap<Integer, String>> weightedDistributionRouting;
 
   /**
    * A Routing Manager that distributes queries according to assigned weights based on
-   * Presto cluster queue length.
+   * Presto cluster queue length and falls back to Running Count if queue length are equal.
    */
   public PrestoQueueLengthRoutingTable(GatewayBackendManager gatewayBackendManager,
                                        QueryHistoryManager queryHistoryManager) {
@@ -179,7 +182,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   /**
    * Update the Routing Table only if a previously known backend has been deactivated.
    * Newly added backends are handled through
-   * {@link PrestoQueueLengthRoutingTable#updateRoutingTable(Map)}
+   * {@link PrestoQueueLengthRoutingTable#updateRoutingTable(Map, Map)}
    * updateRoutingTable}
    */
   public void updateRoutingTable(String routingGroup, Set<String> backends) {
@@ -208,25 +211,32 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   /**
    * Update routing Table with new Queue Lengths.
    */
-  public void updateRoutingTable(Map<String, Map<String, Integer>> updatedQueueLengthMap) {
+  public void updateRoutingTable(Map<String, Map<String, Integer>> updatedQueueLengthMap,
+                                 Map<String, Map<String, Integer>> updatedRunningLengthMap) {
     synchronized (lockObject) {
       log.debug("Update Routing table with new cluster queue lengths : [{}]",
-          updatedQueueLengthMap.toString());
+              updatedQueueLengthMap.toString());
       clusterQueueLengthMap.clear();
 
       for (String grp : updatedQueueLengthMap.keySet()) {
         if (grp == null) {
           continue;
         }
-        
         ConcurrentHashMap<String, Integer> queueMap = new ConcurrentHashMap<>();
-        queueMap.putAll(updatedQueueLengthMap.get(grp));
+
+        int maxQueueLen = Collections.max(updatedQueueLengthMap.get(grp).values());
+        int minQueueLen = Collections.min(updatedQueueLengthMap.get(grp).values());
+        if (minQueueLen == maxQueueLen) {
+          log.info("Queue lengths equal: {} for all clusters in the group {}."
+                  + " Falling back to Running Counts", maxQueueLen, grp);
+          queueMap.putAll(updatedRunningLengthMap.get(grp));
+        } else {
+          queueMap.putAll(updatedQueueLengthMap.get(grp));
+        }
         clusterQueueLengthMap.put(grp, queueMap);
       }
-
       computeWeightsBasedOnQueueLength(clusterQueueLengthMap);
     }
-
   }
 
   /**
