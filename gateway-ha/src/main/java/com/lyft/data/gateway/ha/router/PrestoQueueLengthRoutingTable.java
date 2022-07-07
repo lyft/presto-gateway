@@ -228,7 +228,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         int minQueueLen = Collections.min(updatedQueueLengthMap.get(grp).values());
         if (minQueueLen == maxQueueLen) {
           log.info("Queue lengths equal: {} for all clusters in the group {}."
-                  + " Falling back to Running Counts", maxQueueLen, grp);
+                  + " Falling back to Running Counts : {}", maxQueueLen, grp,
+                  updatedRunningLengthMap.get(grp));
           queueMap.putAll(updatedRunningLengthMap.get(grp));
         } else {
           queueMap.putAll(updatedQueueLengthMap.get(grp));
