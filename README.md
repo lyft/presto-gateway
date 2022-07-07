@@ -21,6 +21,9 @@ mysql -uroot -proot123 -h127.0.0.1 -Dprestogateway
 Once logged in to mysql console, please run [gateway-ha-persistence.sql](/gateway-ha/src/main/resources/gateway-ha-persistence.sql) to populate the tables.
 
 ### Build and run
+
+Please note these steps have been verified with JDK 8 and 11. Higher versions of Java might run into unexpected issues. 
+
 run `mvn clean install` to build `presto-gateway`
 
 Edit the [config file](/gateway-ha/gateway-ha-config.yml) and update the mysql db information.
@@ -45,6 +48,9 @@ jdk.tls.disabledAlgorithms=SSLv3, TLSv1, TLSv1.1, RC4, DES, MD5withRSA, \
 Remove `TLSv1, TLSv1.1` and redo the above steps to build and run `presto-gateway`.
 
 Now you can access load balanced presto at localhost:8080 port. We will refer to this as `prestogateway.lyft.com`
+
+If you see test failures while building `presto-gateway` or in an IDE, please  run `mvn process-classes` to instrument javalite models
+which are used by the tests . Ref [javalite-examples](https://github.com/javalite/javalite-examples/tree/master/simple-example#instrumentation) for more details.
 
 ## Gateway API
 
