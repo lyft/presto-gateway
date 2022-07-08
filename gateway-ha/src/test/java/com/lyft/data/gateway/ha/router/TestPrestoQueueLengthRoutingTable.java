@@ -329,7 +329,7 @@ public class TestPrestoQueueLengthRoutingTable {
         totalDistribution.putAll(routingDistribution);
       } else {
         for (String key : routingDistribution.keySet()) {
-          sum = totalDistribution.get(key) + routingDistribution.get(key);
+          sum = totalDistribution.getOrDefault(key, 0) + routingDistribution.get(key);
           totalDistribution.put(key, sum);
         }
       }
