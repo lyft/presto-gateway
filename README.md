@@ -498,7 +498,15 @@ Want to help build Presto Gateway? Check out our [contributing documentation](CO
 
 References :sparkles:
 --------------------
-[Scaling Presto Infra with gateway at Lyft](https://eng.lyft.com/presto-infrastructure-at-lyft-b10adb9db01)
+[Lyft](https://eng.lyft.com/presto-infrastructure-at-lyft-b10adb9db01)
 
-[Presto-gateway at Pinterest](https://medium.com/pinterest-engineering/presto-at-pinterest-a8bda7515e52)
+[Pinterest](https://medium.com/pinterest-engineering/presto-at-pinterest-a8bda7515e52)
+    
+[Zomato](https://www.zomato.com/blog/powering-data-analytics-with-trino)
+
+[Shopify](https://shopify.engineering/faster-trino-query-execution-infrastructure)
+    
+{{Your org here}}
+    
+
 
