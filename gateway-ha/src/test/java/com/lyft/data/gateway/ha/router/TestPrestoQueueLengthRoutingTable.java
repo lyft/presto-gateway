@@ -26,6 +26,7 @@ public class TestPrestoQueueLengthRoutingTable {
   String[] mockRoutingGroups = {"adhoc", "scheduled"};
   String mockRoutingGroup = "adhoc";
   Map<String, Map<String, Integer>> clusterQueueMap;
+  Map<String, Map<String, Integer>> clusterRunningMap;
 
   @BeforeClass(alwaysRun = true)
   public void setUp() {
@@ -52,6 +53,7 @@ public class TestPrestoQueueLengthRoutingTable {
       backendManager.deactivateBackend(mockRoutingGroup + i);
     }
     clusterQueueMap = new HashMap<>();
+    clusterRunningMap = new HashMap<>();
   }
 
   private void addMockBackends(String groupName, int numBackends,
@@ -70,60 +72,49 @@ public class TestPrestoQueueLengthRoutingTable {
     }
   }
 
-  private void registerBackEndsWithRandomQueueLength(String groupName, int numBackends) {
-    int mockQueueLength = 0;
-    String backend;
-    int maxLength = 200;
-    Random generator = new Random();
-
-    Map<String, Integer> queueLenghts = new HashMap<>();
-
-    for (int i = 0; i < numBackends; i++) {
-      backend = groupName + i;
-      backendManager.activateBackend(backend);
-      queueLenghts.put(backend, generator.nextInt(maxLength));
-    }
-
-    clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
-  }
-
   private void registerBackEndsWithRandomQueueLengths(String groupName, int numBackends) {
     int mockQueueLength = 0;
     String backend;
     Random rand = new Random();
-    Map<String, Integer> queueLenghts = new HashMap<>();
+    Map<String, Integer> queueLengths = new HashMap<>();
 
     for (int i = 0; i < numBackends; i++) {
       backend = groupName + i;
       backendManager.activateBackend(backend);
-      queueLenghts.put(backend, mockQueueLength += rand.nextInt(100));
+      queueLengths.put(backend, mockQueueLength += rand.nextInt(100));
     }
 
-    clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
+    clusterQueueMap.put(groupName, queueLengths);
+    // Running counts don't matter if queue lengths are random.
+    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap);
   }
 
   private void registerBackEnds(String groupName, int numBackends,
-                                int queueLengthDistributiveFactor) {
+                                int queueLengthDistributiveFactor,
+                                int runningLenDistributiveFactor) {
     int mockQueueLength = 0;
+    int mockRunningLength = 0;
     String backend;
 
-    Map<String, Integer> queueLenghts = new HashMap<>();
+    Map<String, Integer> queueLengths = new HashMap<>();
+    Map<String, Integer> runningLengths = new HashMap<>();
 
     for (int i = 0; i < numBackends; i++) {
       backend = groupName + i;
       backendManager.activateBackend(backend);
-      queueLenghts.put(backend, mockQueueLength += queueLengthDistributiveFactor);
+      queueLengths.put(backend, mockQueueLength += queueLengthDistributiveFactor);
+      runningLengths.put(backend, mockRunningLength += runningLenDistributiveFactor);
     }
 
-    clusterQueueMap.put(groupName, queueLenghts);
-    routingTable.updateRoutingTable(clusterQueueMap);
+    clusterQueueMap.put(groupName, queueLengths);
+    clusterRunningMap.put(groupName, runningLengths);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap);
   }
 
-  private void resetBackends(String groupName, int numBk, int queueDistribution) {
+  private void resetBackends(String groupName, int numBk,
+                             int queueDistribution, int runningDistribution) {
     deactiveAllBackends();
-    registerBackEnds(groupName, numBk, queueDistribution);
+    registerBackEnds(groupName, numBk, queueDistribution, runningDistribution);
   }
 
   private Map<String, Integer> routeQueries(String groupName, int numRequests) {
@@ -149,11 +140,12 @@ public class TestPrestoQueueLengthRoutingTable {
   public void testRoutingWithEvenWeightDistribution() {
 
     int queueDistribution = 3;
+    int runningDistribution = 0;
 
     for (int numRequests : QUERY_VOLUMES) {
       for (int numBk = 1; numBk <= NUM_BACKENDS; numBk++) {
 
-        resetBackends(mockRoutingGroup, numBk, queueDistribution);
+        resetBackends(mockRoutingGroup, numBk, queueDistribution, runningDistribution);
         Map<String, Integer> routingDistribution = routeQueries(mockRoutingGroup, numRequests);
 
         // Useful for debugging
@@ -201,8 +193,6 @@ public class TestPrestoQueueLengthRoutingTable {
           assert routingDistribution.values().stream().mapToInt(Integer::intValue).sum()
               == numRequests;
         }
-
-
       }
     }
   }
@@ -210,11 +200,11 @@ public class TestPrestoQueueLengthRoutingTable {
   @Test
   public void testRoutingWithEqualWeightDistribution() {
     int queueDistribution = 0;
-
+    int runningDistribution = 0;
     for (int numRequests : QUERY_VOLUMES) {
       for (int numBk = 1; numBk <= NUM_BACKENDS; numBk++) {
 
-        resetBackends(mockRoutingGroup, numBk, queueDistribution);
+        resetBackends(mockRoutingGroup, numBk, queueDistribution, runningDistribution);
         Map<String, Integer> routingDistribution = routeQueries(mockRoutingGroup, numRequests);
 
         //Useful Debugging Info
@@ -235,6 +225,37 @@ public class TestPrestoQueueLengthRoutingTable {
     }
   }
 
+
+  @Test
+  public void testRoutingWithEqualQueueSkewedRunningDistribution() {
+    int queueDistribution = 0;
+    int runningDistribution = 100;
+
+    for (int numRequests : QUERY_VOLUMES) {
+      for (int numBk = 1; numBk <= NUM_BACKENDS; numBk++) {
+
+        resetBackends(mockRoutingGroup, numBk, queueDistribution, runningDistribution);
+        Map<String, Integer> routingDistribution = routeQueries(mockRoutingGroup, numRequests);
+
+        //Useful Debugging Info
+        /*
+        System.out.println("Input :" + clusterRunningMap.toString() + " Num of Requests:" +
+        numRequests
+        + " Internal Routing table: " + routingTable.getInternalWeightedRoutingTable
+        (mockRoutingGroup).toString()
+        + " Distribution: " + routingDistribution.toString());
+        */
+        if (numBk > 2 && routingDistribution.containsKey(mockRoutingGroup + (numBk - 1))) {
+          assert routingDistribution.get(mockRoutingGroup + (numBk - 1))
+                  <= Math.ceil(numRequests / numBk);
+        } else  {
+          assert routingDistribution.values().stream().mapToInt(Integer::intValue).sum()
+                  == numRequests;
+        }
+      }
+    }
+  }
+
   @Test
   public void testRoutingWithMultipleGroups() {
     int queueDistribution = 10;
@@ -242,7 +263,7 @@ public class TestPrestoQueueLengthRoutingTable {
     int numBk = 3;
 
     for (String grp : mockRoutingGroups) {
-      resetBackends(grp, numBk, queueDistribution);
+      resetBackends(grp, numBk, queueDistribution, 0);
       Map<String, Integer> routingDistribution = routeQueries(grp, numRequests);
 
       // Useful for debugging
@@ -295,10 +316,10 @@ public class TestPrestoQueueLengthRoutingTable {
       }
       globalToggle.set(!globalToggle.get());
       clusterQueueMap.put(mockRoutingGroup, queueLenghts);
-      routingTable.updateRoutingTable(clusterQueueMap);
+      routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
     };
 
-    resetBackends(mockRoutingGroup, numBk, 0);
+    resetBackends(mockRoutingGroup, numBk, 0, 0);
     scheduler.scheduleAtFixedRate(activeClusterMonitor, 0, 1, SECONDS);
 
 
@@ -308,7 +329,7 @@ public class TestPrestoQueueLengthRoutingTable {
         totalDistribution.putAll(routingDistribution);
       } else {
         for (String key : routingDistribution.keySet()) {
-          sum = totalDistribution.get(key) + routingDistribution.get(key);
+          sum = totalDistribution.getOrDefault(key, 0) + routingDistribution.get(key);
           totalDistribution.put(key, sum);
         }
       }
