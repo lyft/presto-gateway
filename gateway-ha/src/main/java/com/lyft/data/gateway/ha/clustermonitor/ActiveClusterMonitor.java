@@ -1,7 +1,9 @@
 package com.lyft.data.gateway.ha.clustermonitor;
 
+import static com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler.UI_API_QUEUED_LIST_PATH;
 import static com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler.UI_API_STATS_PATH;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.lyft.data.gateway.ha.config.MonitorConfiguration;
@@ -16,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,6 +33,8 @@ public class ActiveClusterMonitor implements Managed {
   public static final int BACKEND_CONNECT_TIMEOUT_SECONDS = 15;
   public static final int MONITOR_TASK_DELAY_MIN = 1;
   public static final int DEFAULT_THREAD_POOL_SIZE = 10;
+
+  private static final String SESSION_USER = "sessionUser";
 
   private final List<PrestoClusterStatsObserver> clusterStatsObservers;
   private final GatewayBackendManager gatewayBackendManager;
@@ -94,10 +99,7 @@ public class ActiveClusterMonitor implements Managed {
         });
   }
 
-  private ClusterStats getPrestoClusterStats(ProxyBackendConfiguration backend) {
-    ClusterStats clusterStats = new ClusterStats();
-    clusterStats.setClusterId(backend.getName());
-    String target = backend.getProxyTo() + UI_API_STATS_PATH;
+  private String queryCluster(String target) {
     HttpURLConnection conn = null;
     try {
       URL url = new URL(target);
@@ -108,22 +110,15 @@ public class ActiveClusterMonitor implements Managed {
       conn.connect();
       int responseCode = conn.getResponseCode();
       if (responseCode == HttpStatus.SC_OK) {
-        clusterStats.setHealthy(true);
         BufferedReader reader =
-            new BufferedReader(new InputStreamReader((InputStream) conn.getContent()));
+                new BufferedReader(new InputStreamReader((InputStream) conn.getContent()));
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
           sb.append(line + "\n");
         }
-        HashMap<String, Object> result = OBJECT_MAPPER.readValue(sb.toString(), HashMap.class);
-        clusterStats.setNumWorkerNodes((int) result.get("activeWorkers"));
-        clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
-        clusterStats.setRunningQueryCount((int) result.get("runningQueries"));
-        clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
-        clusterStats.setProxyTo(backend.getProxyTo());
-        clusterStats.setExternalUrl(backend.getExternalUrl());
-        clusterStats.setRoutingGroup(backend.getRoutingGroup());
+
+        return sb.toString();
       } else {
         log.warn("Received non 200 response, response code: {}", responseCode);
       }
@@ -134,6 +129,58 @@ public class ActiveClusterMonitor implements Managed {
         conn.disconnect();
       }
     }
+    return null;
+  }
+
+  private ClusterStats getPrestoClusterStats(ProxyBackendConfiguration backend) {
+    ClusterStats clusterStats = new ClusterStats();
+    clusterStats.setClusterId(backend.getName());
+
+    // Fetch Cluster level Stats.
+    String target = backend.getProxyTo() + UI_API_STATS_PATH;
+    String response = queryCluster(target);
+    if (response == null) {
+      log.error("Received null response for {}", target);
+      return  clusterStats;
+    }
+    clusterStats.setHealthy(true);
+    try {
+      HashMap<String, Object> result = null;
+      result = OBJECT_MAPPER.readValue(response, HashMap.class);
+
+      clusterStats.setNumWorkerNodes((int) result.get("activeWorkers"));
+      clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
+      clusterStats.setRunningQueryCount((int) result.get("runningQueries"));
+      clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
+      clusterStats.setProxyTo(backend.getProxyTo());
+      clusterStats.setExternalUrl(backend.getExternalUrl());
+      clusterStats.setRoutingGroup(backend.getRoutingGroup());
+
+    } catch (Exception e) {
+      log.error("Error parsing cluster stats from [{}]", response, e);
+    }
+
+    // Fetch User Level Stats.
+    Map<String, Integer> clusterUserStats = new HashMap<>();
+    target = backend.getProxyTo() + UI_API_QUEUED_LIST_PATH;
+    response = queryCluster(target);
+    if (response == null) {
+      log.error("Received null response for {}", target);
+      return clusterStats;
+    }
+    try {
+      List<Map<String, Object>> queries = OBJECT_MAPPER.readValue(response,
+            new TypeReference<List<Map<String, Object>>>(){});
+
+      for (Map<String, Object> q : queries) {
+        String user = (String) q.get(SESSION_USER);
+        clusterUserStats.put(user, clusterUserStats.getOrDefault(user, 0) + 1);
+      }
+    } catch (Exception e) {
+      log.error("Error parsing cluster user stats: {}", e);
+    }
+    clusterStats.setUserQueuedCount(clusterUserStats);
+
     return clusterStats;
   }
 

@@ -61,7 +61,7 @@ public abstract class RoutingManager {
    *
    * @return
    */
-  public String provideAdhocBackend() {
+  public String provideAdhocBackend(String user) {
     List<ProxyBackendConfiguration> backends = this.gatewayBackendManager.getActiveAdhocBackends();
     if (backends.size() == 0) {
       throw new IllegalStateException("Number of active backends found zero");
@@ -76,11 +76,11 @@ public abstract class RoutingManager {
    *
    * @return
    */
-  public String provideBackendForRoutingGroup(String routingGroup) {
+  public String provideBackendForRoutingGroup(String routingGroup, String user) {
     List<ProxyBackendConfiguration> backends =
         gatewayBackendManager.getActiveBackends(routingGroup);
     if (backends.isEmpty()) {
-      return provideAdhocBackend();
+      return provideAdhocBackend(user);
     }
     int backendId = Math.abs(RANDOM.nextInt()) % backends.size();
     return backends.get(backendId).getProxyTo();

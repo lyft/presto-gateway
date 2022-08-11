@@ -35,6 +35,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String V1_QUERY_PATH = "/v1/query";
   public static final String V1_INFO_PATH = "/v1/info";
   public static final String UI_API_STATS_PATH = "/ui/api/stats";
+  public static final String UI_API_QUEUED_LIST_PATH = "/ui/api/query?state=QUEUED";
   public static final String PRESTO_UI_PATH = "/ui";
   public static final String USER_HEADER = "X-Trino-User";
   public static final String ALTERNATE_USER_HEADER = "X-Presto-User";
@@ -121,11 +122,13 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
         backendAddress = routingManager.findBackendForQueryId(queryId);
       } else {
         String routingGroup = routingGroupSelector.findRoutingGroup(request);
+        String user = Optional.ofNullable(request.getHeader(USER_HEADER))
+                .orElse(request.getHeader(ALTERNATE_USER_HEADER));
         if (!Strings.isNullOrEmpty(routingGroup)) {
           // This falls back on adhoc backend if there are no cluster found for the routing group.
-          backendAddress = routingManager.provideBackendForRoutingGroup(routingGroup);
+          backendAddress = routingManager.provideBackendForRoutingGroup(routingGroup, user);
         } else {
-          backendAddress = routingManager.provideAdhocBackend();
+          backendAddress = routingManager.provideAdhocBackend(user);
         }
       }
       // set target backend so that we could save queryId to backend mapping later.
