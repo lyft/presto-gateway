@@ -285,7 +285,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   }
 
   /**
-   * Looks up the closest weight to random number generated for a given routing group.
+   * Find the cluster with least user queue else fall back to overall cluster weight based routing.
    */
   public String getEligibleBackEnd(String routingGroup, String user) {
 
@@ -318,6 +318,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         }
       }
     }
+    // Looks up the closest weight to random number generated for a given routing group.
     if (routingGroupWeightSum.containsKey(routingGroup)
         && weightedDistributionRouting.containsKey(routingGroup)) {
       int rnd = RANDOM.nextInt(routingGroupWeightSum.get(routingGroup));

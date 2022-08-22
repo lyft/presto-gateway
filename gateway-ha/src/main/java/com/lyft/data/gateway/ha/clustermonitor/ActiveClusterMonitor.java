@@ -5,6 +5,7 @@ import static com.lyft.data.gateway.ha.handler.QueryIdCachingProxyHandler.UI_API
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.lyft.data.gateway.ha.config.MonitorConfiguration;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
@@ -139,8 +140,8 @@ public class ActiveClusterMonitor implements Managed {
     // Fetch Cluster level Stats.
     String target = backend.getProxyTo() + UI_API_STATS_PATH;
     String response = queryCluster(target);
-    if (response == null) {
-      log.error("Received null response for {}", target);
+    if (Strings.isNullOrEmpty(response)) {
+      log.error("Received null/empty response for {}", target);
       return  clusterStats;
     }
     clusterStats.setHealthy(true);
@@ -164,8 +165,8 @@ public class ActiveClusterMonitor implements Managed {
     Map<String, Integer> clusterUserStats = new HashMap<>();
     target = backend.getProxyTo() + UI_API_QUEUED_LIST_PATH;
     response = queryCluster(target);
-    if (response == null) {
-      log.error("Received null response for {}", target);
+    if (Strings.isNullOrEmpty(response)) {
+      log.error("Received null/empty response for {}", target);
       return clusterStats;
     }
     try {
