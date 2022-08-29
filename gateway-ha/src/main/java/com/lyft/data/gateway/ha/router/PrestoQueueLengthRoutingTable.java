@@ -226,8 +226,6 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
       userClusterQueueLengthMap.clear();
 
       if (updatedUserQueueLengthMap != null) {
-        log.debug("Update user queue sizes:[{}]", updatedUserQueueLengthMap.toString());
-
         for (String user : updatedUserQueueLengthMap.keySet()) {
           ConcurrentHashMap<String, Integer> clusterQueueMap =
                   new ConcurrentHashMap<>(updatedUserQueueLengthMap.get(user));
@@ -244,7 +242,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         int maxQueueLen = Collections.max(updatedQueueLengthMap.get(grp).values());
         int minQueueLen = Collections.min(updatedQueueLengthMap.get(grp).values());
 
-        if (minQueueLen == maxQueueLen && updatedQueueLengthMap.get(grp).size() > 1) {
+        if (minQueueLen == maxQueueLen && updatedQueueLengthMap.get(grp).size() > 1
+                && updatedRunningLengthMap.containsKey(grp)) {
           log.info("Queue lengths equal: {} for all clusters in the group {}."
                   + " Falling back to Running Counts : {}", maxQueueLen, grp,
                   updatedRunningLengthMap.get(grp));
@@ -312,7 +311,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         }
         // If all clusters have the same queue count, then fallback to the older weighted logic.
         if (!Strings.isNullOrEmpty(leastQueuedCluster) && minQueueCount != maxQueueCount) {
-          log.debug("Routing to:{} with userQueueCount:{}", leastQueuedCluster, minQueueCount);
+          log.debug("{} routing to:{}. userQueueCount:{}", user, leastQueuedCluster, minQueueCount);
 
           return leastQueuedCluster;
         }
