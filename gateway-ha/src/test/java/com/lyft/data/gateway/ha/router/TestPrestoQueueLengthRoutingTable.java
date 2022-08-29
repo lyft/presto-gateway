@@ -1,13 +1,17 @@
 package com.lyft.data.gateway.ha.router;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
 
 import com.lyft.data.gateway.ha.HaGatewayTestUtils;
 import com.lyft.data.gateway.ha.config.DataStoreConfiguration;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import com.lyft.data.gateway.ha.persistence.JdbcConnectionManager;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -25,6 +29,9 @@ public class TestPrestoQueueLengthRoutingTable {
   QueryHistoryManager historyManager;
   String[] mockRoutingGroups = {"adhoc", "scheduled"};
   String mockRoutingGroup = "adhoc";
+
+  String mockUser = "user";
+
   Map<String, Map<String, Integer>> clusterQueueMap;
   Map<String, Map<String, Integer>> clusterRunningMap;
 
@@ -86,7 +93,7 @@ public class TestPrestoQueueLengthRoutingTable {
 
     clusterQueueMap.put(groupName, queueLengths);
     // Running counts don't matter if queue lengths are random.
-    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap, null);
   }
 
   private void registerBackEnds(String groupName, int numBackends,
@@ -108,7 +115,39 @@ public class TestPrestoQueueLengthRoutingTable {
 
     clusterQueueMap.put(groupName, queueLengths);
     clusterRunningMap.put(groupName, runningLengths);
-    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap, null);
+  }
+
+
+
+  private void registerBackEndsWithUserQueue(String groupName, int numBackends,
+                                List<Integer> userQueues) {
+
+    deactiveAllBackends();
+    int mockQueueLength = 0;
+    int mockRunningLength = 0;
+    String backend;
+
+    Map<String, Integer> queueLengths = new HashMap<>();
+    Map<String, Integer> runningLengths = new HashMap<>();
+    Map<String, Map<String, Integer>> userClusterQueue = new HashMap<>();
+
+    for (int i = 0; i < numBackends; i++) {
+      backend = groupName + i;
+      backendManager.activateBackend(backend);
+      queueLengths.put(backend, mockQueueLength);
+      runningLengths.put(backend, mockRunningLength);
+      if (userQueues.size() > i) {
+        Map<String, Integer> userQueueMap =
+                userClusterQueue.getOrDefault(mockUser, new HashMap<>());
+        userQueueMap.put(backend, userQueues.get(i));
+        userClusterQueue.put(mockUser, userQueueMap);
+      }
+    }
+
+    clusterQueueMap.put(groupName, queueLengths);
+    clusterRunningMap.put(groupName, runningLengths);
+    routingTable.updateRoutingTable(clusterQueueMap, clusterRunningMap, userClusterQueue);
   }
 
   private void resetBackends(String groupName, int numBk,
@@ -124,7 +163,7 @@ public class TestPrestoQueueLengthRoutingTable {
 
 
     for (int i = 0; i < numRequests; i++) {
-      eligibleBackend = routingTable.getEligibleBackEnd(groupName);
+      eligibleBackend = routingTable.getEligibleBackEnd(groupName, null);
 
       if (!routingDistribution.containsKey(eligibleBackend)) {
         routingDistribution.put(eligibleBackend, 1);
@@ -195,6 +234,70 @@ public class TestPrestoQueueLengthRoutingTable {
         }
       }
     }
+  }
+
+  @Test
+  public void testRoutingWithUserQueuedLength() {
+    int numBackends = 2;
+    int queryVolume = 10000;
+
+    // Case 1: All user queue counts Present.
+    // Validate always routed to  cluster with lowest user queue
+    registerBackEndsWithUserQueue(mockRoutingGroup, numBackends, Arrays.asList(1, 2));
+    for (int i = 0; i < queryVolume; i++) {
+      assertEquals(routingTable.getEligibleBackEnd(mockRoutingGroup, mockUser),
+              mockRoutingGroup + "0");
+    }
+
+    // Case 2: Not all user queue counts Present.
+    // Validate always routed to cluster with zero queue length i.e. the missing cluster.
+    registerBackEndsWithUserQueue(mockRoutingGroup, numBackends, Arrays.asList(1));
+    for (int i = 0; i < queryVolume; i++) {
+      assertEquals(routingTable.getEligibleBackEnd(mockRoutingGroup, mockUser),
+              mockRoutingGroup + "1");
+    }
+
+    // Case 3: All user queue counts Present but equal
+    // Validate equally routed to all clusters.
+    registerBackEndsWithUserQueue(mockRoutingGroup, numBackends, Arrays.asList(2, 2));
+    Map<String, Integer> counts = new HashMap<>();
+    for (int i = 0; i < queryVolume; i++) {
+      String cluster = routingTable.getEligibleBackEnd(mockRoutingGroup, mockUser);
+      counts.put(cluster, counts.getOrDefault(cluster, 0) + 1);
+    }
+    double variance = 0.1;
+    double expectedLowerBound = (queryVolume / numBackends) * (1 - variance);
+    double expectedUpperBound = (queryVolume / numBackends) * (1 + variance);
+
+    for (Integer c : counts.values()) {
+      assert  c >= expectedLowerBound && c <= expectedUpperBound;
+    }
+
+    // Case 4: NO user queue lengths present
+    // Validate equally routed to all clusters.
+    registerBackEndsWithUserQueue(mockRoutingGroup, numBackends, new ArrayList<>());
+    counts = new HashMap<>();
+    for (int i = 0; i < queryVolume; i++) {
+      String cluster = routingTable.getEligibleBackEnd(mockRoutingGroup, mockUser);
+      counts.put(cluster, counts.getOrDefault(cluster, 0) + 1);
+    }
+    for (Integer c : counts.values()) {
+      assert c >= expectedLowerBound && c <= expectedUpperBound;
+    }
+
+    // Case 5: Null or empty users
+    // Validate equally routed to all clusters.
+    registerBackEndsWithUserQueue(mockRoutingGroup, numBackends, new ArrayList<>());
+    counts = new HashMap<>();
+    for (int i = 0; i < queryVolume; i++) {
+      String cluster = routingTable.getEligibleBackEnd(mockRoutingGroup, null);
+      counts.put(cluster, counts.getOrDefault(cluster, 0) + 1);
+    }
+    for (Integer c : counts.values()) {
+      assert c >= expectedLowerBound && c <= expectedUpperBound;
+    }
+
+
   }
 
   @Test
@@ -316,7 +419,7 @@ public class TestPrestoQueueLengthRoutingTable {
       }
       globalToggle.set(!globalToggle.get());
       clusterQueueMap.put(mockRoutingGroup, queueLenghts);
-      routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap);
+      routingTable.updateRoutingTable(clusterQueueMap, clusterQueueMap, null);
     };
 
     resetBackends(mockRoutingGroup, numBk, 0, 0);

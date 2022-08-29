@@ -1,5 +1,6 @@
 package com.lyft.data.gateway.ha.router;
 
+import com.google.common.base.Strings;
 import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,6 +37,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   private ConcurrentHashMap<String, Integer> routingGroupWeightSum;
   private ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> clusterQueueLengthMap;
 
+  private ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>> userClusterQueueLengthMap;
+
   private Map<String, TreeMap<Integer, String>> weightedDistributionRouting;
 
   /**
@@ -47,6 +51,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
     routingGroupWeightSum = new ConcurrentHashMap<String, Integer>();
     clusterQueueLengthMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, Integer>>();
     weightedDistributionRouting = new HashMap<String, TreeMap<Integer, String>>();
+    userClusterQueueLengthMap = new ConcurrentHashMap<>();
   }
 
   /**
@@ -182,7 +187,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   /**
    * Update the Routing Table only if a previously known backend has been deactivated.
    * Newly added backends are handled through
-   * {@link PrestoQueueLengthRoutingTable#updateRoutingTable(Map, Map)}
+   * {@link PrestoQueueLengthRoutingTable#updateRoutingTable(Map, Map, Map)}
    * updateRoutingTable}
    */
   public void updateRoutingTable(String routingGroup, Set<String> backends) {
@@ -212,11 +217,21 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
    * Update routing Table with new Queue Lengths.
    */
   public void updateRoutingTable(Map<String, Map<String, Integer>> updatedQueueLengthMap,
-                                 Map<String, Map<String, Integer>> updatedRunningLengthMap) {
+                                 Map<String, Map<String, Integer>> updatedRunningLengthMap,
+                                 Map<String, Map<String, Integer>> updatedUserQueueLengthMap) {
     synchronized (lockObject) {
       log.debug("Update Routing table with new cluster queue lengths : [{}]",
               updatedQueueLengthMap.toString());
       clusterQueueLengthMap.clear();
+      userClusterQueueLengthMap.clear();
+
+      if (updatedUserQueueLengthMap != null) {
+        for (String user : updatedUserQueueLengthMap.keySet()) {
+          ConcurrentHashMap<String, Integer> clusterQueueMap =
+                  new ConcurrentHashMap<>(updatedUserQueueLengthMap.get(user));
+          userClusterQueueLengthMap.put(user, clusterQueueMap);
+        }
+      }
 
       for (String grp : updatedQueueLengthMap.keySet()) {
         if (grp == null) {
@@ -227,7 +242,8 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
         int maxQueueLen = Collections.max(updatedQueueLengthMap.get(grp).values());
         int minQueueLen = Collections.min(updatedQueueLengthMap.get(grp).values());
 
-        if (minQueueLen == maxQueueLen && updatedQueueLengthMap.get(grp).size() > 1) {
+        if (minQueueLen == maxQueueLen && updatedQueueLengthMap.get(grp).size() > 1
+                && updatedRunningLengthMap.containsKey(grp)) {
           log.info("Queue lengths equal: {} for all clusters in the group {}."
                   + " Falling back to Running Counts : {}", maxQueueLen, grp,
                   updatedRunningLengthMap.get(grp));
@@ -268,9 +284,40 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
   }
 
   /**
-   * Looks up the closest weight to random number generated for a given routing group.
+   * Find the cluster with least user queue else fall back to overall cluster weight based routing.
    */
-  public String getEligibleBackEnd(String routingGroup) {
+  public String getEligibleBackEnd(String routingGroup, String user) {
+
+    // Route to the least queued backend for the user out of all backends for that group
+    if (!Strings.isNullOrEmpty(user)) {
+      Map<String, Integer> clusterQueueCountForUser = userClusterQueueLengthMap.get(user);
+
+      if (clusterQueueCountForUser != null && !clusterQueueCountForUser.isEmpty()) {
+        Set<String> backends = clusterQueueLengthMap.get(routingGroup).keySet();
+        String leastQueuedCluster = null;
+        Integer minQueueCount = Integer.MAX_VALUE;
+        Integer maxQueueCount = Integer.MIN_VALUE;
+        for (String b : backends) {
+          // If missing, we assume no queued queries for the user on that cluster.
+          Integer queueCount = clusterQueueCountForUser.getOrDefault(b, 0);
+
+          if (queueCount < minQueueCount) {
+            leastQueuedCluster = b;
+            minQueueCount = queueCount;
+          }
+          if (queueCount > maxQueueCount) {
+            maxQueueCount = queueCount;
+          }
+        }
+        // If all clusters have the same queue count, then fallback to the older weighted logic.
+        if (!Strings.isNullOrEmpty(leastQueuedCluster) && minQueueCount != maxQueueCount) {
+          log.debug("{} routing to:{}. userQueueCount:{}", user, leastQueuedCluster, minQueueCount);
+
+          return leastQueuedCluster;
+        }
+      }
+    }
+    // Looks up the closest weight to random number generated for a given routing group.
     if (routingGroupWeightSum.containsKey(routingGroup)
         && weightedDistributionRouting.containsKey(routingGroup)) {
       int rnd = RANDOM.nextInt(routingGroupWeightSum.get(routingGroup));
@@ -285,12 +332,12 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
    * backend is found.
    */
   @Override
-  public String provideBackendForRoutingGroup(String routingGroup) {
+  public String provideBackendForRoutingGroup(String routingGroup, String user) {
     List<ProxyBackendConfiguration> backends =
         getGatewayBackendManager().getActiveBackends(routingGroup);
 
     if (backends.isEmpty()) {
-      return provideAdhocBackend();
+      return provideAdhocBackend(user);
     }
     Map<String, String> proxyMap = new HashMap<>();
     for (ProxyBackendConfiguration backend : backends) {
@@ -298,7 +345,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
     }
 
     updateRoutingTable(routingGroup, proxyMap.keySet());
-    String clusterId = getEligibleBackEnd(routingGroup);
+    String clusterId = getEligibleBackEnd(routingGroup, user);
     log.debug("Routing to eligible backend : [{}] for routing group: [{}]",
         clusterId, routingGroup);
 
@@ -318,7 +365,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
    * <p>d.
    */
   @Override
-  public String provideAdhocBackend() {
+  public String provideAdhocBackend(String user) {
     Map<String, String> proxyMap = new HashMap<>();
     List<ProxyBackendConfiguration> backends = getGatewayBackendManager().getActiveAdhocBackends();
     if (backends.size() == 0) {
@@ -331,7 +378,7 @@ public class PrestoQueueLengthRoutingTable extends HaRoutingManager {
 
     updateRoutingTable("adhoc", proxyMap.keySet());
 
-    String clusterId = getEligibleBackEnd("adhoc");
+    String clusterId = getEligibleBackEnd("adhoc", user);
     log.debug("Routing to eligible backend : " + clusterId + " for routing group: adhoc");
     if (clusterId != null) {
       return proxyMap.get(clusterId);

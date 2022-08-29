@@ -1,5 +1,7 @@
 package com.lyft.data.gateway.ha.clustermonitor;
 
+import java.util.Map;
+
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,4 +17,5 @@ public class ClusterStats {
   private String proxyTo;
   private String externalUrl;
   private String routingGroup;
+  private Map<String, Integer> userQueuedCount;
 }
