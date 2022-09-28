@@ -53,8 +53,8 @@ public class PrestoQueueLengthChecker implements PrestoClusterStatsObserver {
       // Create inverse map from user -> {cluster-> count}
       if (stat.getUserQueuedCount() != null && !stat.getUserQueuedCount().isEmpty()) {
         for (Map.Entry<String, Integer> queueCount : stat.getUserQueuedCount().entrySet()) {
-          Map<String, Integer> clusterQueue = userClusterQueuedCount.getOrDefault(queueCount.getKey(),
-                  new HashMap<>());
+          Map<String, Integer> clusterQueue = userClusterQueuedCount.getOrDefault(
+                  queueCount.getKey(), new HashMap<>());
           clusterQueue.put(stat.getClusterId(), queueCount.getValue());
           userClusterQueuedCount.put(queueCount.getKey(), clusterQueue);
         }
