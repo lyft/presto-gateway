@@ -26,6 +26,10 @@ public class PrestoQueueLengthChecker implements PrestoClusterStatsObserver {
             = new HashMap<>();
 
     for (ClusterStats stat : stats) {
+      if (!stat.isHealthy()) {
+        // Skip if the cluster isn't healthy
+        continue;
+      }
       if (!clusterQueueMap.containsKey(stat.getRoutingGroup())) {
         clusterQueueMap.put(stat.getRoutingGroup(), new HashMap<String, Integer>() {
               {
@@ -47,11 +51,13 @@ public class PrestoQueueLengthChecker implements PrestoClusterStatsObserver {
       }
 
       // Create inverse map from user -> {cluster-> count}
-      for (Map.Entry<String, Integer> queueCount : stat.getUserQueuedCount().entrySet()) {
-        Map<String, Integer> clusterQueue = userClusterQueuedCount.getOrDefault(queueCount.getKey(),
-                new HashMap<>());
-        clusterQueue.put(stat.getClusterId(), queueCount.getValue());
-        userClusterQueuedCount.put(queueCount.getKey(), clusterQueue);
+      if (stat.getUserQueuedCount() != null && !stat.getUserQueuedCount().isEmpty()) {
+        for (Map.Entry<String, Integer> queueCount : stat.getUserQueuedCount().entrySet()) {
+          Map<String, Integer> clusterQueue = userClusterQueuedCount.getOrDefault(queueCount.getKey(),
+                  new HashMap<>());
+          clusterQueue.put(stat.getClusterId(), queueCount.getValue());
+          userClusterQueuedCount.put(queueCount.getKey(), clusterQueue);
+        }
       }
     }
 
