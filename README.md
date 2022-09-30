@@ -163,7 +163,6 @@ curl -X POST http://localhost:8080/presto/resourcegroup/create \
         "maxQueued": 100, \
         "softConcurrencyLimit": 100, \
         "hardConcurrencyLimit": 100, \
-        "environment": "test", \
         "schedulingPolicy": null, \
         "schedulingWeight": null, \
         "jmxExport": null, \
@@ -190,7 +189,6 @@ curl -X POST http://localhost:8080/presto/resourcegroup/update \
         "maxQueued": 50, \
         "softConcurrencyLimit": 40, \
         "hardConcurrencyLimit": 60, \
-        "environment": "test", \
         "schedulingPolicy": null, \
         "schedulingWeight": null, \
         "jmxExport": null, \
