@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -72,7 +73,7 @@ public class HaGatewayTestUtils {
                 "APPLICATION_CONNECTOR_PORT", String.valueOf(30000 + (int) (Math.random() * 1000)))
             .replace("ADMIN_CONNECTOR_PORT", String.valueOf(31000 + (int) (Math.random() * 1000)));
 
-    File target = File.createTempFile("config-" + System.currentTimeMillis(), "config.yaml");
+    File target = Files.createTempFile("config-" + System.currentTimeMillis(), "config.yaml").toFile();
 
     FileWriter fw = new FileWriter(target);
     fw.append(configStr);
