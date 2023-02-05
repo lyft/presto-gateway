@@ -42,8 +42,10 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String SOURCE_HEADER = "X-Trino-Source";
   public static final String ALTERNATE_SOURCE_HEADER = "X-Presto-Source";
   public static final String HOST_HEADER = "Host";
+  public static final String REFERER_STRING = "Referer";
   private static final int QUERY_TEXT_LENGTH_FOR_HISTORY = 200;
-  private static final Pattern QUERY_ID_PATTERN = Pattern.compile(".*[/=?](\\d+_\\d+_\\d+_\\w+).*");
+  private static final Pattern QUERY_ID_PATTERN =
+      Pattern.compile("(.*[/=?])?(\\d+_\\d+_\\d+_\\w+).*");
 
   private static final Pattern EXTRACT_BETWEEN_SINGLE_QUOTES = Pattern.compile("'([^\\s']+)'");
 
@@ -115,22 +117,23 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
     // Only load balance presto query APIs.
     if (isPathWhiteListed(request.getRequestURI())) {
-      String queryId = extractQueryIdIfPresent(request);
+      Optional<String> queryId = extractQueryIdIfPresent(request);
 
+      backendAddress = queryId
       // Find query id and get url from cache
-      if (!Strings.isNullOrEmpty(queryId)) {
-        backendAddress = routingManager.findBackendForQueryId(queryId);
-      } else {
+      .map(routingManager::findBackendForQueryId)
+      .orElseGet(() -> {
         String routingGroup = routingGroupSelector.findRoutingGroup(request);
         String user = Optional.ofNullable(request.getHeader(USER_HEADER))
                 .orElse(request.getHeader(ALTERNATE_USER_HEADER));
         if (!Strings.isNullOrEmpty(routingGroup)) {
           // This falls back on adhoc backend if there are no cluster found for the routing group.
-          backendAddress = routingManager.provideBackendForRoutingGroup(routingGroup, user);
+          return routingManager.provideBackendForRoutingGroup(routingGroup, user);
         } else {
-          backendAddress = routingManager.provideAdhocBackend(user);
+          return routingManager.provideAdhocBackend(user);
         }
-      }
+      });
+
       // set target backend so that we could save queryId to backend mapping later.
       ((MultiReadHttpServletRequest) request).addHeader(PROXY_TARGET_HEADER, backendAddress);
     }
@@ -159,7 +162,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return targetLocation;
   }
 
-  protected String extractQueryIdIfPresent(HttpServletRequest request) {
+  protected Optional<String> extractQueryIdIfPresent(HttpServletRequest request) {
     String path = request.getRequestURI();
     String queryParams = request.getQueryString();
     try {
@@ -174,7 +177,8 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
             if (m.find()) {
               String queryQuoted = m.group();
               if (!Strings.isNullOrEmpty(queryQuoted) && queryQuoted.length() > 0) {
-                return queryQuoted.substring(1, queryQuoted.length() - 1);
+                String res = queryQuoted.substring(1, queryQuoted.length() - 1);
+                return Optional.of(res).filter(s -> !s.isEmpty());
               }
             }
           }
@@ -183,37 +187,58 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } catch (Exception e) {
       log.error("Error extracting query payload from request", e);
     }
-
-    return extractQueryIdIfPresent(path, queryParams);
+    
+    return extractQueryIdIfPresent(path, queryParams).or(() -> {
+      return Optional.ofNullable(request.getHeader(REFERER_STRING))
+      .flatMap(referer -> {
+        try {
+          URI uri = URI.create(referer);
+          return extractQueryIdIfPresent(uri.getPath(), uri.getQuery());
+        } catch (Exception e) {
+          log.error("Error extracting query id from Referer header", e);
+        }
+        return Optional.empty();
+      });
+    }).filter(s -> !s.isEmpty());
   }
 
-  protected static String extractQueryIdIfPresent(String path, String queryParams) {
+  protected static Optional<String> extractQueryIdIfPresent(String path, String queryParams) {
     if (path == null) {
-      return null;
+      return Optional.empty();
     }
-    String queryId = null;
 
     log.debug("trying to extract query id from  path [{}] or queryString [{}]", path, queryParams);
     if (path.startsWith(V1_STATEMENT_PATH) || path.startsWith(V1_QUERY_PATH)) {
       String[] tokens = path.split("/");
-      if (tokens.length >= 4) {
-        if (path.contains("queued")
-            || path.contains("scheduled")
-            || path.contains("executing")
-            || path.contains("partialCancel")) {
-          queryId = tokens[4];
-        } else {
-          queryId = tokens[3];
-        }
+      if (tokens.length < 4) {
+        return Optional.empty();
       }
-    } else if (path.startsWith(PRESTO_UI_PATH)) {
+
+      if (path.contains("queued")
+          || path.contains("scheduled")
+          || path.contains("executing")
+          || path.contains("partialCancel")) {
+        return Optional.of(tokens[4]);
+      } 
+      
+      return Optional.of(tokens[3]);
+    }
+
+    if (path.startsWith(PRESTO_UI_PATH)) {
       Matcher matcher = QUERY_ID_PATTERN.matcher(path);
       if (matcher.matches()) {
-        queryId = matcher.group(1);
+        return Optional.of(matcher.group(2));
+      }
+    } 
+    
+    if (queryParams != null) {
+      Matcher matcher = QUERY_ID_PATTERN.matcher(queryParams);
+      if (matcher.matches()) {
+        return Optional.of(matcher.group(2));
       }
     }
-    log.debug("query id in url [{}]", queryId);
-    return queryId;
+
+    return Optional.empty();
   }
 
   protected void postConnectionHook(
