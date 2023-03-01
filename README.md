@@ -510,6 +510,8 @@ References :sparkles:
 
 [Shopify](https://shopify.engineering/faster-trino-query-execution-infrastructure)
     
+[Electronic Arts](https://www.youtube.com/watch?v=-5mlZGjt6H4)
+    
 {{Your org here}}
     
 
