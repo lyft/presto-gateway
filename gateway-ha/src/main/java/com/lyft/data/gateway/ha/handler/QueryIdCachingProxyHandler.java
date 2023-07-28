@@ -13,7 +13,6 @@ import com.lyft.data.proxyserver.wrapper.MultiReadHttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -37,7 +36,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   public static final String UI_API_STATS_PATH = "/ui/api/stats";
   public static final String UI_API_QUEUED_LIST_PATH = "/ui/api/query?state=QUEUED";
   public static final String PRESTO_UI_PATH = "/ui";
-  public static final String OAUTH2_PATH = "/oauth2";
   public static final String USER_HEADER = "X-Trino-User";
   public static final String ALTERNATE_USER_HEADER = "X-Presto-User";
   public static final String SOURCE_HEADER = "X-Trino-Source";
@@ -97,7 +95,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return path.startsWith(V1_STATEMENT_PATH)
         || path.startsWith(V1_QUERY_PATH)
         || path.startsWith(PRESTO_UI_PATH)
-        || path.startsWith(OAUTH2_PATH)
         || path.startsWith(V1_INFO_PATH)
         || path.startsWith(UI_API_STATS_PATH);
   }
@@ -218,6 +215,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     return queryId;
   }
 
+  @Override
   protected void postConnectionHook(
       HttpServletRequest request,
       HttpServletResponse response,

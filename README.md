@@ -163,6 +163,7 @@ curl -X POST http://localhost:8080/presto/resourcegroup/create \
         "maxQueued": 100, \
         "softConcurrencyLimit": 100, \
         "hardConcurrencyLimit": 100, \
+        "environment": "test", \
         "schedulingPolicy": null, \
         "schedulingWeight": null, \
         "jmxExport": null, \
@@ -189,6 +190,7 @@ curl -X POST http://localhost:8080/presto/resourcegroup/update \
         "maxQueued": 50, \
         "softConcurrencyLimit": 40, \
         "hardConcurrencyLimit": 60, \
+        "environment": "test", \
         "schedulingPolicy": null, \
         "schedulingWeight": null, \
         "jmxExport": null, \
@@ -509,8 +511,6 @@ References :sparkles:
 [Zomato](https://www.zomato.com/blog/powering-data-analytics-with-trino)
 
 [Shopify](https://shopify.engineering/faster-trino-query-execution-infrastructure)
-    
-[Electronic Arts](https://www.youtube.com/watch?v=-5mlZGjt6H4)
     
 {{Your org here}}
     

@@ -1,0 +1,24 @@
+requestRouter:
+  port: REQUEST_ROUTER_PORT
+  name: testPrestoRouter
+  historySize: 1000
+
+server:
+  applicationConnectors:
+    - type: http
+      port: APPLICATION_CONNECTOR_PORT
+  adminConnectors:
+    - type: http
+      port: ADMIN_CONNECTOR_PORT
+
+dataStore:
+  jdbcUrl: jdbc:h2:DB_FILE_PATH
+  user: sa
+  password: sa
+  driver: org.h2.Driver
+
+modules:
+  - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+
+managedApps:
+  - com.lyft.data.gateway.ha.GatewayManagedApp

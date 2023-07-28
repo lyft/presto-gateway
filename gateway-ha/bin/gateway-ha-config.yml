@@ -1,0 +1,59 @@
+routingRules:
+  rulesEngineEnabled: False
+  # rulesConfigPath: "src/main/resources/rules/routing_rules.yml"
+
+requestRouter:
+  port: 8080
+  name: prestoRouter
+  historySize: 1000
+
+dataStore:
+  jdbcUrl: jdbc:mysql://127.0.0.1:3306/prestogateway
+  user: root
+  password: root123
+  driver: com.mysql.cj.jdbc.Driver
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8090
+  adminConnectors:
+    - type: http
+      port: 8091
+
+notifier:
+  smtpHost: localhost
+  smtpPort: 587
+  sender: presto-gw-monitor-noreply@lyft.com
+  recipients:
+    - prestodev@yourorg.com
+
+# This can be adjusted based on the coordinator state
+monitor:
+  connectionTimeout: 15
+
+modules:
+  - com.lyft.data.gateway.ha.module.HaGatewayProviderModule
+  - com.lyft.data.gateway.ha.module.ClusterStateListenerModule
+
+managedApps:
+  - com.lyft.data.gateway.ha.GatewayManagedApp
+  - com.lyft.data.gateway.ha.clustermonitor.ActiveClusterMonitor
+
+# Logging settings.
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+    com.lyft: DEBUG
+
+  appenders:
+    - type: console
+    - type: file
+      currentLogFilename: /var/log/prestoproxy/prestoproxy-java.log
+      archivedLogFilenamePattern: /var/log/prestoproxy/prestoproxy-java-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 100MB

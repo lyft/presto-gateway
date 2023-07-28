@@ -10,6 +10,8 @@ import com.google.inject.Module;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.Configuration;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.servlets.tasks.Task;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>GuiceApplication also makes {@link com.codahale.metrics.MetricRegistry} available for
  * injection.
+ * @param <T>
  */
 @Slf4j
 public abstract class BaseApp<T extends AppConfiguration> extends Application<T> {
@@ -85,9 +88,12 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
    */
   @Override
   public void initialize(Bootstrap<T> bootstrap) {
+    bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+            bootstrap.getConfigurationSourceProvider(),
+            new EnvironmentVariableSubstitutor(false)));
     super.initialize(bootstrap);
   }
-
+  
   /**
    * When the application runs, this is called after the {@link Bundle}s are run.
    *
@@ -141,6 +147,7 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
    * Supply a list of modules to be used by Guice.
    *
    * @param configuration the app configuration
+     * @param environment
    * @return a list of modules to be provisioned by Guice
    */
   protected List<AppModule> addModules(T configuration, Environment environment) {

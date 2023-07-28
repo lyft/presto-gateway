@@ -1,0 +1,24 @@
+name: "airflow rule group"
+description: "routing rules for query from airflow"
+compositeRuleType: "ConditionalRuleGroup"
+composingRules:
+  - name: "main condition"
+    description: "source is airflow"
+    priority: 0
+    condition: "request.getHeader(\"X-Trino-Source\") == \"airflow\""
+    actions:
+      - ""
+  - name: "airflow subrules"
+    compositeRuleType: "ActivationRuleGroup"
+    composingRules:
+      - name: "airflow special"
+        description: "special label"
+        priority: 0
+        condition: "request.getHeader(\"X-Trino-Client-Tags\") contains \"label=special\""
+        actions:
+          - "result.put(\"routingGroup\", \"etl-special\")"
+      - name: "airflow default"
+        description: "airflow queries default to etl"
+        condition: "true"
+        actions:
+          - "result.put(\"routingGroup\", \"etl\")"
