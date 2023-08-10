@@ -60,7 +60,7 @@
             <tbody>
             <#list queryHistory as q>
                 <tr>
-                    <td><a href="/ui/query.html?${q.queryId}"
+                    <td><a href="${q.backendUrl}/ui/query.html?${q.queryId}"
                            target="_blank">${q.queryId}</a></td>
                     <td>  ${q.user}</td>
                     <td>
