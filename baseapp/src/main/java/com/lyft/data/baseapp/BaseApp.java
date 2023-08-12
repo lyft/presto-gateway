@@ -120,7 +120,7 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
 
   private Injector configureGuice(T configuration, Environment environment) throws Exception {
     appModules.add(new MetricRegistryModule(environment.metrics()));
-    appModules.addAll(addModules(configuration, environment));
+    addModules(appModules, configuration, environment);
     Injector injector = Guice.createInjector(ImmutableList.copyOf(appModules));
     injector.injectMembers(this);
     registerWithInjector(configuration, environment, injector);
@@ -140,14 +140,14 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
   /**
    * Supply a list of modules to be used by Guice.
    *
+   * @param modules Guice Module list for appending
    * @param configuration the app configuration
-   * @return a list of modules to be provisioned by Guice
+   * @param environment the Dropwizard {@link Environment}
    */
-  protected List<AppModule> addModules(T configuration, Environment environment) {
-    List<AppModule> modules = new ArrayList<>();
+  protected void addModules(List<Module> modules, T configuration, Environment environment) {
     if (configuration.getModules() == null) {
       log.warn("No modules to load.");
-      return modules;
+      return;
     }
     for (String clazz : configuration.getModules()) {
       try {
@@ -156,12 +156,12 @@ public abstract class BaseApp<T extends AppConfiguration> extends Application<T>
             Class.forName(clazz)
                 .getConstructor(configuration.getClass(), Environment.class)
                 .newInstance(configuration, environment);
+        Guice.createInjector(modules).injectMembers(ob);
         modules.add((AppModule) ob);
       } catch (Exception e) {
         log.error("Could not instantiate module [" + clazz + "]", e);
       }
     }
-    return modules;
   }
 
   /**

@@ -13,7 +13,7 @@ import com.lyft.data.gateway.ha.router.GatewayBackendManager;
 import com.lyft.data.gateway.ha.router.HaGatewayManager;
 import com.lyft.data.gateway.ha.router.HaQueryHistoryManager;
 import com.lyft.data.gateway.ha.router.HaResourceGroupsManager;
-import com.lyft.data.gateway.ha.router.HaRoutingManager;
+import com.lyft.data.gateway.ha.router.PrestoQueueLengthRoutingTable;
 import com.lyft.data.gateway.ha.router.QueryHistoryManager;
 import com.lyft.data.gateway.ha.router.ResourceGroupsManager;
 import com.lyft.data.gateway.ha.router.RoutingGroupSelector;
@@ -37,8 +37,9 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
     resourceGroupsManager = new HaResourceGroupsManager(connectionManager);
     gatewayBackendManager = new HaGatewayManager(connectionManager);
     queryHistoryManager = new HaQueryHistoryManager(connectionManager);
-    routingManager =
-        new HaRoutingManager(gatewayBackendManager, (HaQueryHistoryManager) queryHistoryManager);
+    routingManager = new PrestoQueueLengthRoutingTable(
+        gatewayBackendManager,
+        (HaQueryHistoryManager) queryHistoryManager);
   }
 
   protected ProxyHandler getProxyHandler() {
