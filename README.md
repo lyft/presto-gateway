@@ -1,4 +1,7 @@
-# presto-gateway
+### NOTE: This is a legacy version of Trino Gateway. Please refer to https://github.com/trinodb/trino-gateway for active development and updates moving forward.
+
+
+# presto-gateway (outdated)
 
 A load balancer / proxy / gateway for presto compute engine.
 
