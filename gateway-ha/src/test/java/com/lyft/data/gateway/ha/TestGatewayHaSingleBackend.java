@@ -1,7 +1,9 @@
 package com.lyft.data.gateway.ha;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.lyft.data.gateway.ha.config.ProxyBackendConfiguration;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,6 +49,25 @@ public class TestGatewayHaSingleBackend {
             .build();
     Response response = httpClient.newCall(request).execute();
     Assert.assertEquals(EXPECTED_RESPONSE, response.body().string());
+  }
+
+  @Test
+  public void testBackendConfiguration() throws Exception {
+    Request request = new Request.Builder()
+            .url("http://localhost:" + routerPort + "/entity/GATEWAY_BACKEND")
+            .method("GET", null)
+            .build();
+    Response response = httpClient.newCall(request).execute();
+
+    final ObjectMapper objectMapper = new ObjectMapper();
+    ProxyBackendConfiguration[] backendConfiguration =
+            objectMapper.readValue(response.body().string(), ProxyBackendConfiguration[].class);
+
+    Assert.assertNotNull(backendConfiguration);
+    Assert.assertEquals(1, backendConfiguration.length);
+    Assert.assertTrue(backendConfiguration[0].isActive());
+    Assert.assertEquals("adhoc", backendConfiguration[0].getRoutingGroup());
+    Assert.assertEquals("externalUrl", backendConfiguration[0].getExternalUrl());
   }
 
   @AfterClass(alwaysRun = true)
