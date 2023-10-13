@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <jetty.version>9.4.48.v20220622</jetty.version>
+        <jetty.version>9.4.51.v20230217</jetty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <lombok.version>1.18.22</lombok.version>
         <testng.version>6.10</testng.version>
