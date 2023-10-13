@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.util.Scanner;
 import javax.servlet.http.HttpServletRequest;
 import org.testng.Assert;
@@ -83,7 +84,7 @@ public class TestRoutingGroupSelector {
   }
 
   public void testByRoutingRulesEngineFileChange() throws Exception {
-    File file = File.createTempFile("routing_rules", ".yml");
+    File file = Files.createTempFile("routing_rules", ".yml").toFile();
 
     FileWriter fw = new FileWriter(file);
     fw.write(
