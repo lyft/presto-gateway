@@ -36,24 +36,21 @@ public interface RoutingGroupSelector {
   static RoutingGroupSelector byRoutingRulesEngine(String rulesConfigPath) {
     RulesEngine rulesEngine = new DefaultRulesEngine();
     MVELRuleFactory ruleFactory = new MVELRuleFactory(new YamlRuleDefinitionReader());
-
-    return request -> {
-      try {
-        Rules rules = ruleFactory.createRules(
-            new FileReader(rulesConfigPath));
+    try {
+      final Rules rules = ruleFactory.createRules(new FileReader(rulesConfigPath));
+      return request -> {
         Facts facts = new Facts();
         HashMap<String, String> result = new HashMap<String, String>();
         facts.put("request", request);
         facts.put("result", result);
         rulesEngine.fire(rules, facts);
         return result.get("routingGroup");
-      } catch (Exception e) {
-        Logger.log.error("Error opening rules configuration file,"
-            + " using routing group header as default.", e);
-        return Optional.ofNullable(request.getHeader(ROUTING_GROUP_HEADER))
-          .orElse(request.getHeader(ALTERNATE_ROUTING_GROUP_HEADER));
-      }
-    };
+      };
+    } catch (Exception e) {
+      Logger.log.error("Error opening rules configuration file,"
+          + " using routing group header as default.", e);
+      return byRoutingGroupHeader();
+    }
   }
 
   /**
