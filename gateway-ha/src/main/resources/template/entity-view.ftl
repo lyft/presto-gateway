@@ -1,14 +1,14 @@
 <html>
 <head>
     <meta charset="UTF-8"/>
-    <link rel="stylesheet" type="text/css" href="assets/css/common.css"/>
-    <link rel="stylesheet" type="text/css" href="assets/css/jquery.dataTables.min.css"/>
-    <script src="assets/js/jquery-3.3.1.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/css/common.css"/>
+    <link rel="stylesheet" type="text/css" href="/assets/css/jquery.dataTables.min.css"/>
+    <script src="/assets/js/jquery-3.3.1.js"></script>
 
     <!-- JSON Editor comes here-->
-    <link rel="stylesheet" href="assets/js/jsonedit/jsoneditor.min.css"/>
-    <script src="assets/js/jsonedit/jsoneditor.min.js" defer></script>
-    <script src="assets/js/entity-editor.js" defer></script>
+    <link rel="stylesheet" href="/assets/js/jsonedit/jsoneditor.min.css"/>
+    <script src="/assets/js/jsonedit/jsoneditor.min.js" defer></script>
+    <script src="/assets/js/entity-editor.js" defer></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
