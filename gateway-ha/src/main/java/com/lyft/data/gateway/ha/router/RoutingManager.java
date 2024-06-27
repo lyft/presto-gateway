@@ -123,8 +123,8 @@ public abstract class RoutingManager {
                 () -> {
                   URL url = new URL(target);
                   HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                  conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
-                  conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(5));
+                  conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
+                  conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(60));
                   conn.setRequestMethod(HttpMethod.HEAD);
                   return conn.getResponseCode();
                 });
