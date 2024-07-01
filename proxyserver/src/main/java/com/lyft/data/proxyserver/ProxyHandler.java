@@ -67,16 +67,25 @@ public class ProxyHandler {
                       + " servlet path {} , toString {}", request.getRequestURL(),
               request.getRequestURI(), request.getServletPath(), request.toString(), var9);
       errorLogHeaders(request);
+      errorLogHeaders(response);
       callback.failed(var9);
     }
   }
 
   protected void errorLogHeaders(HttpServletRequest request) {
-    log.error("-------HttpServletRequest headers---------");
+    log.error("------- error HttpServletRequest headers---------");
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
       log.error(header + "->" + request.getHeader(header));
+    }
+  }
+
+  protected void errorLogHeaders(HttpServletResponse response) {
+    log.error("------- error HttpServletResponse headers---------");
+    Collection<String> headers = response.getHeaderNames();
+    for (String header : headers) {
+      log.error(header + "->" + response.getHeader(header));
     }
   }
 
