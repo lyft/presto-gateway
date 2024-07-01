@@ -55,16 +55,17 @@ public class ProxyHandler {
       int length,
       Callback callback) {
     try {
-      response.getOutputStream().write(buffer, offset, length);
       if (response.getStatus() == HttpServletResponse.SC_BAD_GATEWAY) {
         log.error("Received 502 Bad Gateway response for request URI: {}",
-                request.getRequestURI());
+                request.getRequestURL());
       }
+      response.getOutputStream().write(buffer, offset, length);
 
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("Exception occurred while processing request URI: {}", request.getRequestURI(),
-              var9);
+      log.error("Exception occurred while processing request URL: {} , request URI {} ,"
+                      + " servlet path {} , toString {}", request.getRequestURL(),
+              request.getRequestURI(), request.getServletPath(), request.toString(), var9);
       callback.failed(var9);
     }
   }
