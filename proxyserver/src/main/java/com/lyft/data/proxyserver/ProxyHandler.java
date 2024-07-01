@@ -63,8 +63,9 @@ public class ProxyHandler {
 
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("Exception occurred while processing request URI: {}", request.getRequestURI(),
-              var9);
+      log.error("Exception occurred while processing request URL: {} , request URI {} ," +
+                      " servlet path {}", request.getRequestURL(),
+              request.getRequestURI(), request.getServletPath(), var9);
       callback.failed(var9);
     }
   }
