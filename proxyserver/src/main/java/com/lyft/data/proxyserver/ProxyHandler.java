@@ -66,6 +66,7 @@ public class ProxyHandler {
       log.error("Exception occurred while processing request URL: {} , request URI {} ,"
                       + " servlet path {} , toString {}", request.getRequestURL(),
               request.getRequestURI(), request.getServletPath(), request.toString(), var9);
+      debugLogHeaders(request);
       callback.failed(var9);
     }
   }
