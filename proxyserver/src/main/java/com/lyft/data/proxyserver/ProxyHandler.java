@@ -109,7 +109,7 @@ public class ProxyHandler {
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
-      sb.append(header);
+      sb.append(header + "->" + request.getHeader(header) + "\n");
     }
 
     return sb.toString();
@@ -119,7 +119,7 @@ public class ProxyHandler {
     StringBuilder sb = new StringBuilder("------- error HttpServletResponse headers---------");
     Collection<String> headers = response.getHeaderNames();
     for (String header : headers) {
-      sb.append(header);
+      sb.append(header + "->" + response.getHeader(header) + "\n");
     }
 
     return sb.toString();
