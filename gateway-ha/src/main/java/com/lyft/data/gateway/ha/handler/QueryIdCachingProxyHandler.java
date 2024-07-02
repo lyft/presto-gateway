@@ -64,7 +64,6 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
 
   private final Counter errorCounter4xx;
   private final Counter errorCounter5xx;
-  private final MetricRegistry metrics = new MetricRegistry();
 
   public QueryIdCachingProxyHandler(
       QueryHistoryManager queryHistoryManager,
@@ -75,7 +74,7 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       MetricRegistry metrics) {
     this.requestMeter = requestMeter;
     this.errorCounter4xx = metrics.counter(name(QueryIdCachingProxyHandler.class, "4xx"));
-    this.errorCounter5xx = metrics.counter(name(QueryIdCachingProxyHandler.class, "5xx"));;
+    this.errorCounter5xx = metrics.counter(name(QueryIdCachingProxyHandler.class, "5xx"));
     this.routingManager = routingManager;
     this.routingGroupSelector = routingGroupSelector;
     this.queryHistoryManager = queryHistoryManager;
