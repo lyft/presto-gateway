@@ -60,8 +60,9 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
-      // [sev-16337] with a 10% probably, log the request and response headers and size for debugging
-      if (Math.random() < 0.10) {
+      // [sev-16337] with a 1% probably, log the request and response headers
+      // and size for debugging
+      if (Math.random() < 0.01) {
         log.debug("Request URL: {} , request URI {} , servlet path {} , toString {}, size {}",
                 request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
                 request.toString(), request.getContentLength());
@@ -71,7 +72,8 @@ public class ProxyHandler {
     } catch (Throwable var9) {
       log.error("Exception occurred while processing request URL: {} , request URI {} ,"
                       + " servlet path {} , toString {}, size {}", request.getRequestURL(),
-              request.getRequestURI(), request.getServletPath(), request.toString(), request.getContentLength(), var9);
+              request.getRequestURI(), request.getServletPath(), request.toString(),
+              request.getContentLength(), var9);
       errorLogHeaders(request);
       errorLogHeaders(response);
       callback.failed(var9);
