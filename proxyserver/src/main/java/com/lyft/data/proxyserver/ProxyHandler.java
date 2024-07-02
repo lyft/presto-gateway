@@ -35,6 +35,15 @@ public class ProxyHandler {
    */
   public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
     // you may override it.
+
+    // [sev-16337] with a 10% probably, log the request headers for debugging
+    if (Math.random() < 0.10) {
+      log.debug("(preConnectionHook) Request URL: {} , request URI {} , servlet path {} ,"
+          + "toString {}, getContentLength {}, getRequestHeaderSize {}, requestHeaders {}",
+          request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+          request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+          errorLogHeaders(request));
+    }
   }
 
   /**
@@ -60,12 +69,12 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
-      // [sev-16337] with a 1% probably, log the request and response headers
+      // [sev-16337] with a 10% probably, log the request and response headers
       // and size for debugging
-      if (Math.random() < 0.01) {
-        log.debug("Request URL: {} , request URI {} , servlet path {} ,"
-            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}, 
-                  requestHeaders {}, responseHeaders {}",
+      if (Math.random() < 0.10) {
+        log.debug("(postConnectionHook - success) Request URL: {} , request URI {} , servlet path {} ,"
+            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}, "
+            + "requestHeaders {}, responseHeaders {}",
             request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
             request.toString(), request.getContentLength(), getRequestHeaderSize(request),
             getResponseHeaderSize(response), errorLogHeaders(request),
@@ -74,9 +83,9 @@ public class ProxyHandler {
 
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("Exception occurred while processing request URL: {} , request URI {} ,"
-                + " servlet path {} , toString {}, getContentLength {}, getRequestHeaderSize {},"
-                + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
+      log.error("(postConnectionHook - failed) Exception occurred while processing request URL: {} , "
+                + "request URI {} , servlet path {} , toString {}, getContentLength {}, "
+                + "getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
                 request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
               request.toString(), request.getContentLength(), getRequestHeaderSize(request),
               getResponseHeaderSize(response), errorLogHeaders(request),
