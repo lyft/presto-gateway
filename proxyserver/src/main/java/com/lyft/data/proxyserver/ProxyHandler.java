@@ -72,9 +72,9 @@ public class ProxyHandler {
       // [sev-16337] with a 10% probably, log the request and response headers
       // and size for debugging
       if (Math.random() < 0.10) {
-        log.debug("(postConnectionHook - success) Request URL: {} , request URI {} , servlet path {} ,"
-            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}, "
-            + "requestHeaders {}, responseHeaders {}",
+        log.debug("(postConnectionHook) Request URL: {} , request URI {} , servlet path {} , "
+            + "toString {}, getContentLength {}, getRequestHeaderSize {}, "
+            + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}",
             request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
             request.toString(), request.getContentLength(), getRequestHeaderSize(request),
             getResponseHeaderSize(response), errorLogHeaders(request),
@@ -83,9 +83,10 @@ public class ProxyHandler {
 
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("(postConnectionHook - failed) Exception occurred while processing request URL: {} , "
+      log.error("(postConnectionHook) Exception occurred while processing request URL: {} , "
                 + "request URI {} , servlet path {} , toString {}, getContentLength {}, "
-                + "getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
+                + "getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, " 
+                + "responseHeaders {}",
                 request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
               request.toString(), request.getContentLength(), getRequestHeaderSize(request),
               getResponseHeaderSize(response), errorLogHeaders(request),
