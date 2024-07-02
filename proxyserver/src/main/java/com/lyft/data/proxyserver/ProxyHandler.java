@@ -73,11 +73,11 @@ public class ProxyHandler {
     } catch (Throwable var9) {
       log.error("Exception occurred while processing request URL: {} , request URI {} ,"
                 + " servlet path {} , toString {}, getContentLength {}, getRequestHeaderSize {},"
-                + "getResponseHeaderSize {}", request.getRequestURL(), request.getRequestURI(),
-                request.getServletPath(), request.toString(),
-              request.getContentLength(), getRequestHeaderSize(request), getRequestHeaderSize(response) var9);
-      errorLogHeaders(request);
-      errorLogHeaders(response);
+                + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
+                request.getRequestURL(), request.getRequestURI(), request.getServletPath(), request.toString(),
+              request.getContentLength(), getRequestHeaderSize(request), getRequestHeaderSize(response), 
+                errorLogHeaders(request), errorLogHeaders(response), var9);
+      
       callback.failed(var9);
     }
   }
@@ -102,22 +102,24 @@ private int getResponseHeaderSize(HttpServletResponse response) {
   return headerSize;
 }
 
-
-  protected void errorLogHeaders(HttpServletRequest request) {
-    log.error("------- error HttpServletRequest headers---------");
+  protected String errorLogHeaders(HttpServletRequest request) {
+    StringBuilder sb = "------- error HttpServletRequest headers---------";
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
-      log.error(header + "->" + request.getHeader(header));
+      sb.append(header);
     }
+    return sb.toString();
   }
 
-  protected void errorLogHeaders(HttpServletResponse response) {
-    log.error("------- error HttpServletResponse headers---------");
-    Collection<String> headers = response.getHeaderNames();
-    for (String header : headers) {
-      log.error(header + "->" + response.getHeader(header));
+  protected String errorLogHeaders(HttpServletResponse response) {
+    StringBuilder sb = "------- error HttpServletResponse headers---------";
+    Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      sb.append(header);
     }
+    return sb.toString();
   }
 
   protected void debugLogHeaders(HttpServletRequest request) {
