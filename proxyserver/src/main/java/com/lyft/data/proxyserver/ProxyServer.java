@@ -74,6 +74,7 @@ public class ProxyServer implements Closeable {
       src.setStsMaxAge(TimeUnit.SECONDS.toSeconds(2000));
       src.setStsIncludeSubDomains(true);
       httpsConfig.addCustomizer(src);
+      httpsConfig.addCustomizer( new org.eclipse.jetty.server.ForwardedRequestCustomizer() );
       connector =
           new ServerConnector(
               server,
