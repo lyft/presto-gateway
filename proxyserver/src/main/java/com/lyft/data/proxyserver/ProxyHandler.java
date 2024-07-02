@@ -103,22 +103,23 @@ private int getResponseHeaderSize(HttpServletResponse response) {
 }
 
   protected String errorLogHeaders(HttpServletRequest request) {
-    StringBuilder sb = "------- error HttpServletRequest headers---------";
+    StringBuilder sb = new StringBuilder("------- error HttpServletRequest headers---------");
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
       sb.append(header);
     }
+    
     return sb.toString();
   }
 
   protected String errorLogHeaders(HttpServletResponse response) {
-    StringBuilder sb = "------- error HttpServletResponse headers---------";
-    Enumeration<String> headers = request.getHeaderNames();
-    while (headers.hasMoreElements()) {
-      String header = headers.nextElement();
+    StringBuilder sb = new StringBuilder("------- error HttpServletResponse headers---------");
+    Collection<String> headers = response.getHeaderNames();
+    for (String header : headers) {
       sb.append(header);
     }
+
     return sb.toString();
   }
 
