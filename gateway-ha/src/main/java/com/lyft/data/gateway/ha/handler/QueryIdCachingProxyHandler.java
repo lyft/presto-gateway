@@ -281,11 +281,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } catch (Exception e) {
       log.error("Error in proxying falling back to super call", e);
     }
-//    if (response.getStatus() >= 500){
-//      errorCounter5xx.inc();
-//    } else if (response.getStatus() >= 400){
-//      errorCounter4xx.inc();
-//    }
+    if (response.getStatus() >= 500){
+      errorCounter5xx.inc();
+    } else if (response.getStatus() >= 400){
+      errorCounter4xx.inc();
+    }
 
     super.postConnectionHook(request, response, buffer, offset, length, callback);
   }
