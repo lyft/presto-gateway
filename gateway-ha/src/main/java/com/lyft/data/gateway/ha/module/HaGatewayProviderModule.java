@@ -1,6 +1,8 @@
 package com.lyft.data.gateway.ha.module;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.lyft.data.baseapp.AppModule;
@@ -23,6 +25,8 @@ import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 
   private final ResourceGroupsManager resourceGroupsManager;
@@ -42,9 +46,9 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
   }
 
   protected ProxyHandler getProxyHandler() {
+    MetricRegistry metrics = getEnvironment().metrics();
     Meter requestMeter =
-        getEnvironment()
-            .metrics()
+        metrics
             .meter(getConfiguration().getRequestRouter().getName() + ".requests");
 
     // By default, use routing group header to route
@@ -61,7 +65,8 @@ public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, E
         getRoutingManager(),
         routingGroupSelector,
         getApplicationPort(),
-        requestMeter);
+        requestMeter,
+        metrics);
   }
 
   @Provides
