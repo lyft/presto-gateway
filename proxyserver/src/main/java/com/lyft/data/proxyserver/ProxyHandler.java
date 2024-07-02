@@ -61,10 +61,8 @@ public class ProxyHandler {
       }
       response.getOutputStream().write(buffer, offset, length);
 
-      // [sev-16337] with a 1% probably, log the request and response headers and size for debugging
-      if (Math.random() < 0.01) {
-        debugLogHeaders(request);
-        debugLogHeaders(response);
+      // [sev-16337] with a 10% probably, log the request and response headers and size for debugging
+      if (Math.random() < 0.10) {
         log.debug("Request URL: {} , request URI {} , servlet path {} , toString {}, size {}",
                 request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
                 request.toString(), request.getContentLength());
@@ -76,10 +74,10 @@ public class ProxyHandler {
                       + " servlet path {} , toString {}, size {}", request.getRequestURL(),
               request.getRequestURI(), request.getServletPath(), request.toString(), request.getContentLength(), var9);
       
-      requestHeaderLog = getErrorLogHeaders(request);
+      String requestHeaderLog = getErrorLogHeaders(request);
       log.error(requestHeaderLog);
 
-      responseHeaderLog = getErrorLogHeaders(response);
+      String responseHeaderLog = getErrorLogHeaders(response);
       log.error(responseHeaderLog);
       callback.failed(var9);
     }
@@ -96,7 +94,7 @@ public class ProxyHandler {
     return sb.toString();
   }
 
-  protected void getErrorLogHeaders(HttpServletResponse response) {
+  protected String getErrorLogHeaders(HttpServletResponse response) {
     StringBuilder sb = new StringBuilder();
     sb.append("------- error HttpServletResponse headers---------\n");
     Enumeration<String> headers = response.getHeaderNames();
