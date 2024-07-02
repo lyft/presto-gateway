@@ -75,7 +75,7 @@ public class ProxyHandler {
                 + " servlet path {} , toString {}, getContentLength {}, getRequestHeaderSize {},"
                 + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
                 request.getRequestURL(), request.getRequestURI(), request.getServletPath(), request.toString(),
-              request.getContentLength(), getRequestHeaderSize(request), getRequestHeaderSize(response), 
+              request.getContentLength(), getRequestHeaderSize(request), getResponseHeaderSize(response),
                 errorLogHeaders(request), errorLogHeaders(response), var9);
       
       callback.failed(var9);
@@ -109,7 +109,7 @@ private int getResponseHeaderSize(HttpServletResponse response) {
       String header = headers.nextElement();
       sb.append(header);
     }
-    
+
     return sb.toString();
   }
 
