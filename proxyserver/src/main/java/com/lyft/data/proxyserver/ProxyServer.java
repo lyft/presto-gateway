@@ -86,10 +86,13 @@ public class ProxyServer implements Closeable {
     connector.setPort(config.getLocalPort());
     connector.setName(config.getName());
     connector.setAccepting(true);
+    connector.setIdleTimeout(150000L);
+    connector.setAcceptQueueSize(1024);
     this.server.addConnector(connector);
 
     // Setup proxy handler to handle CONNECT methods
     ConnectHandler proxyConnectHandler = new ConnectHandler();
+    proxyConnectHandler.getIdleTimeout()
     this.server.setHandler(proxyConnectHandler);
 
     if (proxyHandler != null) {
@@ -102,6 +105,7 @@ public class ProxyServer implements Closeable {
     proxyServlet.setInitParameter("prefix", config.getPrefix());
     proxyServlet.setInitParameter("trustAll", config.getTrustAll());
     proxyServlet.setInitParameter("preserveHost", config.getPreserveHost());
+    proxyServlet.setInitParameter("timeout", "120000");
 
     // Setup proxy servlet
     this.context =
