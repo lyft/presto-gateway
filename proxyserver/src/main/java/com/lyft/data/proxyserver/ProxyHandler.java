@@ -64,9 +64,10 @@ public class ProxyHandler {
       // and size for debugging
       if (Math.random() < 0.01) {
         log.debug("Request URL: {} , request URI {} , servlet path {} ,"
-          + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}",
-                request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
-                request.toString(), request.getContentLength(), getRequestHeaderSize(request), getResponseHeaderSize(response));
+            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}",
+            request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+            request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+            getResponseHeaderSize(response));
       }
 
       callback.succeeded();
@@ -74,9 +75,10 @@ public class ProxyHandler {
       log.error("Exception occurred while processing request URL: {} , request URI {} ,"
                 + " servlet path {} , toString {}, getContentLength {}, getRequestHeaderSize {},"
                 + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}", 
-                request.getRequestURL(), request.getRequestURI(), request.getServletPath(), request.toString(),
-              request.getContentLength(), getRequestHeaderSize(request), getResponseHeaderSize(response),
-                errorLogHeaders(request), errorLogHeaders(response), var9);
+                request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+              request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+              getResponseHeaderSize(response), errorLogHeaders(request),
+              errorLogHeaders(response), var9);
       
       callback.failed(var9);
     }
@@ -86,21 +88,21 @@ public class ProxyHandler {
     int headerSize = 0;
     Enumeration<String> headerNames = request.getHeaderNames();
     while (headerNames.hasMoreElements()) {
-        String headerName = headerNames.nextElement();
-        String headerValue = request.getHeader(headerName);
-        headerSize += headerName.length() + headerValue.length();
+      String headerName = headerNames.nextElement();
+      String headerValue = request.getHeader(headerName);
+      headerSize += headerName.length() + headerValue.length();
     }
     return headerSize;
-}
+  }
 
-private int getResponseHeaderSize(HttpServletResponse response) {
-  int headerSize = 0;
-  for (String headerName : response.getHeaderNames()) {
+  private int getResponseHeaderSize(HttpServletResponse response) {
+    int headerSize = 0;
+    for (String headerName : response.getHeaderNames()) {
       String headerValue = response.getHeader(headerName);
       headerSize += headerName.length() + headerValue.length();
+    }
+    return headerSize;
   }
-  return headerSize;
-}
 
   protected String errorLogHeaders(HttpServletRequest request) {
     StringBuilder sb = new StringBuilder("------- error HttpServletRequest headers---------");
