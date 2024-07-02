@@ -64,10 +64,11 @@ public class ProxyHandler {
       // and size for debugging
       if (Math.random() < 0.01) {
         log.debug("Request URL: {} , request URI {} , servlet path {} ,"
-            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}",
+            + "toString {}, getContentLength {}, getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}",
             request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
             request.toString(), request.getContentLength(), getRequestHeaderSize(request),
-            getResponseHeaderSize(response));
+            getResponseHeaderSize(response), errorLogHeaders(request),
+              errorLogHeaders(response));
       }
 
       callback.succeeded();
