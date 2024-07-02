@@ -1,6 +1,5 @@
 package com.lyft.data.gateway.ha.module;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Provides;
@@ -25,7 +24,6 @@ import com.lyft.data.proxyserver.ProxyServer;
 import com.lyft.data.proxyserver.ProxyServerConfiguration;
 import io.dropwizard.setup.Environment;
 
-import static com.codahale.metrics.MetricRegistry.name;
 
 public class HaGatewayProviderModule extends AppModule<HaGatewayConfiguration, Environment> {
 

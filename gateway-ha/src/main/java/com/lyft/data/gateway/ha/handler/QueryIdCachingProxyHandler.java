@@ -1,5 +1,7 @@
 package com.lyft.data.gateway.ha.handler;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -30,7 +32,6 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.Callback;
 
-import static com.codahale.metrics.MetricRegistry.name;
 
 @Slf4j
 public class QueryIdCachingProxyHandler extends ProxyHandler {
@@ -281,12 +282,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
     } catch (Exception e) {
       log.error("Error in proxying falling back to super call", e);
     }
-    if (response.getStatus() >= 500){
+    if (response.getStatus() >= 500) {
       errorCounter5xx.inc();
-    } else if (response.getStatus() >= 400){
+    } else if (response.getStatus() >= 400) {
       errorCounter4xx.inc();
     }
-
     super.postConnectionHook(request, response, buffer, offset, length, callback);
   }
 
