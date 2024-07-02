@@ -74,8 +74,6 @@ public class ProxyServer implements Closeable {
       httpsConfig.setRequestHeaderSize(2048000);
       httpsConfig.setResponseHeaderSize(2048000);
 
-      
-
       SecureRequestCustomizer src = new SecureRequestCustomizer();
       src.setStsMaxAge(TimeUnit.SECONDS.toSeconds(2000));
       src.setStsIncludeSubDomains(true);
