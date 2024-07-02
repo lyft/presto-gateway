@@ -92,7 +92,6 @@ public class ProxyServer implements Closeable {
 
     // Setup proxy handler to handle CONNECT methods
     ConnectHandler proxyConnectHandler = new ConnectHandler();
-    proxyConnectHandler.getIdleTimeout()
     this.server.setHandler(proxyConnectHandler);
 
     if (proxyHandler != null) {
