@@ -60,7 +60,6 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
-
       // [sev-16337] with a 10% probably, log the request and response headers and size for debugging
       if (Math.random() < 0.10) {
         log.debug("Request URL: {} , request URI {} , servlet path {} , toString {}, size {}",
@@ -73,36 +72,27 @@ public class ProxyHandler {
       log.error("Exception occurred while processing request URL: {} , request URI {} ,"
                       + " servlet path {} , toString {}, size {}", request.getRequestURL(),
               request.getRequestURI(), request.getServletPath(), request.toString(), request.getContentLength(), var9);
-      
-      String requestHeaderLog = getErrorLogHeaders(request);
-      log.error(requestHeaderLog);
-
-      String responseHeaderLog = getErrorLogHeaders(response);
-      log.error(responseHeaderLog);
+      errorLogHeaders(request);
+      errorLogHeaders(response);
       callback.failed(var9);
     }
   }
 
-  protected String getErrorLogHeaders(HttpServletRequest request) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("------- error HttpServletRequest headers---------\n");
+  protected void errorLogHeaders(HttpServletRequest request) {
+    log.error("------- error HttpServletRequest headers---------");
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
-      sb.append(header).append("->").append(request.getHeader(header)).append("\n");
+      log.error(header + "->" + request.getHeader(header));
     }
-    return sb.toString();
   }
 
-  protected String getErrorLogHeaders(HttpServletResponse response) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("------- error HttpServletResponse headers---------\n");
-    Enumeration<String> headers = response.getHeaderNames();
-    while (headers.hasMoreElements()) {
-      String header = headers.nextElement();
-      sb.append(header).append("->").append(response.getHeader(header)).append("\n");
+  protected void errorLogHeaders(HttpServletResponse response) {
+    log.error("------- error HttpServletResponse headers---------");
+    Collection<String> headers = response.getHeaderNames();
+    for (String header : headers) {
+      log.error(header + "->" + response.getHeader(header));
     }
-    return sb.toString();
   }
 
   protected void debugLogHeaders(HttpServletRequest request) {
