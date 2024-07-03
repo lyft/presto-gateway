@@ -3,6 +3,8 @@ package com.lyft.data.proxyserver;
 import java.io.Closeable;
 import java.io.File;
 import java.util.EnumSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
@@ -36,6 +38,9 @@ public class ProxyServer implements Closeable {
   private final Server server;
   private final ProxyServletImpl proxy;
   private final ProxyHandler proxyHandler;
+  private final ScheduledExecutorService scheduler =
+      Executors.newScheduledThreadPool(1);
+
   private ServletContextHandler context;
 
   public ProxyServer(ProxyServerConfiguration config, ProxyHandler proxyHandler) {
@@ -109,10 +114,11 @@ public class ProxyServer implements Closeable {
 
     RequestLogHandler requestLogHandler = new RequestLogHandler();
     StatisticsHandler statsHandler = new StatisticsHandler();
+    statsHandler.setHandler(proxyConnectHandler);
+
     //possible not needed
     //requestLogHandler.setRequestLog(customRequestLog);
     handlers.setHandlers(new Handler[] { requestLogHandler, statsHandler, proxyConnectHandler });
-
 
     this.server.setHandler(handlers);
 
@@ -144,6 +150,16 @@ public class ProxyServer implements Closeable {
 
     try {
       this.server.start();
+
+      // Schedule a task to log metrics at a fixed rate
+      StatisticsHandler stats = this.server.getChildHandlerByClass(StatisticsHandler.class);
+      this.scheduler.scheduleAtFixedRate(() -> {
+        log.debug("(jetty) Num requests: " + stats.getRequests());
+        log.debug("(jetty) Num requests: " + stats.getRequestsActive());
+        log.debug("(jetty) Responses with 4xx status: " + stats.getResponses4xx());
+        log.debug("(jetty) Responses with 5xx status: " + stats.getResponses5xx());
+        // Log other metrics as needed
+      }, 0, 5, TimeUnit.MINUTES);
     } catch (Exception e) {
       log.error("Error starting proxy server", e);
       throw new IllegalStateException(e);
