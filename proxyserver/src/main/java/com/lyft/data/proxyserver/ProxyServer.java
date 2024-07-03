@@ -26,6 +26,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -107,9 +108,10 @@ public class ProxyServer implements Closeable {
     HandlerCollection handlers = new HandlerCollection();
 
     RequestLogHandler requestLogHandler = new RequestLogHandler();
+    StatisticsHandler statsHandler = new StatisticsHandler();
     //possible not needed
     //requestLogHandler.setRequestLog(customRequestLog);
-    handlers.setHandlers(new Handler[] { requestLogHandler, proxyConnectHandler });
+    handlers.setHandlers(new Handler[] { requestLogHandler, statsHandler, proxyConnectHandler });
 
 
     this.server.setHandler(handlers);
