@@ -116,19 +116,20 @@ public class ProxyServer implements Closeable {
 
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
+
     }
 
     ServletHolder proxyServlet = new ServletHolder(config.getName(), proxy);
-
     proxyServlet.setInitParameter("proxyTo", config.getProxyTo());
     proxyServlet.setInitParameter("prefix", config.getPrefix());
     proxyServlet.setInitParameter("trustAll", config.getTrustAll());
     proxyServlet.setInitParameter("preserveHost", config.getPreserveHost());
     proxyServlet.setInitParameter("timeout", "120000");
 
+
     // Setup proxy servlet
     this.context =
-        new ServletContextHandler(proxyConnectHandler, "/", ServletContextHandler.SESSIONS);
+        new ServletContextHandler(handlers, "/", ServletContextHandler.SESSIONS);
     this.context.addServlet(proxyServlet, "/*");
     this.context.addFilter(RequestFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
   }
