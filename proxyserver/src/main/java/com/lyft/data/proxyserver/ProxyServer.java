@@ -170,6 +170,7 @@ public class ProxyServer implements Closeable {
   public void close() {
     try {
       this.server.stop();
+      this.scheduler.shutdown();
     } catch (Exception e) {
       log.error("Could not close the proxy server", e);
     }
