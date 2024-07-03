@@ -35,6 +35,15 @@ public class ProxyHandler {
    */
   public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
     // you may override it.
+
+    // [sev-16337] with a 10% probably, log the request headers for debugging
+    if (Math.random() < 0.10) {
+      log.debug("(preConnectionHook) Request URL: {} , request URI {} , servlet path {} ,"
+          + "toString {}, getContentLength {}, getRequestHeaderSize {}, requestHeaders {}",
+          request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+          request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+          errorLogHeaders(request));
+    }
   }
 
   /**
@@ -60,14 +69,72 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
+      // [sev-16337] with a 10% probably, log the request and response headers
+      // and size for debugging
+      if (Math.random() < 0.10) {
+        log.debug("(postConnectionHook) Request URL: {} , request URI {} , servlet path {} , "
+            + "toString {}, getContentLength {}, getRequestHeaderSize {}, "
+            + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}",
+            request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+            request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+            getResponseHeaderSize(response), errorLogHeaders(request),
+              errorLogHeaders(response));
+      }
 
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("Exception occurred while processing request URL: {} , request URI {} ,"
-                      + " servlet path {} , toString {}", request.getRequestURL(),
-              request.getRequestURI(), request.getServletPath(), request.toString(), var9);
+      log.error("(postConnectionHook) Exception occurred while processing request URL: {} , "
+                + "request URI {} , servlet path {} , toString {}, getContentLength {}, "
+                + "getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, " 
+                + "responseHeaders {}",
+                request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
+              request.toString(), request.getContentLength(), getRequestHeaderSize(request),
+              getResponseHeaderSize(response), errorLogHeaders(request),
+              errorLogHeaders(response), var9);
+      
       callback.failed(var9);
     }
+  }
+
+  protected int getRequestHeaderSize(HttpServletRequest request) {
+    int headerSize = 0;
+    Enumeration<String> headerNames = request.getHeaderNames();
+    while (headerNames.hasMoreElements()) {
+      String headerName = headerNames.nextElement();
+      String headerValue = request.getHeader(headerName);
+      headerSize += headerName.length() + headerValue.length();
+    }
+    return headerSize;
+  }
+
+  private int getResponseHeaderSize(HttpServletResponse response) {
+    int headerSize = 0;
+    for (String headerName : response.getHeaderNames()) {
+      String headerValue = response.getHeader(headerName);
+      headerSize += headerName.length() + headerValue.length();
+    }
+    return headerSize;
+  }
+
+  protected String errorLogHeaders(HttpServletRequest request) {
+    StringBuilder sb = new StringBuilder("------- error HttpServletRequest headers---------");
+    Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String header = headers.nextElement();
+      sb.append(header + "->" + request.getHeader(header) + "\n");
+    }
+
+    return sb.toString();
+  }
+
+  protected String errorLogHeaders(HttpServletResponse response) {
+    StringBuilder sb = new StringBuilder("------- error HttpServletResponse headers---------");
+    Collection<String> headers = response.getHeaderNames();
+    for (String header : headers) {
+      sb.append(header + "->" + response.getHeader(header) + "\n");
+    }
+
+    return sb.toString();
   }
 
   protected void debugLogHeaders(HttpServletRequest request) {
