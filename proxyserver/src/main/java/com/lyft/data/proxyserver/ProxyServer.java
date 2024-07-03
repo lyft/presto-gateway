@@ -155,7 +155,7 @@ public class ProxyServer implements Closeable {
       StatisticsHandler stats = this.server.getChildHandlerByClass(StatisticsHandler.class);
       this.scheduler.scheduleAtFixedRate(() -> {
         log.debug("(jetty) Num requests: " + stats.getRequests());
-        log.debug("(jetty) Num requests: " + stats.getRequestsActive());
+        log.debug("(jetty) Num active requests: " + stats.getRequestsActive());
         log.debug("(jetty) Responses with 4xx status: " + stats.getResponses4xx());
         log.debug("(jetty) Responses with 5xx status: " + stats.getResponses5xx());
         // Log other metrics as needed
