@@ -10,16 +10,22 @@ import javax.servlet.Filter;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.TextUtils;
+import org.eclipse.jetty.http.HttpParser;
 import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.proxy.ConnectHandler;
+import org.eclipse.jetty.server.CustomRequestLog;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -97,7 +103,16 @@ public class ProxyServer implements Closeable {
 
     // Setup proxy handler to handle CONNECT methods
     ConnectHandler proxyConnectHandler = new ConnectHandler();
-    this.server.setHandler(proxyConnectHandler);
+
+    HandlerCollection handlers = new HandlerCollection();
+
+    RequestLogHandler requestLogHandler = new RequestLogHandler();
+    //possible not needed
+    //requestLogHandler.setRequestLog(customRequestLog);
+    handlers.setHandlers(new Handler[] { requestLogHandler, proxyConnectHandler });
+
+
+    this.server.setHandler(handlers);
 
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
