@@ -1,15 +1,16 @@
 package com.lyft.data.proxyserver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.Closeable;
 import java.io.File;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.TextUtils;
 import org.eclipse.jetty.http.HttpParser;
@@ -20,9 +21,12 @@ import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
@@ -106,12 +110,84 @@ public class ProxyServer implements Closeable {
 
     HandlerCollection handlers = new HandlerCollection();
 
+    Slf4jRequestLogWriter slfjRequestLogWriter = new Slf4jRequestLogWriter();
+    slfjRequestLogWriter.setLoggerName("request.log");
+    //String format = "%{client}a - %u %t '%r' %s %O '%{Referer}i' '%{User-Agent}i' '%C'";
+    String myFormat =
+        "ACCESS LOG %{client}a - %u %t \"%r\" %s %O \"%{Referer}i\" \"%{User-Agent}i\" **%T/%D**";
+
+
+    CustomRequestLog customRequestLog1 = new CustomRequestLog(slfjRequestLogWriter,myFormat) {
+      @Override
+      public void log(Request request, Response response) {
+        // Access properties of the request object here
+
+        String clientAddress = request.getRemoteAddr();
+        String username = request.getRemoteUser();
+        String requestTime = String.valueOf(request.getTimeStamp());
+        String requestMethod = request.getMethod();
+        String requestUri = request.getRequestURI();
+        int responseStatus = response.getStatus();
+        long responseSize = response.getContentCount();
+        String referer = request.getHeader("Referer");
+        String userAgent = request.getHeader("User-Agent");
+        long requestDurationMs = System.currentTimeMillis() - request.getTimeStamp();
+
+        String logMessageString = "ACCESS LOG == " + clientAddress + " - "
+                + (username != null ? username : "-") + " " + requestTime
+                + " \"" + requestMethod + " " + requestUri + " " + request.getProtocol()
+                + "\" " + responseStatus + " " + responseSize + " \""
+                + (referer != null ? referer : "-") + "\" \""
+                + (userAgent != null ? userAgent : "-")
+                + "\" **" + (requestDurationMs / 1000) + "/" + requestDurationMs + "**";
+
+        // Prepare the JSON log message
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode logMessage = mapper.createObjectNode();
+        logMessage.put("clientAddress", clientAddress);
+        logMessage.put("username", username != null ? username : "-");
+        logMessage.put("requestTime", requestTime);
+        logMessage.put("requestMethod", requestMethod);
+        logMessage.put("requestURI", requestUri);
+        logMessage.put("protocol", request.getProtocol());
+        logMessage.put("responseStatus", responseStatus);
+        logMessage.put("responseSize", responseSize);
+        logMessage.put("referer", referer != null ? referer : "-");
+        logMessage.put("userAgent", userAgent != null ? userAgent : "-");
+        logMessage.put("requestDurationMs", requestDurationMs);
+        try {
+          Enumeration<String> headerNames = request.getHeaderNames();
+          while (headerNames.hasMoreElements()) {
+            String header = headerNames.nextElement();
+            logMessage.put("request_header_" + header, request.getHeader(header));
+          }
+
+          for (String i: response.getHeaderNames()) {
+            logMessage.put("request_header_" + i, response.getHeader(i));
+          }
+          log.info("Request message: {}", request.toString());
+          log.info("Response message: {}", response.toString());
+          log.info("Response message: {}", response.toString());
+          log.info("ACCESS LOG: {} : {}", logMessage.toString(),
+                  request.getHeader("proxytarget"), request.getHeaderNames());
+        } catch (Exception e) {
+          log.error("Error logging access log message", e);
+        }
+
+
+        //log.info(logMessageString);
+      }
+    };
+
+
+
     RequestLogHandler requestLogHandler = new RequestLogHandler();
+
+    //CustomRequestLog customRequestLog = new CustomRequestLog(slfjRequestLogWriter, myFormat);
+    this.server.setRequestLog(customRequestLog1);
     //possible not needed
     //requestLogHandler.setRequestLog(customRequestLog);
     handlers.setHandlers(new Handler[] { requestLogHandler, proxyConnectHandler });
-
-
     this.server.setHandler(handlers);
 
     if (proxyHandler != null) {
@@ -127,10 +203,12 @@ public class ProxyServer implements Closeable {
     proxyServlet.setInitParameter("timeout", "120000");
 
 
+
     // Setup proxy servlet
     this.context =
         new ServletContextHandler(handlers, "/", ServletContextHandler.SESSIONS);
     this.context.addServlet(proxyServlet, "/*");
+
     this.context.addFilter(RequestFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
   }
 

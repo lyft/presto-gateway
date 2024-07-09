@@ -118,4 +118,16 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>lyft-releases</id>
+            <name>release</name>
+            <url>https://artifactory.lyft.net/artifactory/virtual-maven-libs-release</url>
+        </repository>
+        <snapshotRepository>
+            <id>lyft-snapshots</id>
+            <name>libs-snapshot</name>
+            <url>https://artifactory.lyft.net/artifactory/virtual-maven-libs-snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
