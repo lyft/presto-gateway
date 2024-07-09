@@ -97,8 +97,6 @@ public class ProxyServer implements Closeable {
     connector.setPort(config.getLocalPort());
     connector.setName(config.getName());
     connector.setAccepting(true);
-    connector.setIdleTimeout(150000L);
-    connector.setAcceptQueueSize(1024);
     this.server.addConnector(connector);
 
     // Setup proxy handler to handle CONNECT methods
