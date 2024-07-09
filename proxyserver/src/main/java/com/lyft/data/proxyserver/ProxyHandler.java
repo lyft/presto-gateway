@@ -41,7 +41,7 @@ public class ProxyHandler {
           + "toString {}, getContentLength {}, getRequestHeaderSize {}, requestHeaders {}",
           request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
           request.toString(), request.getContentLength(), getRequestHeaderSize(request),
-          errorLogHeaders(request));
+          logRequestHeaders(request));
     }
   }
 
@@ -68,29 +68,8 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
-      // [sev-16337] with a 10% probably, log the request and response headers
-      // and size for debugging
-      if (Math.random() < 0.10) {
-        log.debug("(postConnectionHook) Request URL: {} , request URI {} , servlet path {} , "
-            + "toString {}, getContentLength {}, getRequestHeaderSize {}, "
-            + "getResponseHeaderSize {}, requestHeaders {}, responseHeaders {}",
-            request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
-            request.toString(), request.getContentLength(), getRequestHeaderSize(request),
-            getResponseHeaderSize(response), errorLogHeaders(request),
-              errorLogHeaders(response));
-      }
-
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("(postConnectionHook) Exception occurred while processing request URL: {} , "
-                + "request URI {} , servlet path {} , toString {}, getContentLength {}, "
-                + "getRequestHeaderSize {}, getResponseHeaderSize {}, requestHeaders {}, " 
-                + "responseHeaders {}",
-                request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
-              request.toString(), request.getContentLength(), getRequestHeaderSize(request),
-              getResponseHeaderSize(response), errorLogHeaders(request),
-              errorLogHeaders(response), var9);
-      
       callback.failed(var9);
     }
   }
@@ -115,8 +94,8 @@ public class ProxyHandler {
     return headerSize;
   }
 
-  protected String errorLogHeaders(HttpServletRequest request) {
-    StringBuilder sb = new StringBuilder("------- error HttpServletRequest headers---------");
+  protected String logRequestHeaders(HttpServletRequest request) {
+    StringBuilder sb = new StringBuilder("------- HttpServletRequest headers---------");
     Enumeration<String> headers = request.getHeaderNames();
     while (headers.hasMoreElements()) {
       String header = headers.nextElement();
@@ -126,8 +105,8 @@ public class ProxyHandler {
     return sb.toString();
   }
 
-  protected String errorLogHeaders(HttpServletResponse response) {
-    StringBuilder sb = new StringBuilder("------- error HttpServletResponse headers---------");
+  protected String logResponseHeaders(HttpServletResponse response) {
+    StringBuilder sb = new StringBuilder("------- HttpServletResponse headers---------");
     Collection<String> headers = response.getHeaderNames();
     for (String header : headers) {
       sb.append(header + "->" + response.getHeader(header) + "\n");

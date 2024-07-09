@@ -88,7 +88,6 @@ public class ProxyServer implements Closeable {
       src.setStsMaxAge(TimeUnit.SECONDS.toSeconds(2000));
       src.setStsIncludeSubDomains(true);
       httpsConfig.addCustomizer(src);
-      httpsConfig.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
       connector =
           new ServerConnector(
               server,
@@ -179,20 +178,12 @@ public class ProxyServer implements Closeable {
       }
     };
 
-
-
-    RequestLogHandler requestLogHandler = new RequestLogHandler();
-
-    //CustomRequestLog customRequestLog = new CustomRequestLog(slfjRequestLogWriter, myFormat);
     this.server.setRequestLog(customRequestLog1);
-    //possible not needed
-    //requestLogHandler.setRequestLog(customRequestLog);
-    handlers.setHandlers(new Handler[] { requestLogHandler, proxyConnectHandler });
+    handlers.setHandlers(new Handler[] { proxyConnectHandler });
     this.server.setHandler(handlers);
 
     if (proxyHandler != null) {
       proxy.setProxyHandler(proxyHandler);
-
     }
 
     ServletHolder proxyServlet = new ServletHolder(config.getName(), proxy);
@@ -201,8 +192,6 @@ public class ProxyServer implements Closeable {
     proxyServlet.setInitParameter("trustAll", config.getTrustAll());
     proxyServlet.setInitParameter("preserveHost", config.getPreserveHost());
     proxyServlet.setInitParameter("timeout", "120000");
-
-
 
     // Setup proxy servlet
     this.context =
