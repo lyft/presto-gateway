@@ -186,7 +186,6 @@ public class ProxyServer implements Closeable {
     proxyServlet.setInitParameter("prefix", config.getPrefix());
     proxyServlet.setInitParameter("trustAll", config.getTrustAll());
     proxyServlet.setInitParameter("preserveHost", config.getPreserveHost());
-    proxyServlet.setInitParameter("timeout", "120000");
 
     // Setup proxy servlet
     this.context =
