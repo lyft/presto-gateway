@@ -6,10 +6,6 @@ requestRouter:
   port: 8080
   name: prestoRouter
   historySize: 1000
-  requestHeaderSize: 2048000
-  responseHeaderSize: 2048000
-  requestBufferSize: 2048000
-  responseBufferSize: 2048000
 
 dataStore:
   jdbcUrl: jdbc:mysql://127.0.0.1:3306/prestogateway
