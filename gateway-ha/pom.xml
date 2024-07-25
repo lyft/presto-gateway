@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.lyft.data</groupId>
         <artifactId>prestogateway-parent</artifactId>
-        <version>1.9.6-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
     <artifactId>gateway-ha</artifactId>
+    <version>${project.parent.version}</version>
     <packaging>jar</packaging>
     <name>gateway-ha</name>
 
