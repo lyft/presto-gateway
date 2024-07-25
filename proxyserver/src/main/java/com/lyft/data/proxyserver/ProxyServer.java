@@ -40,6 +40,7 @@ public class ProxyServer implements Closeable {
   private final ProxyServletImpl proxy;
   private final ProxyHandler proxyHandler;
   private ServletContextHandler context;
+  private boolean accessLogEnabled;
 
   public ProxyServer(ProxyServerConfiguration config, ProxyHandler proxyHandler) {
     this(config, proxyHandler, new ProxyServletImpl());
@@ -54,6 +55,8 @@ public class ProxyServer implements Closeable {
 
     this.proxy.setServerConfig(config);
     this.setupContext(config);
+    //cheap flag to turn on Jetty access logging
+    this.accessLogEnabled = false;
   }
 
   private void setupContext(ProxyServerConfiguration config) {
@@ -108,76 +111,74 @@ public class ProxyServer implements Closeable {
 
     HandlerCollection handlers = new HandlerCollection();
 
-    Slf4jRequestLogWriter slfjRequestLogWriter = new Slf4jRequestLogWriter();
-    slfjRequestLogWriter.setLoggerName("request.log");
-    //String format = "%{client}a - %u %t '%r' %s %O '%{Referer}i' '%{User-Agent}i' '%C'";
-    String myFormat =
-        "ACCESS LOG %{client}a - %u %t \"%r\" %s %O \"%{Referer}i\" \"%{User-Agent}i\" **%T/%D**";
-
-
-    CustomRequestLog customRequestLog1 = new CustomRequestLog(slfjRequestLogWriter,myFormat) {
-      @Override
-      public void log(Request request, Response response) {
-        // Access properties of the request object here
-
-        String clientAddress = request.getRemoteAddr();
-        String username = request.getRemoteUser();
-        String requestTime = String.valueOf(request.getTimeStamp());
-        String requestMethod = request.getMethod();
-        String requestUri = request.getRequestURI();
-        int responseStatus = response.getStatus();
-        long responseSize = response.getContentCount();
-        String referer = request.getHeader("Referer");
-        String userAgent = request.getHeader("User-Agent");
-        long requestDurationMs = System.currentTimeMillis() - request.getTimeStamp();
-
-        String logMessageString = "ACCESS LOG == " + clientAddress + " - "
-                + (username != null ? username : "-") + " " + requestTime
-                + " \"" + requestMethod + " " + requestUri + " " + request.getProtocol()
-                + "\" " + responseStatus + " " + responseSize + " \""
-                + (referer != null ? referer : "-") + "\" \""
-                + (userAgent != null ? userAgent : "-")
-                + "\" **" + (requestDurationMs / 1000) + "/" + requestDurationMs + "**";
-
-        // Prepare the JSON log message
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode logMessage = mapper.createObjectNode();
-        logMessage.put("clientAddress", clientAddress);
-        logMessage.put("username", username != null ? username : "-");
-        logMessage.put("requestTime", requestTime);
-        logMessage.put("requestMethod", requestMethod);
-        logMessage.put("requestURI", requestUri);
-        logMessage.put("protocol", request.getProtocol());
-        logMessage.put("responseStatus", responseStatus);
-        logMessage.put("responseSize", responseSize);
-        logMessage.put("referer", referer != null ? referer : "-");
-        logMessage.put("userAgent", userAgent != null ? userAgent : "-");
-        logMessage.put("requestDurationMs", requestDurationMs);
-        try {
-          Enumeration<String> headerNames = request.getHeaderNames();
-          while (headerNames.hasMoreElements()) {
-            String header = headerNames.nextElement();
-            logMessage.put("request_header_" + header, request.getHeader(header));
+    if (this.accessLogEnabled) {
+      Slf4jRequestLogWriter slfjRequestLogWriter = new Slf4jRequestLogWriter();
+      slfjRequestLogWriter.setLoggerName("request.log");
+      String myFormat =
+          "ACCESS LOG %{client}a - %u %t \"%r\" %s %O \"%{Referer}i\" \"%{User-Agent}i\" **%T/%D**";
+  
+  
+      CustomRequestLog requestLog = new CustomRequestLog(slfjRequestLogWriter,myFormat) {
+        @Override
+        public void log(Request request, Response response) {
+          String clientAddress = request.getRemoteAddr();
+          String username = request.getRemoteUser();
+          String requestTime = String.valueOf(request.getTimeStamp());
+          String requestMethod = request.getMethod();
+          String requestUri = request.getRequestURI();
+          int responseStatus = response.getStatus();
+          long responseSize = response.getContentCount();
+          String referer = request.getHeader("Referer");
+          String userAgent = request.getHeader("User-Agent");
+          long requestDurationMs = System.currentTimeMillis() - request.getTimeStamp();
+  
+          String logMessageString = "ACCESS LOG == " + clientAddress + " - "
+                  + (username != null ? username : "-") + " " + requestTime
+                  + " \"" + requestMethod + " " + requestUri + " " + request.getProtocol()
+                  + "\" " + responseStatus + " " + responseSize + " \""
+                  + (referer != null ? referer : "-") + "\" \""
+                  + (userAgent != null ? userAgent : "-")
+                  + "\" **" + (requestDurationMs / 1000) + "/" + requestDurationMs + "**";
+  
+          ObjectMapper mapper = new ObjectMapper();
+          ObjectNode logMessage = mapper.createObjectNode();
+          logMessage.put("clientAddress", clientAddress);
+          logMessage.put("username", username != null ? username : "-");
+          logMessage.put("requestTime", requestTime);
+          logMessage.put("requestMethod", requestMethod);
+          logMessage.put("requestURI", requestUri);
+          logMessage.put("protocol", request.getProtocol());
+          logMessage.put("responseStatus", responseStatus);
+          logMessage.put("responseSize", responseSize);
+          logMessage.put("referer", referer != null ? referer : "-");
+          logMessage.put("userAgent", userAgent != null ? userAgent : "-");
+          logMessage.put("requestDurationMs", requestDurationMs);
+          try {
+            Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+              String header = headerNames.nextElement();
+              logMessage.put("request_header_" + header, request.getHeader(header));
+            }
+  
+            for (String i: response.getHeaderNames()) {
+              logMessage.put("request_header_" + i, response.getHeader(i));
+            }
+            
+            log.info("ACCESS LOG: {} : {}", logMessage.toString(),
+                      request.getHeader("proxytarget"), request.getHeaderNames());
+            
+          } catch (Exception e) {
+            log.error("Error logging access log message", e);
           }
-
-          for (String i: response.getHeaderNames()) {
-            logMessage.put("request_header_" + i, response.getHeader(i));
-          }
-          log.info("Request message: {}", request.toString());
-          log.info("Response message: {}", response.toString());
-          log.info("Response message: {}", response.toString());
-          log.info("ACCESS LOG: {} : {}", logMessage.toString(),
-                  request.getHeader("proxytarget"), request.getHeaderNames());
-        } catch (Exception e) {
-          log.error("Error logging access log message", e);
+  
+  
+          //log.info(logMessageString);
         }
-
-
-        //log.info(logMessageString);
-      }
-    };
-
-    this.server.setRequestLog(customRequestLog1);
+      };
+      
+      this.server.setRequestLog(customRequestLog);
+    }
+    
     handlers.setHandlers(new Handler[] { proxyConnectHandler });
     this.server.setHandler(handlers);
 
