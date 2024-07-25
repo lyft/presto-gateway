@@ -46,6 +46,7 @@ public class ProxyServletImpl extends ProxyServlet.Transparent {
     HttpClient httpClient = new HttpClient(sslFactory);
     httpClient.setMaxConnectionsPerDestination(10000);
     httpClient.setConnectTimeout(TimeUnit.SECONDS.toMillis(60));
+
     return httpClient;
   }
 

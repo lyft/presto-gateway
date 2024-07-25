@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.zip.GZIPInputStream;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,12 +59,8 @@ public class ProxyHandler {
                 request.getRequestURL());
       }
       response.getOutputStream().write(buffer, offset, length);
-
       callback.succeeded();
     } catch (Throwable var9) {
-      log.error("Exception occurred while processing request URL: {} , request URI {} ,"
-                      + " servlet path {} , toString {}", request.getRequestURL(),
-              request.getRequestURI(), request.getServletPath(), request.toString(), var9);
       callback.failed(var9);
     }
   }

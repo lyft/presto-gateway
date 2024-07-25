@@ -1,6 +1,10 @@
 package com.lyft.data.gateway.ha.handler;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
@@ -27,6 +31,7 @@ import org.eclipse.jetty.client.api.Request;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.Callback;
+
 
 @Slf4j
 public class QueryIdCachingProxyHandler extends ProxyHandler {
@@ -57,13 +62,19 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
   private final Meter requestMeter;
   private final int serverApplicationPort;
 
+  private final Counter errorCounter4xx;
+  private final Counter errorCounter5xx;
+
   public QueryIdCachingProxyHandler(
       QueryHistoryManager queryHistoryManager,
       RoutingManager routingManager,
       RoutingGroupSelector routingGroupSelector,
       int serverApplicationPort,
-      Meter requestMeter) {
+      Meter requestMeter,
+      MetricRegistry metrics) {
     this.requestMeter = requestMeter;
+    this.errorCounter4xx = metrics.counter(name(QueryIdCachingProxyHandler.class, "4xx"));
+    this.errorCounter5xx = metrics.counter(name(QueryIdCachingProxyHandler.class, "5xx"));
     this.routingManager = routingManager;
     this.routingGroupSelector = routingGroupSelector;
     this.queryHistoryManager = queryHistoryManager;
@@ -269,6 +280,11 @@ public class QueryIdCachingProxyHandler extends ProxyHandler {
       }
     } catch (Exception e) {
       log.error("Error in proxying falling back to super call", e);
+    }
+    if (response.getStatus() >= 500) {
+      errorCounter5xx.inc();
+    } else if (response.getStatus() >= 400) {
+      errorCounter4xx.inc();
     }
     super.postConnectionHook(request, response, buffer, offset, length, callback);
   }
