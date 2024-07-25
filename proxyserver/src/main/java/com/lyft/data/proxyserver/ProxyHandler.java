@@ -65,47 +65,6 @@ public class ProxyHandler {
     }
   }
 
-  protected int getRequestHeaderSize(HttpServletRequest request) {
-    int headerSize = 0;
-    Enumeration<String> headerNames = request.getHeaderNames();
-    while (headerNames.hasMoreElements()) {
-      String headerName = headerNames.nextElement();
-      String headerValue = request.getHeader(headerName);
-      headerSize += headerName.length() + headerValue.length();
-    }
-    return headerSize;
-  }
-
-  private int getResponseHeaderSize(HttpServletResponse response) {
-    int headerSize = 0;
-    for (String headerName : response.getHeaderNames()) {
-      String headerValue = response.getHeader(headerName);
-      headerSize += headerName.length() + headerValue.length();
-    }
-    return headerSize;
-  }
-
-  protected String logRequestHeaders(HttpServletRequest request) {
-    StringBuilder sb = new StringBuilder("------- HttpServletRequest headers---------");
-    Enumeration<String> headers = request.getHeaderNames();
-    while (headers.hasMoreElements()) {
-      String header = headers.nextElement();
-      sb.append(header + "->" + request.getHeader(header) + "\n");
-    }
-
-    return sb.toString();
-  }
-
-  protected String logResponseHeaders(HttpServletResponse response) {
-    StringBuilder sb = new StringBuilder("------- HttpServletResponse headers---------");
-    Collection<String> headers = response.getHeaderNames();
-    for (String header : headers) {
-      sb.append(header + "->" + response.getHeader(header) + "\n");
-    }
-
-    return sb.toString();
-  }
-
   protected void debugLogHeaders(HttpServletRequest request) {
     if (log.isDebugEnabled()) {
       log.debug("-------HttpServletRequest headers---------");
