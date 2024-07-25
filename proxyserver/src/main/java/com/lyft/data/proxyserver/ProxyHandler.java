@@ -33,16 +33,6 @@ public class ProxyHandler {
    * @param proxyRequest
    */
   public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
-    // you may override it.
-
-    // [sev-16337] with a 10% probably, log the request headers for debugging
-    if (Math.random() < 0.10) {
-      log.debug("(preConnectionHook) Request URL: {} , request URI {} , servlet path {} ,"
-          + "toString {}, getContentLength {}, getRequestHeaderSize {}, requestHeaders {}",
-          request.getRequestURL(), request.getRequestURI(), request.getServletPath(),
-          request.toString(), request.getContentLength(), getRequestHeaderSize(request),
-          logRequestHeaders(request));
-    }
   }
 
   /**
