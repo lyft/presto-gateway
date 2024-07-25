@@ -166,13 +166,11 @@ public class ProxyServer implements Closeable {
           } catch (Exception e) {
             log.error("Error logging access log message", e);
           }
-  
-  
-          //log.info(logMessageString);
+          
         }
       };
       
-      this.server.setRequestLog(customRequestLog);
+      this.server.setRequestLog(requestLog);
     }
     
     handlers.setHandlers(new Handler[] { proxyConnectHandler });
