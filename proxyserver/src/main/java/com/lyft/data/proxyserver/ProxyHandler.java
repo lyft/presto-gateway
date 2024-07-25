@@ -33,6 +33,7 @@ public class ProxyHandler {
    * @param proxyRequest
    */
   public void preConnectionHook(HttpServletRequest request, Request proxyRequest) {
+    // you may override it.
   }
 
   /**
