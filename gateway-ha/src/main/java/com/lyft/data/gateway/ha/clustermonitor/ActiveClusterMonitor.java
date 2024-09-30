@@ -150,6 +150,9 @@ public class ActiveClusterMonitor implements Managed {
       result = OBJECT_MAPPER.readValue(response, HashMap.class);
 
       clusterStats.setNumWorkerNodes((int) result.get("activeWorkers"));
+      if (clusterStats.getNumWorkerNodes() < 1) {
+        clusterStats.setHealthy(false);
+      }
       clusterStats.setQueuedQueryCount((int) result.get("queuedQueries"));
       clusterStats.setRunningQueryCount((int) result.get("runningQueries"));
       clusterStats.setBlockedQueryCount((int) result.get("blockedQueries"));
