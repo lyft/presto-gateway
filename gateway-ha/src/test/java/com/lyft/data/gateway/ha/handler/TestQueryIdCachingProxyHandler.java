@@ -4,6 +4,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,15 +24,21 @@ public class TestQueryIdCachingProxyHandler {
         "/ui/api/query?query_id=20200416_160256_03078_6b4yt",
         "/ui/api/query.html?20200416_160256_03078_6b4yt"};
     for (String path : paths) {
-      String queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
-      assertEquals(queryId, "20200416_160256_03078_6b4yt");
+      Optional<String> queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
+      assertEquals(queryId, Optional.of("20200416_160256_03078_6b4yt"));
     }
+    
+    Optional<String> queryParamId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(
+        "/ui/query", 
+        "20200416_160256_03078_6b4yt");
+    assertEquals(queryParamId, Optional.of("20200416_160256_03078_6b4yt"));
+    
     String[] nonPaths = {
         "/ui/api/query/myOtherThing",
         "/ui/api/query/20200416_blah?bogus_fictional_param"};
     for (String path : nonPaths) {
-      String queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
-      assertNull(queryId);
+      Optional<String> queryId = QueryIdCachingProxyHandler.extractQueryIdIfPresent(path, null);
+      assertEquals(queryId, Optional.empty());
     }
   }
 
