@@ -124,7 +124,7 @@ public class PrestoResource {
 
   @GET
   @Path("/selector/read/{resourceGroupId}")
-  public Response readSelector(@QueryParam("resourceGroupId") String resourceGroupIdStr,
+  public Response readSelector(@PathParam("resourceGroupId") String resourceGroupIdStr,
                                @QueryParam("useSchema") String useSchema) {
     if (Strings.isNullOrEmpty(resourceGroupIdStr)) { // if query not specified, return all
       return Response.ok(this.resourceGroupsManager.readAllSelectors(useSchema)).build();
