@@ -296,7 +296,7 @@ Presto gateway supports graceful shutdown of Presto clusters. Even when a cluste
 
 To graceful shutdown a Presto cluster without query losses, the steps are:
 1. Set the backend to deactivate state, this prevents any new incoming queries from getting assigned to the backend.
-2. Poll the Presto backend coorinator URL until the queued query count and the running query count both hit 0.
+2. Poll the Presto backend coordinator URL until the queued query count and the running query count both hit 0.
 3. Terminate the Presto Coordinator & Worker Java process.
 
 
